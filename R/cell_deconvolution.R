@@ -571,6 +571,7 @@ compute.cell.types = function(data, cells_extra = NULL){
 #' @param threshold Threshold for defined high correlated features
 #' @param name Cell type name corresponding to the given matrix in 'data'
 #' @param n_seed Seed to ensure reproducibility regarding the choice of the feature.
+#' @param corr_method Correlation type whether "spearman" or "pearson".
 #'
 #' @return A list containing
 #'
@@ -578,12 +579,12 @@ compute.cell.types = function(data, cells_extra = NULL){
 #' - Highly correlated features found
 #' - Cell type name
 #'
-removeCorrelatedFeatures <- function(data, threshold, name, n_seed) {
+removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method = "spearman") {
 
   features_high_corr = c()
   cell_name = c()
   # Compute correlation matrix
-  corr_matrix <- stats::cor(data, method = "spearman")
+  corr_matrix <- stats::cor(data, method = corr_method)
   # Find highly correlated features
   contador = 1
   while(nrow(corr_matrix)>0){
@@ -656,6 +657,7 @@ remove_subgroups = function(groups){
 #'
 #' @param deconvolution A matrix with unprocessed cell deconvolution results
 #' @param thres_corr A numeric value with the minimum correlation allowed to group cell deconvolution features
+#' @param corr_type
 #' @param file_name Base name for subgroup
 #'
 #' @return A list containing
@@ -665,7 +667,7 @@ remove_subgroups = function(groups){
 #' - Cell subgroups obtained by proportionality correlation
 #' - Discard cell features either because of low variance or high zero number
 #'
-compute_subgroups = function(deconvolution, thres_corr, file_name){
+compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name){
   data = data.frame(deconvolution)
   cell_subgroups = list()
   #cell_groups_similarity = list()
@@ -755,7 +757,7 @@ compute_subgroups = function(deconvolution, thres_corr, file_name){
     terminate = FALSE
     iteration = 1
     while (terminate == FALSE) {
-      corr_df <- correlation(data.matrix(data))
+      corr_df <- correlation(data.matrix(data), corr_type = corr_type)
       vec = colnames(data)
       indice = 1
       subgroup = list()
@@ -870,12 +872,13 @@ compute_subgroups = function(deconvolution, thres_corr, file_name){
 #' Perform pairwise correlation across all features
 #'
 #' @param data Matrix with features to correlate
+#' @param corr_type Correlation type whether "spearman" or "pearson".
 #'
 #' @return Dataframe containing all significant correlations (pvalue < 0.05)
 #'
-correlation <- function(data) {
+correlation <- function(data, corr_type = "spearman") {
 
-  M <- Hmisc::rcorr(as.matrix(data), type = "spearman")
+  M <- Hmisc::rcorr(as.matrix(data), type = corr_type)
   Mdf <- purrr::map(M[c("r", "P", "n")], ~data.frame(.x))
 
   corr_df = Mdf %>%
@@ -939,6 +942,7 @@ remove_low_variance <- function(data, plot = FALSE) {
 #'
 #' @param deconvolution Deconvolution output of compute.deconvolution() with features as columns and samples as rows
 #' @param corr Minimum correlation threshold for subgroupping the deconvolution features
+#' @param corr_type Correlation type for computing the cell subgroups, whether "spearman" or "pearson".
 #' @param seed A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.
 #' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
 #' @param file_name A string specifying the file name of the .csv file with the deconvolution subgroups
@@ -966,7 +970,7 @@ remove_low_variance <- function(data, plot = FALSE) {
 #'
 #' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 #'
-compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, seed = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
+compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "pearson", seed = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
   deconvolution.mat = deconvolution
 
   #####Unsupervised filtering
@@ -1016,7 +1020,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, seed = NUL
     if(is.null(ncol(data))==T){
       cells[[i]] = data
     }else if(ncol(data)>1){
-      data = removeCorrelatedFeatures(data, 0.9, names(cells)[i], seed)
+      data = removeCorrelatedFeatures(data, 0.9, names(cells)[i], seed, corr_method = corr_type)
       cells[[i]] = data[[1]]
       if(length(data[[2]])>0 && is.null(data[[3]])==F){
         features_high_corr[[j]] = data[[2]]
@@ -1032,7 +1036,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, seed = NUL
   #groups_similarity = list()
   groups_discard = list()
   for (i in 1:length(cells)) {
-    x = compute_subgroups(cells[[i]], file_name = names(cells)[i], thres_corr = corr)
+    x = compute_subgroups(cells[[i]], file_name = names(cells)[i], thres_corr = corr, corr_type = corr_type)
     res = c(res, x[1])
     groups = c(groups, x[2])
     #groups_similarity = c(groups_similarity, x[3])
