@@ -1,9 +1,11 @@
 Package: multideconv
 Title: Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods
 Version: 0.0.1
-Authors@R: 
+Authors@R:c( 
     person("Marcelo", "Hurtado", , "marcelo.hurtado@inserm.fr", role = c("aut", "cre"),
-           comment = c(ORCID = "0009-0004-6712-0864"))
+           comment = c(ORCID = "0009-0004-6712-0864")),
+    person("Vera", "Pancaldi", , "vera.pancaldi@inserm.fr", role = "aut",
+           comment = c(ORCID = "0000-0002-7433-624X")))
 Description: R package that reduces dimensionality and eliminates redundancy through unsupervised filtering and iterative correlation analyses. Built on top of existing frameworks like immunedeconv (Sturm et al. 2019) and omnideconv (Dietrich et al. 2024), multideconv harmonizes outputs across methods to identify robust cell subgroups and mitigate signature-driven heterogeneity.
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
