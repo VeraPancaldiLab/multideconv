@@ -2455,7 +2455,6 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #'
 #' @param data A matrix or data frame of deconvolution features (samples x features) and a column named `target` indicating class labels.
 #' @param folds A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.
-#' @param coldata A data frame with metadata (e.g., sample annotations), must match the number and order of samples in `data`.
 #'
 #' @return A list of two elements:
 #' \itemize{
@@ -2477,7 +2476,7 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @importFrom stats setNames
 #' @export
 #'
-prepare_multideconv_folds <- function(deconv, folds, coldata) {
+prepare_multideconv_folds <- function(data, folds) {
 
   processed_folds <- list()
 
@@ -2485,11 +2484,10 @@ prepare_multideconv_folds <- function(deconv, folds, coldata) {
     cat("Preprocessing fold", i, "\n")
 
     train_idx <- folds[[i]]
-    test_idx <- setdiff(seq_len(nrow(deconv)), train_idx)
+    test_idx <- setdiff(seq_len(nrow(data)), train_idx)
 
     ## Subset data
-    train_deconv <- deconv[train_idx, , drop = FALSE]
-    train_coldata <- coldata[train_idx, , drop = FALSE]
+    train_deconv <- data[train_idx, , drop = FALSE]
     obs_train <- train_deconv$target
     train_deconv$target <- NULL
 
@@ -2506,8 +2504,8 @@ prepare_multideconv_folds <- function(deconv, folds, coldata) {
       dplyr::mutate(target = obs_train)
 
     ## Prepare test data using trained info
-    test_deconv <- deconv[test_idx, , drop = FALSE]
-    obs_test <- deconv$target[test_idx]
+    test_deconv <- data[test_idx, , drop = FALSE]
+    obs_test <- test_deconv$target[test_idx]
     test_deconv$target = NULL
 
     test_data = replicate_deconvolution_subgroups(deconv_subgroups, test_deconv)
@@ -2522,11 +2520,11 @@ prepare_multideconv_folds <- function(deconv, folds, coldata) {
   }
 
   # Run multideconv on the full training set
-  obs_train = deconv$target
-  deconv$target = NULL
+  obs_train = data$target
+  data$target = NULL
 
   deconv_subgroups_final <- compute.deconvolution.analysis(
-    deconv = deconv,
+    deconv = data,
     corr = 0.7,
     seed = 123,
     cells_extra = cells_extra,
