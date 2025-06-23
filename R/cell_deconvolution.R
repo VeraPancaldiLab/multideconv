@@ -2476,7 +2476,7 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @importFrom stats setNames
 #' @export
 #'
-prepare_multideconv_folds <- function(data, folds) {
+prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 
   processed_folds <- list()
 
