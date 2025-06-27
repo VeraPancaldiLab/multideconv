@@ -2505,7 +2505,7 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 
     ## Prepare test data using trained info
     test_deconv <- data[test_idx, , drop = FALSE]
-    obs_test <- test_deconv$target[test_idx]
+    obs_test <- test_deconv$target
     test_deconv$target = NULL
 
     test_data = replicate_deconvolution_subgroups(deconv_subgroups, test_deconv)
