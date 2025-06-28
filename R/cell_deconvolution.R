@@ -1972,6 +1972,11 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
   deconv_subgroups = deconv_res[["Deconvolution subgroups composition"]]
   iterations = find.maximum.iteration(deconv_subgroups)
 
+  if (is.infinite(iterations) && iterations < 0) {
+    warning("No subgroups to replicate, returning all features")
+    return(deconvolution_test)
+  }
+
   # Create same groups composition
   for (m in 1:iterations) {
     base_groups = list()
