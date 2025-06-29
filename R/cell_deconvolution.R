@@ -2486,7 +2486,6 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
   processed_folds <- list()
 
   for (i in seq_along(folds)) {
-    cat("Preprocessing fold", i, "\n")
 
     train_idx <- folds[[i]]
     test_idx <- setdiff(seq_len(nrow(data)), train_idx)
