@@ -141,7 +141,7 @@ compute.deconvolution.preprocessing = function(deconv){
   if(ncol(CD4)>0){
     deconv = deconv[,-which(colnames(deconv)%in%colnames(CD4)), drop = F]
     colnames(CD4) = stringr::str_replace(colnames(CD4), "T.cells.CD4(?!\\.cells)", "CD4.cells")
-    colnames(deconv) <- stringr::str_replace(colnames(CD4), "_CD4$", "_CD4.cells")
+    colnames(CD4) <- stringr::str_replace(colnames(CD4), "_CD4$", "_CD4.cells")
     colnames(CD4) = stringr::str_replace(colnames(CD4), "^CD4(?!\\.cells)", "CD4.cells")
   }
 
