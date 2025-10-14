@@ -1973,7 +1973,8 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
   iterations = find.maximum.iteration(deconv_subgroups)
 
   if (is.infinite(iterations) && iterations < 0) {
-    warning("No subgroups to replicate, returning all features")
+    warning("No subgroups to replicate")
+    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])] # Filter for features not found in the deconv_res (low variance, zeros, etc)
     return(deconvolution_test)
   }
 
