@@ -7,16 +7,20 @@
 compute.deconvolution.analysis(
   deconvolution,
   corr = 0.7,
+  corr_type = "pearson",
   seed = NULL,
   cells_extra = NULL,
   file_name = NULL,
-  return = FALSE
+  return = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
 \item{deconvolution}{Deconvolution output of compute.deconvolution() with features as columns and samples as rows}
 
 \item{corr}{Minimum correlation threshold for subgroupping the deconvolution features}
+
+\item{corr_type}{Correlation type for computing the cell subgroups, whether "spearman" or "pearson".}
 
 \item{seed}{A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.}
 
@@ -25,6 +29,8 @@ compute.deconvolution.analysis(
 \item{file_name}{A string specifying the file name of the .csv file with the deconvolution subgroups}
 
 \item{return}{Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.}
+
+\item{verbose}{Boolen value to whether print or no the function messages}
 }
 \value{
 A list containing

@@ -9,6 +9,7 @@ reference:
   contents:
   - compute.deconvolution
   - compute.deconvolution.analysis
+  - deconvolution_dictionary
   - compute.deconvolution.preprocessing
   - compute_methods_variable_signature
   - replicate_deconvolution_subgroups

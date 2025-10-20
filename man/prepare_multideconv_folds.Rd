@@ -4,14 +4,12 @@
 \alias{prepare_multideconv_folds}
 \title{Prepare folds for multideconv cross-validation with processed training and test data}
 \usage{
-prepare_multideconv_folds(deconv, folds, coldata)
+prepare_multideconv_folds(data, folds, cells_extra = NULL)
 }
 \arguments{
-\item{folds}{A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.}
-
-\item{coldata}{A data frame with metadata (e.g., sample annotations), must match the number and order of samples in \code{data}.}
-
 \item{data}{A matrix or data frame of deconvolution features (samples x features) and a column named \code{target} indicating class labels.}
+
+\item{folds}{A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.}
 }
 \value{
 A list of two elements:

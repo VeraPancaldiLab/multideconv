@@ -280,6 +280,27 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
                                                   file_name = "Tutorial") 
 ```
 
+## **Deconvolution dictionary**
+
+The deconvolution dictionary step integrates deconvolution features with pathway activity information to provide a functional interpretation of each cell-type–specific component. This process identifies groups of pathways that show coordinated behavior across samples (e.g., immunoactive vs. immunosuppressive signaling) and assigns each deconvolution feature to one of these pathway clusters based on correlation patterns. The resulting dictionary can then be used to understand whether a cell-type feature is more associated with activation or suppression programs.
+
+For this, we start from normalized gene expression data, compute pathway activity scores (see [CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) package), and link them to deconvolution results obtained in previous steps. Finally, we use the deconvolution_dictionary() function to classify each deconvolution feature according to its dominant pathway cluster.
+```{r}
+counts = multideconv::raw_counts
+counts.norm = ADImpute::NormalizeTPM(counts, log = TRUE)
+pathways = CellTFusion::compute.pathway.activity(counts.norm)
+deconv = multideconv::deconv_bulk[rownames(multideconv::deconv_bulk)%in%colnames(counts),]
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv, 
+                                                  corr = 0.7, 
+                                                  seed = 123, 
+                                                  file_name = "Tutorial", 
+                                                  return = TRUE) 
+dict = deconvolution_dictionary(deconv_subgroups, pathways)
+deconv = dict[[1]]
+head(deconv[[1]][,1:5])
+print(dict[[2]])
+```
+
 ## **Replicate deconvolution subgroups in an independent set**
 
 Cell subgroup identification through deconvolution is cohort-specific, as it relies on correlation patterns across samples. This means that subgroup definitions may vary across different splits or datasets. If you aim to replicate the same subgroups identified in one dataset onto another (e.g., for model validation), you can use the following function.

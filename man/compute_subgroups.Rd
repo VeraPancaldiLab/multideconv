@@ -4,12 +4,14 @@
 \alias{compute_subgroups}
 \title{Compute deconvolution subgroups}
 \usage{
-compute_subgroups(deconvolution, thres_corr, file_name)
+compute_subgroups(deconvolution, thres_corr, corr_type, file_name)
 }
 \arguments{
 \item{deconvolution}{A matrix with unprocessed cell deconvolution results}
 
 \item{thres_corr}{A numeric value with the minimum correlation allowed to group cell deconvolution features}
+
+\item{corr_type}{Correlation type whether "spearman" or "pearson".}
 
 \item{file_name}{Base name for subgroup}
 }

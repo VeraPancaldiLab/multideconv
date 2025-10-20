@@ -657,7 +657,7 @@ remove_subgroups = function(groups){
 #'
 #' @param deconvolution A matrix with unprocessed cell deconvolution results
 #' @param thres_corr A numeric value with the minimum correlation allowed to group cell deconvolution features
-#' @param corr_type
+#' @param corr_type Correlation type whether "spearman" or "pearson".
 #' @param file_name Base name for subgroup
 #'
 #' @return A list containing
@@ -1124,11 +1124,11 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
                                   column_dend_reorder = T, row_dend_reorder = F,
                                   show_row_names = T,
                                   show_heatmap_legend = T,
-                                  row_names_gp = gpar(fontsize = 10),
-                                  column_names_gp = gpar(fontsize =10),
+                                  row_names_gp = grid::gpar(fontsize = 10),
+                                  column_names_gp = grid::gpar(fontsize =10),
                                   width = grid::unit(40, "cm"), height = grid::unit(40, "cm"),
-                                  heatmap_legend_param = list(labels_gp = gpar(fontsize = 12), legend_width = grid::unit(12, "cm"),
-                                                              legend_heigh = grid::unit(12, "cm"), title_gp = gpar(fontsize = 12)))
+                                  heatmap_legend_param = list(labels_gp = grid::gpar(fontsize = 12), legend_width = grid::unit(12, "cm"),
+                                                              legend_heigh = grid::unit(12, "cm"), title_gp = grid::gpar(fontsize = 12)))
 
     grDevices::pdf(paste0("Results/Heatmap_deconvolution_after_groupping_", file_name), height = 20, width = 25)
     ComplexHeatmap::draw(ht1, show_heatmap_legend = T, heatmap_legend_side = "left", annotation_legend_side = 'left')
@@ -2545,4 +2545,122 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
   return(list(processed_folds, train_cell_data_final, custom_output))
 }
 
+#' Build a Deconvolution–Pathway Relationship Dictionary
+#'
+#' @description
+#' The `deconvolution_dictionary()` function integrates cell-type–specific
+#' deconvolution features with pathway activity information (e.g., PROGENy pathways).
+#' It identifies globally consistent pathway clusters and reannotates each
+#' deconvolution feature according to its association with those pathway clusters.
+#'
+#' The function first computes a global correlation matrix between the full
+#' deconvolution matrix and the provided pathway activity matrix, performs
+#' hierarchical clustering on pathways, and automatically determines the optimal
+#' number of pathway clusters using the silhouette method. Each deconvolution
+#' feature within each cell type is then correlated with pathways, scored against
+#' the global clusters, and classified into the cluster with which it is most
+#' strongly associated.
+#'
+#' @param deconv_subgroups Output of `compute.deconvolution.analysis()`
+#'
+#' @param progeny A matrix or data frame of pathway activities (e.g., PROGENy output),
+#'   with the same rows (samples) as in the deconvolution matrices.
+#'
+#' @return
+#' A list with two elements:
+#' \describe{
+#'   \item{\code{Deconvolution}}{An updated version of \code{deconv_subgroups} where:
+#'     \itemize{
+#'       \item Each feature in the deconvolution subgroups has been renamed with its
+#'         associated global cluster (e.g., \code{"FeatureA_Cluster_1"}).
+#'       \item The main \code{"Deconvolution matrix"} has been rebuilt by column-binding
+#'         all updated subgroups.}}
+#'   \item{\code{Clusters}}{A list of globally defined pathway clusters
+#'     (e.g., \code{$Cluster_1}, \code{$Cluster_2}, ...), where each element
+#'     contains the pathway names belonging to that cluster.}
+#' }
+#'
+#' @details
+#' - The optimal number of pathway clusters (\eqn{k}) is determined automatically
+#'   using the silhouette width criterion via \code{factoextra::fviz_nbclust()}.
+#' - The clustering is performed globally across all pathways, ensuring consistent
+#'   interpretation of clusters across all cell types.
+#' - Each deconvolution feature is assigned to the pathway cluster with the
+#'   highest mean correlation score.
+#'
+#' @seealso
+#' \code{\link[CellTFusion]{compute.modules.relationship}},
+#' \code{\link[factoextra]{fviz_nbclust}},
+#' \code{\link[stats]{hclust}},
+#' \code{\link[stats]{cutree}}
+#'
+#' @importFrom purrr list_flatten
+#' @importFrom dplyr bind_cols
+#' @importFrom stats dist hclust cutree
+#' @importFrom factoextra fviz_nbclust hcut
+#'
+#' @export
+deconvolution_dictionary = function(deconv_subgroups, progeny){
 
+  cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
+  cell_clusters = list()
+  i = 1
+
+  # Compute global module correlation using the full deconvolution matrix
+  global_x = CellTFusion::compute.modules.relationship(
+    deconv_subgroups[["Deconvolution matrix"]],
+    progeny,
+    return = TRUE,
+    plot = FALSE
+  )
+
+  #Create distance matrix and hierarchical clustering for the PROGENy pathways (global)
+  d_global <- factoextra::dist(t(global_x[[1]]))
+  dendrogram_global <- stats::hclust(d_global)
+
+  #Identify the two global pathway clusters
+  silhouette = factoextra::fviz_nbclust(as.matrix(t(global_x[[1]])), factoextra::hcut, method = "silhouette", k.max = attr(d_global, "Size")-1)
+  k_cluster = as.numeric(silhouette$data$clusters[which.max(silhouette$data$y)])
+  clusters_global <- stats::cutree(dendrogram_global, k = k_cluster)
+  clusters_global <- split(names(clusters_global), clusters_global)
+  names(clusters_global) <- paste0("Cluster_", seq_along(clusters_global))
+
+  #Compute correlation within each cell type to see the cluster classification in its own cell-type context (avoid domination of strong correlations from abundant or variable cell types)
+  for (cell in seq_along(cell_subgroups)) {
+    if (ncol(cell_subgroups[[cell]]) >= 2) {
+      rownames(cell_subgroups[[cell]]) <- rownames(deconv_subgroups[["Deconvolution matrix"]])
+
+      #Compute module correlation between cell deconvolution features and PROGENy pathways
+      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], progeny, return = TRUE, plot = FALSE)
+      corr_matrix <- data.frame(x[[1]])
+
+      #Calculate mean correlation for each cluster dynamically
+      for (k in seq_along(clusters_global)) {
+        cluster_name <- names(clusters_global)[k]
+        corr_matrix[[paste0(cluster_name, "_Score")]] <- rowMeans(
+          corr_matrix[, clusters_global[[k]]], na.rm = TRUE
+        )
+      }
+
+      #Identify which cluster each feature belongs to based on the highest mean score
+      cluster_scores <- corr_matrix[, grepl("_Score$", colnames(corr_matrix))]
+      corr_matrix$Classification <- apply(cluster_scores, 1, function(row) {
+        cluster_name <- names(which.max(row))
+        gsub("_Score", "", cluster_name)
+      })
+
+      #Rename deconvolution features with cluster information
+      deconv_names <- paste0(rownames(corr_matrix), "_", corr_matrix$Classification)
+      colnames(cell_subgroups[[cell]]) <- deconv_names
+
+      i <- i + 1
+    }
+  }
+
+  ### Flat list to replace main deconvolution element
+  flat_list <- purrr::list_flatten(cell_subgroups)
+  deconv_subgroups[["Deconvolution matrix"]] = bind_cols(flat_list)
+  deconv_subgroups[["Deconvolution subgroups per cell types"]] = cell_subgroups
+
+  return(list(Deconvolution = deconv_subgroups, Clusters = clusters_global))
+}

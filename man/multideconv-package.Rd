@@ -20,5 +20,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Marcelo Hurtado \email{marcelo.hurtado@inserm.fr} (\href{https://orcid.org/0009-0004-6712-0864}{ORCID})
 
+Authors:
+\itemize{
+  \item Vera Pancaldi \email{vera.pancaldi@inserm.fr} (\href{https://orcid.org/0000-0002-7433-624X}{ORCID})
+}
+
 }
 \keyword{internal}

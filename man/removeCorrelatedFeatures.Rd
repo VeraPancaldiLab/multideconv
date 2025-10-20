@@ -4,7 +4,13 @@
 \alias{removeCorrelatedFeatures}
 \title{Remove high correlated cell deconvolution features}
 \usage{
-removeCorrelatedFeatures(data, threshold, name, n_seed)
+removeCorrelatedFeatures(
+  data,
+  threshold,
+  name,
+  n_seed,
+  corr_method = "spearman"
+)
 }
 \arguments{
 \item{data}{Deconvolution matrix}
@@ -14,6 +20,8 @@ removeCorrelatedFeatures(data, threshold, name, n_seed)
 \item{name}{Cell type name corresponding to the given matrix in 'data'}
 
 \item{n_seed}{Seed to ensure reproducibility regarding the choice of the feature.}
+
+\item{corr_method}{Correlation type whether "spearman" or "pearson".}
 }
 \value{
 A list containing

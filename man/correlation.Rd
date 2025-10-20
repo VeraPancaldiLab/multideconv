@@ -4,10 +4,12 @@
 \alias{correlation}
 \title{Perform pairwise correlation across all features}
 \usage{
-correlation(data)
+correlation(data, corr_type = "spearman")
 }
 \arguments{
 \item{data}{Matrix with features to correlate}
+
+\item{corr_type}{Correlation type whether "spearman" or "pearson".}
 }
 \value{
 Dataframe containing all significant correlations (pvalue < 0.05)
