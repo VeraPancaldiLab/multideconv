@@ -2567,17 +2567,17 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 #'   with the same rows (samples) as in the deconvolution matrices.
 #'
 #' @return
-#' A list with two elements:
+#' An updated version of \code{deconv_subgroups} containing:
 #' \describe{
-#'   \item{\code{Deconvolution}}{An updated version of \code{deconv_subgroups} where:
-#'     \itemize{
-#'       \item Each feature in the deconvolution subgroups has been renamed with its
-#'         associated global cluster (e.g., \code{"FeatureA_Cluster_1"}).
-#'       \item The main \code{"Deconvolution matrix"} has been rebuilt by column-binding
-#'         all updated subgroups.}}
-#'   \item{\code{Clusters}}{A list of globally defined pathway clusters
-#'     (e.g., \code{$Cluster_1}, \code{$Cluster_2}, ...), where each element
-#'     contains the pathway names belonging to that cluster.}
+#'   \item{\code{Deconvolution matrix}}{A rebuilt deconvolution matrix obtained by
+#'     column-binding all cell-type–specific subgroups after relabeling features
+#'     with their corresponding pathway cluster.}
+#'   \item{\code{Deconvolution subgroups per cell types}}{The list of cell-type–
+#'     specific matrices, each with feature names updated to reflect their
+#'     cluster classification (e.g., \code{"FeatureA_Cluster_1"}).}
+#'   \item{\code{Clusters}}{A list of globally defined pathway clusters (e.g.,
+#'     \code{$Cluster_1}, \code{$Cluster_2}, ...), where each element contains the
+#'     pathways belonging to that cluster.}
 #' }
 #'
 #' @details
@@ -2615,7 +2615,7 @@ deconvolution_dictionary = function(deconv_subgroups, progeny){
   )
 
   #Create distance matrix and hierarchical clustering for the PROGENy pathways (global)
-  d_global <- factoextra::dist(t(global_x[[1]]))
+  d_global <- stats::dist(t(global_x[[1]]))
   dendrogram_global <- stats::hclust(d_global)
 
   #Identify the two global pathway clusters
@@ -2661,6 +2661,7 @@ deconvolution_dictionary = function(deconv_subgroups, progeny){
   flat_list <- purrr::list_flatten(cell_subgroups)
   deconv_subgroups[["Deconvolution matrix"]] = bind_cols(flat_list)
   deconv_subgroups[["Deconvolution subgroups per cell types"]] = cell_subgroups
+  deconv_subgroups[["Clusters"]] = clusters_global
 
-  return(list(Deconvolution = deconv_subgroups, Clusters = clusters_global))
+  return(deconv_subgroups)
 }

@@ -295,10 +295,9 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv,
                                                   seed = 123, 
                                                   file_name = "Tutorial", 
                                                   return = TRUE) 
-dict = deconvolution_dictionary(deconv_subgroups, pathways)
-deconv = dict[[1]]
-head(deconv[[1]][,1:5])
-print(dict[[2]])
+deconv_subgroups = deconvolution_dictionary(deconv_subgroups, pathways)
+head(deconv_subgroups[[1]][,1:5])
+print(deconv_subgroups[["Clusters"]])
 ```
 
 ## **Replicate deconvolution subgroups in an independent set**
