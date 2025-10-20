@@ -45,23 +45,19 @@ It also processes the entire dataset once to provide a final processed training 
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prepare_multideconv_folds</span><span class="op">(</span><span class="va">deconv</span>, <span class="va">folds</span>, <span class="va">coldata</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prepare_multideconv_folds</span><span class="op">(</span><span class="va">data</span>, <span class="va">folds</span>, cells_extra <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-folds">folds<a class="anchor" aria-label="anchor" href="#arg-folds"></a></dt>
-<dd><p>A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.</p></dd>
-
-
-<dt id="arg-coldata">coldata<a class="anchor" aria-label="anchor" href="#arg-coldata"></a></dt>
-<dd><p>A data frame with metadata (e.g., sample annotations), must match the number and order of samples in <code>data</code>.</p></dd>
-
-
-<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A matrix or data frame of deconvolution features (samples x features) and a column named <code>target</code> indicating class labels.</p></dd>
+
+
+<dt id="arg-folds">folds<a class="anchor" aria-label="anchor" href="#arg-folds"></a></dt>
+<dd><p>A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -42,10 +42,12 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute.deconvolution.analysis</span><span class="op">(</span></span>
 <span>  <span class="va">deconvolution</span>,</span>
 <span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  corr_type <span class="op">=</span> <span class="st">"pearson"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cells_extra <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  return <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -59,6 +61,10 @@
 
 <dt id="arg-corr">corr<a class="anchor" aria-label="anchor" href="#arg-corr"></a></dt>
 <dd><p>Minimum correlation threshold for subgroupping the deconvolution features</p></dd>
+
+
+<dt id="arg-corr-type">corr_type<a class="anchor" aria-label="anchor" href="#arg-corr-type"></a></dt>
+<dd><p>Correlation type for computing the cell subgroups, whether "spearman" or "pearson".</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
@@ -75,6 +81,10 @@
 
 <dt id="arg-return">return<a class="anchor" aria-label="anchor" href="#arg-return"></a></dt>
 <dd><p>Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Boolen value to whether print or no the function messages</p></dd>
 
 </dl></div>
     <div class="section level2">
