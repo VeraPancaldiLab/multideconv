@@ -25,6 +25,7 @@ Imports:
     graphics,
     reshape2,
     ComplexHeatmap,
+    factoextra,
     grDevices,
     ggpubr,
     Hmisc (>= 5.2-3),
