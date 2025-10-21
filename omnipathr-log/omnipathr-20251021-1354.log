@@ -1,0 +1,122 @@
+[2025-10-21 13:54:46] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] Reading JSON from `/home/marcelo.hurtado/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:46] [INFO]    [OmnipathR] Initialized cache: `/home/marcelo.hurtado/.cache/OmnipathR`.
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] Reading JSON from `/home/marcelo.hurtado/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] Reading JSON from `/home/marcelo.hurtado/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] Reading JSON from `/home/marcelo.hurtado/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] Reading JSON from `/home/marcelo.hurtado/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-10-21 13:54:46] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:47] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-10-21 13:54:47] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] Cache file path: /home/marcelo.hurtado/.cache/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-10-21 13:54:47] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 13:54:47] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:54:48] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 13:54:50] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 13:54:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 13:54:50] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 13:56:36] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 13:56:36] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:56:38] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 13:56:38] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 13:56:38] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 13:56:39] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 13:56:39] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 13:56:39] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 14:28:53] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 14:28:53] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 14:28:53] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 14:28:53] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 14:28:53] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 14:28:54] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 14:28:54] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 14:28:54] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 15:07:29] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:07:29] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:07:29] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:07:29] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:07:29] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:07:31] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 15:07:31] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:07:31] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 15:11:07] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:11:07] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:11:08] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:11:08] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:11:08] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:11:09] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 15:11:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:11:09] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 15:12:24] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:12:24] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:12:25] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:12:25] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:12:25] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:12:26] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 15:12:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:12:26] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 15:30:04] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:30:04] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:30:05] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:30:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:30:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:30:06] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 15:30:06] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:30:06] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 15:57:05] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:57:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:57:05] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 15:57:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 15:57:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:57:06] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 15:57:06] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 15:57:06] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 16:17:13] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:17:13] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:17:14] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:17:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:17:14] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:17:15] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 16:17:15] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:17:15] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 16:22:00] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:22:00] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:22:01] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:22:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:22:01] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:22:02] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 16:22:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:22:02] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 16:28:20] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:28:20] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:28:20] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:28:20] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:28:20] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:28:22] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 16:28:22] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:28:22] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 16:32:10] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:32:10] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:32:10] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:32:10] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:32:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:32:12] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 16:32:12] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:32:12] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-21 16:48:31] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:48:31] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:48:32] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-10-21 16:48:32] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-10-21 16:48:32] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:48:34] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-10-21 16:48:34] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-10-21 16:48:34] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.

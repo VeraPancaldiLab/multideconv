@@ -1978,6 +1978,16 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
     return(deconvolution_test)
   }
 
+  ## Extract the deconv feature without the cluster type
+  features_with_clusters <- colnames(deconv_res[["Deconvolution matrix"]])
+
+  # Extract the base name and cluster suffix from the original names
+  base_names <- gsub("_Cluster_\\d+$", "", features_with_clusters)
+  cluster_suffixes <- sub(".*(_Cluster_\\d+$)", "\\1", features_with_clusters)
+
+  # Create df to map the features with their corresponding clusters
+  map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
+
   # Create same groups composition
   for (m in 1:iterations) {
     base_groups = list()
@@ -1998,6 +2008,9 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
     deconvolution_test = cbind(deconv_subgroups_values, deconvolution_test) # Join cell subgroups and deconv features
 
   }
+
+  ## Paste the corresponding clusters to the deconvolution features
+  colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
 
   deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])]
 
@@ -2549,22 +2562,23 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 #'
 #' @description
 #' The `deconvolution_dictionary()` function integrates cell-type–specific
-#' deconvolution features with pathway activity information (e.g., PROGENy pathways).
-#' It identifies globally consistent pathway clusters and reannotates each
-#' deconvolution feature according to its association with those pathway clusters.
+#' deconvolution features with a pathway activity matrix. It identifies globally
+#' consistent pathway clusters and reannotates each deconvolution feature
+#' according to its association with those pathway clusters.
 #'
 #' The function first computes a global correlation matrix between the full
 #' deconvolution matrix and the provided pathway activity matrix, performs
-#' hierarchical clustering on pathways, and automatically determines the optimal
-#' number of pathway clusters using the silhouette method. Each deconvolution
-#' feature within each cell type is then correlated with pathways, scored against
-#' the global clusters, and classified into the cluster with which it is most
-#' strongly associated.
+#' hierarchical clustering on the pathways, and automatically determines the
+#' optimal number of pathway clusters using the silhouette method. Each
+#' deconvolution feature within each cell type is then correlated with the
+#' pathways, scored against the global clusters, and classified into the cluster
+#' with which it is most strongly associated.
 #'
 #' @param deconv_subgroups Output of `compute.deconvolution.analysis()`
 #'
-#' @param progeny A matrix or data frame of pathway activities (e.g., PROGENy output),
-#'   with the same rows (samples) as in the deconvolution matrices.
+#' @param pathway_matrix A numeric matrix or data frame of pathway activities
+#'   (rows = samples, columns = pathways), with the same row names as the
+#'   deconvolution matrices. Can be any pathway or feature activity matrix.
 #'
 #' @return
 #' An updated version of \code{deconv_subgroups} containing:
@@ -2600,7 +2614,7 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 #' @importFrom factoextra fviz_nbclust hcut
 #'
 #' @export
-deconvolution_dictionary = function(deconv_subgroups, progeny){
+deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
 
   cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
   cell_clusters = list()
@@ -2609,7 +2623,7 @@ deconvolution_dictionary = function(deconv_subgroups, progeny){
   # Compute global module correlation using the full deconvolution matrix
   global_x = CellTFusion::compute.modules.relationship(
     deconv_subgroups[["Deconvolution matrix"]],
-    progeny,
+    pathway_matrix,
     return = TRUE,
     plot = FALSE
   )
@@ -2625,13 +2639,29 @@ deconvolution_dictionary = function(deconv_subgroups, progeny){
   clusters_global <- split(names(clusters_global), clusters_global)
   names(clusters_global) <- paste0("Cluster_", seq_along(clusters_global))
 
+  # Calculate mean correlation for each cluster dynamically
+  corr_matrix_global <- data.frame(global_x[[1]])
+  for (k in seq_along(clusters_global)) {
+    cluster_name <- names(clusters_global)[k]
+    corr_matrix_global[[paste0(cluster_name, "_Score")]] <- rowMeans(
+      corr_matrix_global[, clusters_global[[k]]], na.rm = TRUE
+    )
+  }
+
+  # Classify features based on the highest mean correlation across all clusters
+  cluster_scores <- corr_matrix_global[, grepl("_Score$", colnames(corr_matrix_global))]
+  corr_matrix_global$Classification <- apply(cluster_scores, 1, function(row) {
+    cluster_name <- names(which.max(row))
+    gsub("_Score", "", cluster_name)
+  })
+
   #Compute correlation within each cell type to see the cluster classification in its own cell-type context (avoid domination of strong correlations from abundant or variable cell types)
-  for (cell in seq_along(cell_subgroups)) {
+  for (cell in names(cell_subgroups)) {
     if (ncol(cell_subgroups[[cell]]) >= 2) {
       rownames(cell_subgroups[[cell]]) <- rownames(deconv_subgroups[["Deconvolution matrix"]])
 
       #Compute module correlation between cell deconvolution features and PROGENy pathways
-      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], progeny, return = TRUE, plot = FALSE)
+      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, plot = FALSE)
       corr_matrix <- data.frame(x[[1]])
 
       #Calculate mean correlation for each cluster dynamically
@@ -2653,7 +2683,18 @@ deconvolution_dictionary = function(deconv_subgroups, progeny){
       deconv_names <- paste0(rownames(corr_matrix), "_", corr_matrix$Classification)
       colnames(cell_subgroups[[cell]]) <- deconv_names
 
-      i <- i + 1
+    }else if (ncol(cell_subgroups[[cell]]) > 0) { # Subgroup has <2 features → assign cluster based on global classification
+      feature_names <- colnames(cell_subgroups[[cell]])
+      # Use global classification computed earlier
+      global_feature_class <- corr_matrix_global$Classification
+      names(global_feature_class) <- rownames(corr_matrix_global)
+      # Assign the cluster to the feature (if feature exists in global_x)
+      feature_class <- ifelse(feature_names %in% names(global_feature_class),
+                              global_feature_class[feature_names],
+                              "Unclassified")
+
+      # Rename the feature with the assigned cluster
+      colnames(cell_subgroups[[cell]]) <- paste0(feature_names, "_", feature_class)
     }
   }
 

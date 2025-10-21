@@ -32,3 +32,4 @@
 [2025-10-20 14:27:21] [TRACE]   [OmnipathR] Loaded data from RDS `/home/marcelo.hurtado/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
 [2025-10-20 14:27:21] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
 [2025-10-20 14:27:21] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-10-20 17:55:51] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)

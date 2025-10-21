@@ -4,41 +4,42 @@
 \alias{deconvolution_dictionary}
 \title{Build a Deconvolution–Pathway Relationship Dictionary}
 \usage{
-deconvolution_dictionary(deconv_subgroups, progeny)
+deconvolution_dictionary(deconv_subgroups, pathway_matrix)
 }
 \arguments{
 \item{deconv_subgroups}{Output of \code{compute.deconvolution.analysis()}}
 
-\item{progeny}{A matrix or data frame of pathway activities (e.g., PROGENy output),
-with the same rows (samples) as in the deconvolution matrices.}
+\item{pathway_matrix}{A numeric matrix or data frame of pathway activities
+(rows = samples, columns = pathways), with the same row names as the
+deconvolution matrices. Can be any pathway or feature activity matrix.}
 }
 \value{
-A list with two elements:
+An updated version of \code{deconv_subgroups} containing:
 \describe{
-\item{\code{Deconvolution}}{An updated version of \code{deconv_subgroups} where:
-\itemize{
-\item Each feature in the deconvolution subgroups has been renamed with its
-associated global cluster (e.g., \code{"FeatureA_Cluster_1"}).
-\item The main \code{"Deconvolution matrix"} has been rebuilt by column-binding
-all updated subgroups.}}
-\item{\code{Clusters}}{A list of globally defined pathway clusters
-(e.g., \code{$Cluster_1}, \code{$Cluster_2}, ...), where each element
-contains the pathway names belonging to that cluster.}
+\item{\code{Deconvolution matrix}}{A rebuilt deconvolution matrix obtained by
+column-binding all cell-type–specific subgroups after relabeling features
+with their corresponding pathway cluster.}
+\item{\code{Deconvolution subgroups per cell types}}{The list of cell-type–
+specific matrices, each with feature names updated to reflect their
+cluster classification (e.g., \code{"FeatureA_Cluster_1"}).}
+\item{\code{Clusters}}{A list of globally defined pathway clusters (e.g.,
+\code{$Cluster_1}, \code{$Cluster_2}, ...), where each element contains the
+pathways belonging to that cluster.}
 }
 }
 \description{
 The \code{deconvolution_dictionary()} function integrates cell-type–specific
-deconvolution features with pathway activity information (e.g., PROGENy pathways).
-It identifies globally consistent pathway clusters and reannotates each
-deconvolution feature according to its association with those pathway clusters.
+deconvolution features with a pathway activity matrix. It identifies globally
+consistent pathway clusters and reannotates each deconvolution feature
+according to its association with those pathway clusters.
 
 The function first computes a global correlation matrix between the full
 deconvolution matrix and the provided pathway activity matrix, performs
-hierarchical clustering on pathways, and automatically determines the optimal
-number of pathway clusters using the silhouette method. Each deconvolution
-feature within each cell type is then correlated with pathways, scored against
-the global clusters, and classified into the cluster with which it is most
-strongly associated.
+hierarchical clustering on the pathways, and automatically determines the
+optimal number of pathway clusters using the silhouette method. Each
+deconvolution feature within each cell type is then correlated with the
+pathways, scored against the global clusters, and classified into the cluster
+with which it is most strongly associated.
 }
 \details{
 \itemize{
