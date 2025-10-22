@@ -2518,6 +2518,9 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
       return = FALSE
     )
 
+    ## Deconvolution dictionary
+    deconv_subgroups = deconvolution_dictionary(deconv_subgroups)
+
     train_cell_data <- deconv_subgroups[[1]] %>%
       dplyr::mutate(target = obs_train)
 
@@ -2600,7 +2603,7 @@ prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
 #' - The clustering is performed globally across all pathways, ensuring consistent
 #'   interpretation of clusters across all cell types.
 #' - Each deconvolution feature is assigned to the pathway cluster with the
-#'   highest mean correlation score.
+#'   highest eigenvector score.
 #'
 #' @seealso
 #' \code{\link[CellTFusion]{compute.modules.relationship}},
@@ -2639,13 +2642,16 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
   clusters_global <- split(names(clusters_global), clusters_global)
   names(clusters_global) <- paste0("Cluster_", seq_along(clusters_global))
 
-  # Calculate mean correlation for each cluster dynamically
+  # Calculate eigenvector-based score (PC1) for each cluster
   corr_matrix_global <- data.frame(global_x[[1]])
   for (k in seq_along(clusters_global)) {
     cluster_name <- names(clusters_global)[k]
-    corr_matrix_global[[paste0(cluster_name, "_Score")]] <- rowMeans(
-      corr_matrix_global[, clusters_global[[k]], drop = FALSE], na.rm = TRUE
-    )
+    sub_mat <- corr_matrix_global[, clusters_global[[k]], drop = FALSE]
+
+    # Compute eigenvector (PC1) direction per feature (deconv row)
+    pca_res <- prcomp(sub_mat, center = TRUE, scale. = TRUE)
+    pc1_scores <- pca_res$x[, 1]  # first principal component
+    corr_matrix_global[[paste0(cluster_name, "_Score")]] <- pc1_scores
   }
 
   # Classify features based on the highest mean correlation across all clusters
@@ -2664,12 +2670,14 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
       x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, plot = FALSE)
       corr_matrix <- data.frame(x[[1]])
 
-      #Calculate mean correlation for each cluster dynamically
       for (k in seq_along(clusters_global)) {
         cluster_name <- names(clusters_global)[k]
-        corr_matrix[[paste0(cluster_name, "_Score")]] <- rowMeans(
-          corr_matrix[, clusters_global[[k]], drop = FALSE], na.rm = TRUE
-        )
+        sub_mat <- corr_matrix[, clusters_global[[k]], drop = FALSE]
+
+        # Compute eigenvector-based (PC1) score per cluster
+        pca_res <- prcomp(sub_mat, center = TRUE, scale. = TRUE)
+        pc1_scores <- pca_res$x[, 1]
+        corr_matrix[[paste0(cluster_name, "_Score")]] <- pc1_scores
       }
 
       #Identify which cluster each feature belongs to based on the highest mean score
@@ -2706,3 +2714,4 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
 
   return(deconv_subgroups)
 }
+
