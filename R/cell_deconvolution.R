@@ -2644,7 +2644,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
   for (k in seq_along(clusters_global)) {
     cluster_name <- names(clusters_global)[k]
     corr_matrix_global[[paste0(cluster_name, "_Score")]] <- rowMeans(
-      corr_matrix_global[, clusters_global[[k]]], na.rm = TRUE
+      corr_matrix_global[, clusters_global[[k]], drop = FALSE], na.rm = TRUE
     )
   }
 
