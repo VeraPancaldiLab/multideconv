@@ -1972,12 +1972,6 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
   deconv_subgroups = deconv_res[["Deconvolution subgroups composition"]]
   iterations = find.maximum.iteration(deconv_subgroups)
 
-  if (is.infinite(iterations) && iterations < 0) {
-    warning("No subgroups to replicate")
-    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])] # Filter for features not found in the deconv_res (low variance, zeros, etc)
-    return(deconvolution_test)
-  }
-
   ## Extract the deconv feature without the cluster type
   features_with_clusters <- colnames(deconv_res[["Deconvolution matrix"]])
 
@@ -1987,6 +1981,15 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   # Create df to map the features with their corresponding clusters
   map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
+
+  if (is.infinite(iterations) && iterations < 0) {
+    warning("No subgroups to replicate")
+    ## Paste the corresponding clusters to the deconvolution features
+    colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+
+    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])] # Filter for features not found in the deconv_res (low variance, zeros, etc)
+    return(data.frame(deconvolution_test))
+  }
 
   # Create same groups composition
   for (m in 1:iterations) {
