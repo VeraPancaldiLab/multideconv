@@ -2082,7 +2082,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   deconvolution_combinations = gsub("(BPRNACan3DProMet|BPRNACanProMet|BPRNACan)", "\\1_", deconvolution_combinations)
 
   ###Correlation function
-  corr_bench <- function(data, corr = "spearman", pval = 0.05) {
+  corr_bench <- function(data, corr, pval = 0.05) {
     M <- Hmisc::rcorr(as.matrix(data), type = corr)
 
     # Only keep the three matrix elements: r, P, n
@@ -2105,11 +2105,11 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   }
 
   #####Scatter plot function
-  scatter_plots = function(deconv, ground, method){
+  scatter_plots = function(deconv, ground, corr_method){
     for (i in 1:ncol(deconv)) {
       data = cbind(deconv[,i], ground)
       colnames(data) = c("x", "y")
-      cor_test <- stats::cor.test(data$x, data$y)
+      cor_test <- stats::cor.test(data$x, data$y, method = corr_method)
       cor_value <- cor_test$estimate  # Correlation coefficient
       p_value <- cor_test$p.value    # p-value
 
