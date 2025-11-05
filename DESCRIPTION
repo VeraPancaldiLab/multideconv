@@ -15,7 +15,6 @@ Depends:
     R (>= 4.3)
 Imports: 
     ADImpute,
-    DeconRNASeq (>= 1.44.0),
     doParallel,
     dplyr,
     EpiDISH,
