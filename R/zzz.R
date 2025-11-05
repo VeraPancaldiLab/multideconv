@@ -4,4 +4,8 @@
 
   dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
   dir.create(signature_dir, showWarnings = FALSE, recursive = TRUE)
+
+  if (!requireNamespace("DeconRNASeq", quietly = TRUE)) {
+    BiocManager::install("DeconRNASeq", force = TRUE)
+  }
 }
