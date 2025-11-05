@@ -5,7 +5,7 @@
   dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
   dir.create(signature_dir, showWarnings = FALSE, recursive = TRUE)
 
-  if (!requireNamespace("DeconRNASeq", quietly = TRUE)) {
-    BiocManager::install("DeconRNASeq", force = TRUE)
-  }
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  BiocManager::install("DeconRNASeq", force = TRUE)
 }
