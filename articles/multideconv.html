@@ -68,7 +68,19 @@
 package and explains the main functions of the pipeline for deconvolving
 RNA-seq data.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'getOption("repos")' replaces Bioconductor standard repositories, see</span></span>
+<span><span class="co">#&gt; 'help("repositories", package = "BiocManager")' for details.</span></span>
+<span><span class="co">#&gt; Replacement repositories:</span></span>
+<span><span class="co">#&gt;     CRAN: https://cran.rstudio.com</span></span>
+<span><span class="co">#&gt; Bioconductor version 3.22 (BiocManager 1.30.26), R 4.5.2 (2025-10-31)</span></span>
+<span><span class="co">#&gt; Installing package(s) 'DeconRNASeq'</span></span>
+<span><span class="co">#&gt; Warning: package 'DeconRNASeq' is not available for Bioconductor version '3.22'</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; A version of this package for your version of R might be available elsewhere,</span></span>
+<span><span class="co">#&gt; see the ideas at</span></span>
+<span><span class="co">#&gt; https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages</span></span>
+<span><span class="co">#&gt; Old packages: 'purrr', 'stringr'</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="deconvolution-with-default-methods">
 <strong>Deconvolution with default methods</strong><a class="anchor" aria-label="anchor" href="#deconvolution-with-default-methods"></a>
@@ -315,20 +327,6 @@ when examining the real cell proportions (if needed).</p>
 <code class="sourceCode R"><span><span class="va">metacells_seurat</span> <span class="op">=</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">metacell_obj</span>, meta.data <span class="op">=</span> <span class="va">metacell_metadata</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Data is of class matrix. Coercing to dgCMatrix.</span></span>
 <span><span class="va">pseudobulk</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_sc_pseudobulk.html">create_sc_pseudobulk</a></span><span class="op">(</span><span class="va">metacells_seurat</span>, cells_labels <span class="op">=</span> <span class="st">"annotated_ct"</span>, sample_labels <span class="op">=</span> <span class="st">"sample"</span>, normalized <span class="op">=</span> <span class="cn">TRUE</span>, file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `PackageCheck()` was deprecated in SeuratObject 5.0.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `rlang::check_installed()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">Seurat</span> package.</span></span>
-<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/satijalab/seurat/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
-<span><span class="co">#&gt; Warning: The `slot` argument of `GetAssayData()` is deprecated as of SeuratObject 5.0.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use the `layer` argument instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">Seurat</span> package.</span></span>
-<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/satijalab/seurat/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="co">#&gt; Warning: Layer 'data' is empty</span></span>
 <span><span class="co">#&gt; Warning: Layer 'scale.data' is empty</span></span>
 <span><span class="co">#&gt; Aggregating assay 'counts' using 'rowMeans2'.</span></span>
