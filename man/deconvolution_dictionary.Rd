@@ -48,7 +48,7 @@ using the silhouette width criterion via \code{factoextra::fviz_nbclust()}.
 \item The clustering is performed globally across all pathways, ensuring consistent
 interpretation of clusters across all cell types.
 \item Each deconvolution feature is assigned to the pathway cluster with the
-highest mean correlation score.
+highest eigenvector score.
 }
 }
 \seealso{
