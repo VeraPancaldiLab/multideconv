@@ -1,0 +1,97 @@
+# Compute second-generation deconvolution methods
+
+Compute second-generation deconvolution methods
+
+## Usage
+
+``` r
+compute_sc_deconvolution_methods(
+  raw_counts,
+  normalized = TRUE,
+  methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"),
+  sc_object,
+  sc_metadata,
+  cell_annotations,
+  samples_ids,
+  name_object,
+  n_cores = NULL,
+  return = FALSE,
+  file_name = NULL
+)
+```
+
+## Arguments
+
+- raw_counts:
+
+  A matrix with raw counts (samples as columns and genes symbols as
+  rows)
+
+- normalized:
+
+  Boolean value to specify if raw_counts need to be normalized (If no
+  raw_counts are available and argument corresponds to already
+  normalized counts this arguments needs to be set to False)
+
+- methods_sc:
+
+  A character vector with the sc-deconvolution methods to run. Default
+  are "Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"
+
+- sc_object:
+
+  A matrix with the counts from scRNAseq object (genes as rows and cells
+  as columns)
+
+- sc_metadata:
+
+  Dataframe with metadata from the single cell object. The matrix should
+  include the columns cell_label and sample_label.
+
+- cell_annotations:
+
+  A string with the column name with the cell labels (column should be
+  of the same order as in the sc_object)
+
+- samples_ids:
+
+  A string with the column name with the samples labels (column should
+  be of the same order as in the sc_object)
+
+- name_object:
+
+  Signature name to use in the generated single cell signature for
+  deconvolving the bulk RNAseq data
+
+- n_cores:
+
+  Number of cores to use for paralellization. If no number is set,
+  detectCores() - 1 will be set as the number.
+
+- return:
+
+  Whether to save or not the csv file with the deconvolution features.
+
+- file_name:
+
+  File name for the .csv file to save with the deconvolution results.
+
+## Value
+
+A matrix of deconvolution features across samples from your bulk counts
+based on the second generation methods.
+
+## References
+
+Sturm, G., Finotello, F., Petitprez, F., Zhang, J. D., Baumbach, J.,
+Fridman, W. H., ..., List, M., Aneichyk, T. (2019). Comprehensive
+evaluation of transcriptome-based cell-type quantification methods for
+immuno-oncology. Bioinformatics, 35(14), i436-i445.
+https://doi.org/10.1093/bioinformatics/btz363
+
+Benchmarking second-generation methods for cell-type deconvolution of
+transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz,
+Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch,
+Katharina and Edenhofer, Frank and Marini, Federico and Sturm, Gregor
+and List, Markus and Finotello, Francesca. (2024)
+https://doi.org/10.1101/2024.06.10.598226
