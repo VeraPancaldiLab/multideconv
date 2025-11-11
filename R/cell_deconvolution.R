@@ -1135,7 +1135,9 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     grDevices::dev.off()
   }
 
-  message("Deconvolution features subgroupped")
+  if(verbose){
+    message("Deconvolution features subgroupped")
+  }
 
   results = list(dt, res, groups, groups_discard, zero_features, low_variance_features, cells_discarded, features_high_corr)
   names(results) = c("Deconvolution matrix", "Deconvolution subgroups per cell types", "Deconvolution subgroups composition",
