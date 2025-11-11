@@ -551,7 +551,6 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1,
                                                   seed = 123, 
                                                   file_name = "Tutorial", 
                                                   return = FALSE) 
-#> Deconvolution features subgroupped
 
 deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups, 
                                                                deconv_2)

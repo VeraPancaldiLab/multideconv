@@ -86,8 +86,6 @@ A list containing
 data("deconvolution")
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)
-#> Deconvolution features subgroupped
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
-#> Deconvolution features subgroupped
 ```
