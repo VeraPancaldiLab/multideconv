@@ -336,8 +336,6 @@ benchmark = compute.benchmark(deconv_pseudo,
                               height = 15)
 #> No id variables; using all as measure variables
 #> No id variables; using all as measure variables
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_text()`).
 ```
 
 ![](Results/Benchmark.png)
