@@ -1976,18 +1976,23 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   ## Extract the deconv feature without the cluster type
   features_with_clusters <- colnames(deconv_res[["Deconvolution matrix"]])
+  has_clusters <- grepl("_Cluster_\\d+$", features_with_clusters)
 
-  # Extract the base name and cluster suffix from the original names
-  base_names <- gsub("_Cluster_\\d+$", "", features_with_clusters)
-  cluster_suffixes <- sub(".*(_Cluster_\\d+$)", "\\1", features_with_clusters)
+  if(any(has_clusters)){
+    # Extract the base name and cluster suffix from the original names
+    base_names <- gsub("_Cluster_\\d+$", "", features_with_clusters)
+    cluster_suffixes <- sub(".*(_Cluster_\\d+$)", "\\1", features_with_clusters)
 
-  # Create df to map the features with their corresponding clusters
-  map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
+    # Create df to map the features with their corresponding clusters
+    map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
+  }
 
   if (is.infinite(iterations) && iterations < 0) {
     warning("No subgroups to replicate")
     ## Paste the corresponding clusters to the deconvolution features
-    colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+    if(any(has_clusters)){
+      colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+    }
 
     deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])] # Filter for features not found in the deconv_res (low variance, zeros, etc)
     return(data.frame(deconvolution_test))
@@ -2015,7 +2020,9 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
   }
 
   ## Paste the corresponding clusters to the deconvolution features
-  colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+  if(any(has_clusters)){
+    colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+  }
 
   deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])]
 
@@ -2201,6 +2208,13 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     corr_matrix = corr_matrix[-which(rownames(corr_matrix)%in%cells_discard),]
     pval_matrix = pval_matrix[-which(rownames(pval_matrix)%in%cells_discard),]
   }
+
+  ## remove NA columns
+  corr_matrix = corr_matrix %>%
+    dplyr::select(dplyr::where(~ !all(is.na(.))))
+
+  pval_matrix = pval_matrix %>%
+    dplyr::select(dplyr::where(~ !all(is.na(.))))
 
   corr_matrix[nrow(corr_matrix)+1,] = colMeans(corr_matrix, na.rm = T)
   rownames(corr_matrix)[nrow(corr_matrix)] = "average"
@@ -2500,71 +2514,133 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @importFrom stats setNames
 #' @export
 #'
-prepare_multideconv_folds <- function(data, folds, cells_extra = NULL) {
+prepare_multideconv_folds <- function(
+    data,
+    folds = NULL,
+    bestune = NULL,
+    ncores = NULL,
+    time_var = NULL,
+    event_var = NULL,
+    trait.positive = NULL,
+    cells_extra = NULL
+) {
 
-  processed_folds <- list()
+  # -----------------------------
+  # CASE 1: bestune provided → compute full training once
+  # -----------------------------
+  if (!is.null(bestune)) {
 
-  for (i in seq_along(folds)) {
+    # Determine target / survival info
+    if ("target" %in% colnames(data)) {
+      obs_train <- data$target
+      data$target <- NULL
+    } else if (!is.null(time_var) && !is.null(event_var)) {
+      obs_train <- list(
+        time  = time_var,
+        event = as.numeric(event_var == trait.positive)
+      )
+    } else {
+      stop("Data must contain 'target' column or both time_var and event_var")
+    }
 
-    train_idx <- folds[[i]]
-    test_idx <- setdiff(seq_len(nrow(data)), train_idx)
-
-    ## Subset data
-    train_deconv <- data[train_idx, , drop = FALSE]
-    obs_train <- train_deconv$target
-    train_deconv$target <- NULL
-
-    ## Run multideconv once
-    deconv_subgroups <- compute.deconvolution.analysis(
-      deconv = train_deconv,
+    # Compute deconvolution on full dataset
+    deconv_subgroups_final <- compute.deconvolution.analysis(
+      deconv = data,
       corr = 0.7,
       seed = 123,
       cells_extra = cells_extra,
       return = FALSE
     )
 
-    ## Deconvolution dictionary
-    deconv_subgroups = deconvolution_dictionary(deconv_subgroups)
+    train_cell_data_final <- deconv_subgroups_final[[1]] %>%
+      dplyr::mutate(target = if (is.list(obs_train)) NA else obs_train)
+
+    # For survival info
+    if (is.list(obs_train)) {
+      train_cell_data_final <- train_cell_data_final %>%
+        dplyr::mutate(time = obs_train$time, event = obs_train$event)
+    }
+
+    custom_output <- deconv_subgroups_final
+
+    return(list(train_cell_data_final, custom_output, bestune))
+  }
+
+  # -----------------------------
+  # CASE 2: bestune NOT provided → compute folds
+  # -----------------------------
+  if (is.null(ncores)) ncores <- parallel::detectCores() - 2
+  cl <- parallel::makeCluster(ncores)
+  doParallel::registerDoParallel(cl)
+
+  processed_folds <- foreach::foreach(
+    i = seq_along(folds),
+    .packages = c("dplyr", "multideconv")
+  ) %dopar% {
+    cat("Starting fold", names(folds)[i], "\n")
+
+    train_idx <- folds[[i]]
+    test_idx  <- setdiff(seq_len(nrow(data)), train_idx)
+
+    # TRAIN
+    train_data <- data[train_idx, , drop = FALSE]
+
+    if ("target" %in% colnames(train_data)) {
+      obs_train <- train_data$target
+      train_data$target <- NULL
+    } else if (!is.null(time_var) && !is.null(event_var)) {
+      obs_train <- list(
+        time  = time_var[train_idx],
+        event = as.numeric(event_var[train_idx] == trait.positive)
+      )
+    } else {
+      stop("Data must contain 'target' column or both time_var and event_var")
+    }
+
+    deconv_subgroups <- compute.deconvolution.analysis(
+      deconv = train_data,
+      corr = 0.7,
+      seed = 123,
+      cells_extra = cells_extra,
+      return = FALSE
+    )
 
     train_cell_data <- deconv_subgroups[[1]] %>%
-      dplyr::mutate(target = obs_train)
+      dplyr::mutate(target = if (is.list(obs_train)) NA else obs_train)
 
-    ## Prepare test data using trained info
-    test_deconv <- data[test_idx, , drop = FALSE]
-    obs_test <- test_deconv$target
-    test_deconv$target = NULL
+    if (is.list(obs_train)) {
+      train_cell_data <- train_cell_data %>%
+        dplyr::mutate(time = obs_train$time, event = obs_train$event)
+    }
 
-    test_data = replicate_deconvolution_subgroups(deconv_subgroups, test_deconv)
+    # TEST
+    test_data_raw <- data[test_idx, , drop = FALSE]
+    obs_test <- if ("target" %in% colnames(data)) data$target[test_idx] else list(
+      time  = time_var[test_idx],
+      event = as.numeric(event_var[test_idx] == trait.positive)
+    )
+    test_data_raw$target <- NULL
 
-    processed_folds[[i]] <- list(
+    test_data <- replicate_deconvolution_subgroups(deconv_subgroups, test_data_raw)
+
+    list(
       train_data = train_cell_data,
-      test_data = test_data,
-      obs_test = obs_test,
-      rowIndex = test_idx,
-      fold_name = names(folds)[i]
+      test_data  = test_data,
+      obs_test   = obs_test,
+      rowIndex   = test_idx,
+      fold_name  = names(folds)[i]
     )
   }
 
-  # Run multideconv on the full training set
-  obs_train = data$target
-  data$target = NULL
+  parallel::stopCluster(cl)
+  unregister_dopar()
 
-  deconv_subgroups_final <- compute.deconvolution.analysis(
-    deconv = data,
-    corr = 0.7,
-    seed = 123,
-    cells_extra = cells_extra,
-    return = FALSE
-  )
-
-  # Get cell group features
-  train_cell_data_final <- deconv_subgroups_final[[1]] %>%
-    dplyr::mutate(target = obs_train)
-
-  custom_output = deconv_subgroups_final
-
-  return(list(processed_folds, train_cell_data_final, custom_output))
+  # Save each fold
+  for (i in seq_along(processed_folds)) {
+    saveRDS(processed_folds[[i]], file = file.path("Results", paste0("fold_", names(folds)[i], ".rds")))
+  }
 }
+
 
 #' Build a Deconvolution–Pathway Relationship Dictionary
 #'
