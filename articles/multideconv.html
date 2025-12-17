@@ -550,7 +550,7 @@ cluster.</p>
 <span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
 <span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/deconvolution_dictionary.html">deconvolution_dictionary</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>, <span class="va">pathways</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Clusters"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"States"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="replicate-deconvolution-subgroups-in-an-independent-set">
@@ -576,7 +576,6 @@ evaluating machine learning models.</p>
 <span>                                                  seed <span class="op">=</span> <span class="fl">123</span>, </span>
 <span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
 <span>                                                  return <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span>
-<span></span>
 <span><span class="va">deconv_subgroups_replicate</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>, </span>
 <span>                                                               <span class="va">deconv_2</span><span class="op">)</span></span></code></pre></div>
 </div>

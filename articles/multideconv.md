@@ -523,7 +523,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv,
                                                   return = TRUE) 
 deconv_subgroups = deconvolution_dictionary(deconv_subgroups, pathways)
 head(deconv_subgroups[[1]][,1:5])
-print(deconv_subgroups[["Clusters"]])
+print(deconv_subgroups[["States"]])
 ```
 
 ### **Replicate deconvolution subgroups in an independent set**
@@ -549,7 +549,6 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1,
                                                   seed = 123, 
                                                   file_name = "Tutorial", 
                                                   return = FALSE) 
-
 deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups, 
                                                                deconv_2)
 ```
