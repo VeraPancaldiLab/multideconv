@@ -2699,7 +2699,7 @@ prepare_multideconv_folds <- function(
 #'
 #' @export
 deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
-
+  pathway_matrix = pathway_matrix[,!colnames(pathway_matrix)%in%c("Androgen", "Estrogen")]
   cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
   cell_clusters = list()
   i = 1
@@ -2719,6 +2719,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
   #Identify the two global pathway clusters
   silhouette = factoextra::fviz_nbclust(as.matrix(t(global_x[[1]])), factoextra::hcut, method = "silhouette", k.max = attr(d_global, "Size")-1)
   k_cluster = as.numeric(silhouette$data$clusters[which.max(silhouette$data$y)])
+
   clusters_global <- stats::cutree(dendrogram_global, k = k_cluster)
   clusters_global <- split(names(clusters_global), clusters_global)
   names(clusters_global) <- paste0("Cluster_", seq_along(clusters_global))
