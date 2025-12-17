@@ -1976,12 +1976,12 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   ## Extract the deconv feature without the cluster type
   features_with_clusters <- colnames(deconv_res[["Deconvolution matrix"]])
-  has_clusters <- grepl("_Cluster_\\d+$", features_with_clusters)
+  has_clusters <- grepl("_S\\d+$", features_with_clusters)
 
   if(any(has_clusters)){
     # Extract the base name and cluster suffix from the original names
-    base_names <- gsub("_Cluster_\\d+$", "", features_with_clusters)
-    cluster_suffixes <- sub(".*(_Cluster_\\d+$)", "\\1", features_with_clusters)
+    base_names <- gsub("_S\\d+$", "", features_with_clusters)
+    cluster_suffixes <- sub(".*(_S\\d+$)", "\\1", features_with_clusters)
 
     # Create df to map the features with their corresponding clusters
     map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
@@ -2722,7 +2722,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
 
   clusters_global <- stats::cutree(dendrogram_global, k = k_cluster)
   clusters_global <- split(names(clusters_global), clusters_global)
-  names(clusters_global) <- paste0("Cluster_", seq_along(clusters_global))
+  names(clusters_global) <- paste0("S", seq_along(clusters_global))
 
   # Calculate eigenvector-based score (PC1) for each cluster
   corr_matrix_global <- data.frame(global_x[[1]])
@@ -2792,7 +2792,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
   flat_list <- purrr::list_flatten(cell_subgroups)
   deconv_subgroups[["Deconvolution matrix"]] = bind_cols(flat_list)
   deconv_subgroups[["Deconvolution subgroups per cell types"]] = cell_subgroups
-  deconv_subgroups[["Clusters"]] = clusters_global
+  deconv_subgroups[["States"]] = clusters_global
 
   return(deconv_subgroups)
 }
