@@ -374,7 +374,7 @@ convention used - see README for more information).</p>
 <span>                              height <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span><span class="co">#&gt; No id variables; using all as measure variables</span></span>
 <span><span class="co">#&gt; No id variables; using all as measure variables</span></span></code></pre></div>
-<p><img src="Results/Benchmark.png" class="r-plt" width="70%" style="display: block; margin: auto;"></p>
+<p><img src="Results/Benchmark.png" class="r-plt" alt="" width="70%" style="display: block; margin: auto;"></p>
 <div style="text-align: center;">
 <p><em>Figure 1. Example of performance of different methods and
 signature combinations on the pseudo bulk.</em></p>
@@ -409,32 +409,66 @@ output files to the <code>Results/</code> directory</p></li>
 <p>Subgroups composition can be extracted with:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">B.cells</span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_BPRNACan3DProMet_B.cells"             </span></span>
-<span><span class="co">#&gt; [2] "DWLS_BPRNACanProMet_B.cells"                  </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"          </span></span>
-<span><span class="co">#&gt; [4] "DeconRNASeq_CCLE.TIL10_B.cells"               </span></span>
-<span><span class="co">#&gt; [5] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.1</span></span>
 <span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"</span></span>
 <span><span class="co">#&gt; [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.1</span></span>
+<span><span class="co">#&gt; [1] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; [2] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; [3] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.1</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; [2] "CBSX_BPRNACan_B.cells"                        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.1</span></span>
 <span><span class="co">#&gt; [1] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
 <span><span class="co">#&gt; [2] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_BPRNACan_B.cells"       "DeconRNASeq_BPRNACanProMet_B.cells"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; [2] "B.cells_Subgroup.2.Iteration.1"            </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_CCLE.TIL10_B.cells" "DeconRNASeq_TIL10_B.cells"     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "CBSX_BPRNACan3DProMet_B.cells"  "B.cells_Subgroup.4.Iteration.1"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; [2] "B.cells_Subgroup.5.Iteration.1"        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.3</span></span>
+<span><span class="co">#&gt; [1] "B.cells_Subgroup.2.Iteration.2" "B.cells_Subgroup.4.Iteration.2"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.4</span></span>
+<span><span class="co">#&gt; [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"</span></span>
 <span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Macrophages.M2</span></span>
 <span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; [3] "CBSX_CCLE.TIL10_Macrophages.M2"   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $Macrophages.M2_Subgroup.2.Iteration.1</span></span>
+<span><span class="co">#&gt; [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.4.Iteration.1</span></span>
 <span><span class="co">#&gt; [1] "Epidish_LM22_Macrophages.M2" "DWLS_LM22_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_LM22_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; [3] "CBSX_LM22_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.2</span></span>
+<span><span class="co">#&gt; [1] "DWLS_BPRNACan_Macrophages.M2"        </span></span>
+<span><span class="co">#&gt; [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; [3] "DWLS_BPRNACanProMet_Macrophages.M2"</span></span>
 <span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Dendritic.cells</span></span>
 <span><span class="co">#&gt; $Dendritic.cells_Subgroup.1.Iteration.1</span></span>
 <span><span class="co">#&gt; [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span>
-<span><span class="co">#&gt; [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span></code></pre></div>
+<span><span class="co">#&gt; [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   </span></span>
+<span><span class="co">#&gt; [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span></code></pre></div>
 <p>Reduced deconvolution matrix:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>

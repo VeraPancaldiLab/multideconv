@@ -375,32 +375,66 @@ Subgroups composition can be extracted with:
 
 ``` r
 deconv_subgroups[[3]]$B.cells
-#> $B.cells_Subgroup.1.Iteration.1
-#> [1] "Epidish_BPRNACan3DProMet_B.cells"             
-#> [2] "DWLS_BPRNACanProMet_B.cells"                  
-#> [3] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"          
-#> [4] "DeconRNASeq_CCLE.TIL10_B.cells"               
-#> [5] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
-#> 
 #> $B.cells_Subgroup.2.Iteration.1
 #> [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"
 #> [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       
 #> 
 #> $B.cells_Subgroup.3.Iteration.1
+#> [1] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"
+#> [2] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   
+#> [3] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   
+#> 
+#> $B.cells_Subgroup.4.Iteration.1
+#> [1] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> [2] "CBSX_BPRNACan_B.cells"                        
+#> 
+#> $B.cells_Subgroup.5.Iteration.1
 #> [1] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
 #> [2] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   
-#> [3] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> 
+#> $B.cells_Subgroup.1.Iteration.2
+#> [1] "DeconRNASeq_BPRNACan_B.cells"       "DeconRNASeq_BPRNACanProMet_B.cells"
+#> 
+#> $B.cells_Subgroup.2.Iteration.2
+#> [1] "DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells"
+#> [2] "B.cells_Subgroup.2.Iteration.1"            
+#> 
+#> $B.cells_Subgroup.3.Iteration.2
+#> [1] "DeconRNASeq_CCLE.TIL10_B.cells" "DeconRNASeq_TIL10_B.cells"     
+#> 
+#> $B.cells_Subgroup.4.Iteration.2
+#> [1] "CBSX_BPRNACan3DProMet_B.cells"  "B.cells_Subgroup.4.Iteration.1"
+#> 
+#> $B.cells_Subgroup.5.Iteration.2
+#> [1] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> [2] "B.cells_Subgroup.5.Iteration.1"        
+#> 
+#> $B.cells_Subgroup.1.Iteration.3
+#> [1] "B.cells_Subgroup.2.Iteration.2" "B.cells_Subgroup.4.Iteration.2"
+#> 
+#> $B.cells_Subgroup.1.Iteration.4
+#> [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"
 deconv_subgroups[[3]]$Macrophages.M2
 #> $Macrophages.M2_Subgroup.1.Iteration.1
-#> [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   
+#> [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   
+#> [3] "CBSX_CCLE.TIL10_Macrophages.M2"   
 #> 
 #> $Macrophages.M2_Subgroup.2.Iteration.1
+#> [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   
+#> 
+#> $Macrophages.M2_Subgroup.4.Iteration.1
 #> [1] "Epidish_LM22_Macrophages.M2" "DWLS_LM22_Macrophages.M2"   
-#> [3] "CBSX_LM22_Macrophages.M2"
+#> [3] "CBSX_LM22_Macrophages.M2"   
+#> 
+#> $Macrophages.M2_Subgroup.1.Iteration.2
+#> [1] "DWLS_BPRNACan_Macrophages.M2"        
+#> [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"
+#> [3] "DWLS_BPRNACanProMet_Macrophages.M2"
 deconv_subgroups[[3]]$Dendritic.cells
 #> $Dendritic.cells_Subgroup.1.Iteration.1
 #> [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"
-#> [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"
+#> [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   
+#> [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"
 ```
 
 Reduced deconvolution matrix:
