@@ -579,12 +579,28 @@ compute.cell.types = function(data, cells_extra = NULL){
 #' - Highly correlated features found
 #' - Cell type name
 #'
-removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method = "spearman") {
+removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method = "spearman", batch = NULL) {
 
   features_high_corr = c()
   cell_name = c()
+
   # Compute correlation matrix
-  corr_matrix <- stats::cor(data, method = corr_method)
+  if(is.null(batch)){
+    corr_matrix <- stats::cor(data, method = corr_method)
+  } else {
+    if(is.factor(batch) || is.character(batch)) batch <- as.numeric(as.factor(batch))
+    # Pairwise partial correlation
+    corr_matrix <- matrix(NA, ncol=ncol(data), nrow=ncol(data))
+    colnames(corr_matrix) <- colnames(data)
+    rownames(corr_matrix) <- colnames(data)
+    for(i in 1:(ncol(data)-1)){
+      for(j in (i+1):ncol(data)){
+        pc <- ppcor::pcor.test(data[[i]], data[[j]], batch)
+        corr_matrix[i,j] <- pc$estimate
+        corr_matrix[j,i] <- pc$estimate
+      }
+    }
+  }
   # Find highly correlated features
   contador = 1
   while(nrow(corr_matrix)>0){
@@ -667,7 +683,7 @@ remove_subgroups = function(groups){
 #' - Cell subgroups obtained by proportionality correlation
 #' - Discard cell features either because of low variance or high zero number
 #'
-compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name){
+compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, batch = NULL){
   data = data.frame(deconvolution)
   cell_subgroups = list()
   #cell_groups_similarity = list()
@@ -757,7 +773,7 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name){
     terminate = FALSE
     iteration = 1
     while (terminate == FALSE) {
-      corr_df <- correlation(data.matrix(data), corr_type = corr_type)
+      corr_df <- correlation(data, corr_type = corr_type, batch = batch)
       vec = colnames(data)
       indice = 1
       subgroup = list()
@@ -876,28 +892,46 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name){
 #'
 #' @return Dataframe containing all significant correlations (pvalue < 0.05)
 #'
-correlation <- function(data, corr_type = "spearman") {
+correlation <- function(data, corr_type = "spearman", batch = NULL) {
+  if (!is.null(batch)) {
+    # Convert batch to numeric if factor or character
+    if(is.factor(batch) || is.character(batch)){
+      batch <- as.numeric(as.factor(batch))
+    }
 
-  M <- Hmisc::rcorr(as.matrix(data), type = corr_type)
-  Mdf <- purrr::map(M[c("r", "P", "n")], ~data.frame(.x))
+    # Compute all pairwise partial correlations controlling for batch
+    vec <- colnames(data)
+    corr_df <- data.frame(measure1 = character(0), measure2 = character(0),
+                          r = numeric(0), p = numeric(0))
+    for(i in 1:(length(vec)-1)){
+      for(j in (i+1):length(vec)){
+        pc <- ppcor::pcor.test(data[[vec[i]]], data[[vec[j]]], batch, method = corr_type)
+        corr_df <- rbind(corr_df, data.frame(measure1 = vec[i],
+                                             measure2 = vec[j],
+                                             r = pc$estimate,
+                                             p = pc$p.value))
+      }
+    }
+  } else {
+    # Original correlation using Hmisc::rcorr
+    M <- Hmisc::rcorr(data.matrix(data), type = corr_type)
+    Mdf <- purrr::map(M[c("r", "P", "n")], ~data.frame(.x))
+    corr_df <- Mdf %>%
+      purrr::map(~tibble::rownames_to_column(.x, var = "measure1")) %>%
+      purrr::map(~tidyr::pivot_longer(.x, -measure1, names_to = "measure2")) %>%
+      dplyr::bind_rows(.id = "id") %>%
+      tidyr::pivot_wider(names_from = id, values_from = value) %>%
+      dplyr::rename(p = P) %>%
+      dplyr::mutate(sig_p = ifelse(p < 0.05, TRUE, FALSE),
+                    p_if_sig = ifelse(sig_p, p, NA),
+                    r_if_sig = ifelse(sig_p, r, NA))
+    corr_df <- stats::na.omit(corr_df)
+    corr_df <- corr_df[which(corr_df$sig_p == TRUE), ]
+    corr_df <- corr_df[order(corr_df$r, decreasing = TRUE), ]
+  }
 
-  corr_df = Mdf %>%
-    purrr::map(~tibble::rownames_to_column(.x, var="measure1")) %>%
-    purrr::map(~tidyr::pivot_longer(.x, -measure1, names_to = "measure2")) %>%
-    dplyr::bind_rows(.id = "id") %>%
-    tidyr::pivot_wider(names_from = id, values_from = value) %>%
-    dplyr::rename(p = P) %>%
-    dplyr::mutate(sig_p = ifelse(p < .05, T, F),
-                  p_if_sig = ifelse(sig_p, p, NA),
-                  r_if_sig = ifelse(sig_p, r, NA))
-
-  corr_df = stats::na.omit(corr_df)  #remove the ones that are the same Tfeatures (pval = NA)
-  corr_df <- corr_df[which(corr_df$sig_p==T),]  #remove not significant
-  corr_df <- corr_df[order(corr_df$r, decreasing = T),]
-  corr_df$AbsR =  abs(corr_df$r)
-
+  corr_df$AbsR <- abs(corr_df$r)
   return(corr_df)
-
 }
 
 
@@ -970,7 +1004,7 @@ remove_low_variance <- function(data, plot = FALSE) {
 #'
 #' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 #'
-compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "pearson", seed = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
+compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", seed = NULL, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
   deconvolution.mat = deconvolution
 
   #####Unsupervised filtering
@@ -1020,7 +1054,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     if(is.null(ncol(data))==T){
       cells[[i]] = data
     }else if(ncol(data)>1){
-      data = removeCorrelatedFeatures(data, 0.9, names(cells)[i], seed, corr_method = corr_type)
+      data = removeCorrelatedFeatures(data, 0.9, names(cells)[i], seed, corr_method = corr_type, batch = batch)
       cells[[i]] = data[[1]]
       if(length(data[[2]])>0 && is.null(data[[3]])==F){
         features_high_corr[[j]] = data[[2]]
@@ -1036,7 +1070,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
   #groups_similarity = list()
   groups_discard = list()
   for (i in 1:length(cells)) {
-    x = compute_subgroups(cells[[i]], file_name = names(cells)[i], thres_corr = corr, corr_type = corr_type)
+    x = compute_subgroups(cells[[i]], file_name = names(cells)[i], thres_corr = corr, corr_type = corr_type, batch = batch)
     res = c(res, x[1])
     groups = c(groups, x[2])
     #groups_similarity = c(groups_similarity, x[3])
@@ -2698,7 +2732,7 @@ prepare_multideconv_folds <- function(
 #' @importFrom factoextra fviz_nbclust hcut
 #'
 #' @export
-deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
+deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id = NULL){
   pathway_matrix = pathway_matrix[,!colnames(pathway_matrix)%in%c("Androgen", "Estrogen")]
   cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
   cell_clusters = list()
@@ -2709,6 +2743,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
     deconv_subgroups[["Deconvolution matrix"]],
     pathway_matrix,
     return = TRUE,
+    batch = batch_id,
     plot = FALSE
   )
 
@@ -2749,7 +2784,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix){
       rownames(cell_subgroups[[cell]]) <- rownames(deconv_subgroups[["Deconvolution matrix"]])
 
       #Compute module correlation between cell deconvolution features and PROGENy pathways
-      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, plot = FALSE)
+      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, batch = batch_id, plot = FALSE)
       corr_matrix <- data.frame(x[[1]])
 
       for (k in seq_along(clusters_global)) {
