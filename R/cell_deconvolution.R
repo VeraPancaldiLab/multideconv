@@ -2752,12 +2752,43 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
   dendrogram_global <- stats::hclust(d_global)
 
   #Identify the two global pathway clusters
-  silhouette = factoextra::fviz_nbclust(as.matrix(t(global_x[[1]])), factoextra::hcut, method = "silhouette", k.max = attr(d_global, "Size")-1)
-  k_cluster = as.numeric(silhouette$data$clusters[which.max(silhouette$data$y)])
-
-  clusters_global <- stats::cutree(dendrogram_global, k = k_cluster)
+  clusters_global <- stats::cutree(dendrogram_global, k = 2)
   clusters_global <- split(names(clusters_global), clusters_global)
-  names(clusters_global) <- paste0("S", seq_along(clusters_global))
+
+  # Automatic TME annotation based on pathway composition
+  tme_annotation <- c(
+    "Androgen" = "mixed",
+    "JAK.STAT" = "immunoactive",
+    "NFkB" = "immunosuppressive",
+    "Trail" = "immunoactive",
+    "WNT" = "immunosuppressive",
+    "p53" = "mixed",
+    "EGFR" = "immunosuppressive",
+    "Estrogen" = "mixed",
+    "Hypoxia" = "immunosuppressive",
+    "MAPK" = "mixed",
+    "PI3K" = "immunosuppressive",
+    "TGFb" = "immunosuppressive",
+    "TNFa" = "immunoactive",
+    "VEGF" = "immunosuppressive"
+  )
+
+  cluster_tme <- sapply(clusters_global, function(paths) {
+    effects <- tme_annotation[paths]
+    n_immunoactive <- sum(effects == "immunoactive")
+    n_suppressive <- sum(effects == "immunosuppressive")
+
+    if (n_immunoactive > n_suppressive) {
+      return("immunoactive")
+    } else if (n_suppressive > n_immunoactive) {
+      return("immunosuppressive")
+    } else {
+      return("mixed")
+    }
+  })
+
+  # Rename clusters BEFORE computing scores
+  names(clusters_global) <- cluster_tme
 
   # Calculate eigenvector-based score (PC1) for each cluster
   corr_matrix_global <- data.frame(global_x[[1]])
@@ -2831,4 +2862,3 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
 
   return(deconv_subgroups)
 }
-
