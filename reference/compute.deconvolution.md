@@ -189,6 +189,7 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> * CBSX-HNSCC-scRNAseq
 #> * CBSX-Melanoma-scRNAseq
 #> * CBSX-NSCLC-PBMCs-scRNAseq
+#> * CBSX-NSCLC-scRNAseq
 #> * CCLE-TIL10
 #> * LM22
 #> * TIL10
