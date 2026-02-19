@@ -2054,7 +2054,15 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
     deconv_subgroups_values = c()
     for (i in 1:length(base_groups)) {
-      deconv_subgroups_values = cbind(deconv_subgroups_values, matrixStats::rowMedians(as.matrix(deconvolution_test[,base_groups[[i]]]))) #Compute median using base groups
+      x = as.matrix(deconvolution_test[, colnames(deconvolution_test) %in% base_groups[[i]], drop = FALSE])
+
+      if(ncol(x) == 0){
+        med = rep(0, nrow(deconvolution_test))
+      } else {
+        med = matrixStats::rowMedians(x)
+      }
+
+      deconv_subgroups_values = cbind(deconv_subgroups_values, med) #Compute median using base groups
     }
     colnames(deconv_subgroups_values) = names(base_groups)
     deconvolution_test = cbind(deconv_subgroups_values, deconvolution_test) # Join cell subgroups and deconv features
@@ -2063,7 +2071,7 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   ## Paste the corresponding clusters to the deconvolution features
   if(any(has_clusters)){
-    colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), map$suffix[match(colnames(deconvolution_test), map$base)])
+    colnames(deconvolution_test) <- paste0(colnames(deconvolution_test), "_", map$suffix[match(colnames(deconvolution_test), map$base)])
   }
 
   deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])]
