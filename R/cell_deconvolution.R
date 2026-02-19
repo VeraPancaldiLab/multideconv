@@ -2010,15 +2010,23 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   ## Extract the deconv feature without the cluster type
   features_with_clusters <- colnames(deconv_res[["Deconvolution matrix"]])
-  has_clusters <- grepl("_S\\d+$", features_with_clusters)
+  has_clusters <- grepl("_.*(mixed|immunosuppressive|immunoactive)$", features_with_clusters)
 
   if(any(has_clusters)){
-    # Extract the base name and cluster suffix from the original names
-    base_names <- gsub("_S\\d+$", "", features_with_clusters)
-    cluster_suffixes <- sub(".*(_S\\d+$)", "\\1", features_with_clusters)
 
-    # Create df to map the features with their corresponding clusters
-    map <- data.frame(base = base_names, suffix = cluster_suffixes, stringsAsFactors = FALSE)
+    # Base name = everything before final cluster label
+    base_names <- sub("_(mixed|immunosuppressive|immunoactive)$",
+                      "",
+                      features_with_clusters)
+
+    # Cluster suffix = cluster type
+    cluster_suffixes <- sub(".*_(mixed|immunosuppressive|immunoactive)$",
+                            "\\1",
+                            features_with_clusters)
+
+    map <- data.frame(base = base_names,
+                      suffix = cluster_suffixes,
+                      stringsAsFactors = FALSE)
   }
 
   if (is.infinite(iterations) && iterations < 0) {
