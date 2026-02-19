@@ -2819,7 +2819,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
   }
 
   # Classify features based on the highest mean correlation across all clusters
-  cluster_scores <- corr_matrix_global[, grepl("_Score$", colnames(corr_matrix_global))]
+  cluster_scores <- corr_matrix_global[, grepl("_Score$", colnames(corr_matrix_global)), drop = F]
   corr_matrix_global$Classification <- apply(cluster_scores, 1, function(row) {
     cluster_name <- names(which.max(row))
     gsub("_Score", "", cluster_name)
@@ -2845,7 +2845,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
       }
 
       #Identify which cluster each feature belongs to based on the highest mean score
-      cluster_scores <- corr_matrix[, grepl("_Score$", colnames(corr_matrix))]
+      cluster_scores <- corr_matrix[, grepl("_Score$", colnames(corr_matrix)), drop = F]
       corr_matrix$Classification <- apply(cluster_scores, 1, function(row) {
         cluster_name <- names(which.max(row))
         gsub("_Score", "", cluster_name)
