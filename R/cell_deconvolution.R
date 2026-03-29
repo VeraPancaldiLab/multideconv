@@ -121,7 +121,7 @@ standardize_celltype_colnames <- function(mat) {
 
   ## CD4 and subtypes
   lower <- stringr::str_to_lower(colnames(mat))
-  is_cd4 <- grepl("\\bcd4\\b", lower)
+  is_cd4 <- grepl("\\bcd4\\b|reg|regulatory", lower)
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
@@ -170,7 +170,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$CD4.non.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.non.regulatory),
       "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",
-      "\\1_CD4.non.regulatory"
+      "CD4.non.regulatory"
     )
   }
   if (ncol(blocks$CD4.regulatory)){
@@ -178,7 +178,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$CD4.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.regulatory),
       "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|tregulatory.*|regulatory.*)$",
-      "\\1_CD4.regulatory"
+      "CD4.regulatory"
     )
   }
 
@@ -2987,6 +2987,21 @@ create_gsea_signature <- function(gene_scores,
   pos <- fg %>% 
     dplyr::filter(!is.na(NES) & NES > 0) %>%  # Keep positive NES
     dplyr::arrange(dplyr::desc(NES)) # Arrange by descending NES
+
+  #fg_top <- fg %>%
+  #  dplyr::filter(!is.na(NES)) %>%
+  #  dplyr::arrange(dplyr::desc(dplyr::abs(NES))) %>%
+  #  dplyr::slice_head(n = 20) %>%
+  #  dplyr::mutate(pathway = factor(pathway, levels = rev(pathway)),
+  #                sig = -log10(padj + 1e-300))
+
+  #ggplot(fg_top, aes(x = NES, y = pathway, size = size, color = sig)) +
+  #  geom_point() +
+  #  scale_color_viridis_c(name = "-log10(padj)") +
+  #  scale_size_continuous(name = "pathway size") +
+  #  labs(title = "FGSEA — top 20 pathways", x = "NES", y = NULL) +
+  #  theme_minimal(base_size = 12)
+  
   if (nrow(pos) == 0) stop("No pathways with NES > 0 found")
   first_pathway <- as.character(pos$pathway[1]) 
   suffix <- stringr::str_replace_all(first_pathway, "[^A-Za-z0-9]+", "_") # Replace non-alphanumeric characters with underscores
@@ -3009,7 +3024,7 @@ expand_subgroup_members <- function(subgroup, subgroup_map) {
 }
 
 
-compute_deconvolution_dictionary <- function(subgroups, expr) {
+compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL) {
 
   subgroup_map <- subgroups[["Deconvolution subgroups composition"]]
   deconv_mat = subgroups[["Deconvolution matrix"]]
@@ -3029,7 +3044,7 @@ compute_deconvolution_dictionary <- function(subgroups, expr) {
                                          deconv = deconv_mat,
                                          subgroup = sub_name) # Compute correlation rankings for the subgroup
 
-      sig_out <- create_gsea_signature(ranked, sub_name) # create pathwyas signature
+      sig_out <- create_gsea_signature(ranked, sub_name, pathways) # create pathwyas signature
       if (is.null(sig_out)) next # No enrichment found, skip to next subgroup
       new_label <- sig_out[[1]]
       idx <- which(colnames(deconv_mat) == sub_name) # replace column name in deconv_mat if present
@@ -3047,21 +3062,3 @@ compute_deconvolution_dictionary <- function(subgroups, expr) {
 
   return(subgroups)
 }
-
-library(ggplot2)
-library(dplyr)
-library(viridis)
-# FGSEA dotplot (top 20 by |NES|)
-fg_top <- fgseaRes |>
-  filter(!is.na(NES)) |>
-  arrange(desc(abs(NES))) |>
-  slice_head(n = 20) |>
-  mutate(pathway = factor(pathway, levels = rev(pathway)),
-         sig = -log10(padj + 1e-300))
-
-ggplot(fg_top, aes(x = NES, y = pathway, size = size, color = sig)) +
-  geom_point() +
-  scale_color_viridis_c(name = "-log10(padj)") +
-  scale_size_continuous(name = "pathway size") +
-  labs(title = "FGSEA — top 20 pathways", x = "NES", y = NULL) +
-  theme_minimal(base_size = 12)
