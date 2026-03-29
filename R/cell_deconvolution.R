@@ -3062,3 +3062,36 @@ compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL) {
 
   return(subgroups)
 }
+
+compute_subgroups_pathways <- function(subgroups,
+                                       counts_norm,
+                                       file_name = "Test",
+                                       height = 6,
+                                       width = 12,
+                                       par_mar = c(4, 25, 5, 3),
+                                       pval = 0.05) {
+
+  subgroups_cells = subgroups[["Deconvolution subgroups per cell types"]]
+
+  # build PROGENy consensus matrix
+  universe <- decoupleR::get_progeny()
+  universe2 <- universe %>% dplyr::rename(mor = weight)
+  sample_acts <- decoupleR::decouple(counts_norm,
+                                     network = universe2,
+                                     .source = "source",
+                                     .target = "target",
+                                     minsize = 0)
+  mat_consensus <- sample_acts %>%
+    dplyr::filter(statistic == "consensus") %>%
+    decoupleR::pivot_wider_profile(id_cols = source,
+                                   names_from = condition,
+                                   values_from = score) %>%
+    as.data.frame()
+
+  for(celltype in names(subgroups_cells)) {
+    cells = subgroups_cells[[celltype]]
+    if(ncol(cells) < 2) next 
+    compute.modules.relationship(cells, t(mat_consensus),file_name = paste0(file_name, "_", celltype), height = height, width = width, par_mar = par_mar, pval = pval)
+  }
+  
+}

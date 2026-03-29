@@ -52,184 +52,643 @@ safe_workers <- function(x) {
   as.integer(x)
 }
 
-ui <- fluidPage(
-  tags$head(
-    tags$style(HTML("\n      :root {\n        --bg-1: #f4f8fb;\n        --bg-2: #e6f0f5;\n        --ink: #17324a;\n        --brand: #0d6e8a;\n        --brand-dark: #0a5469;\n        --accent: #f3b562;\n        --panel: #ffffff;\n        --soft-border: #d7e4ec;\n      }\n\n      body {\n        background: linear-gradient(145deg, var(--bg-1), var(--bg-2));\n        color: var(--ink);\n      }\n\n      .container-fluid {\n        max-width: 1320px;\n      }\n\n      .main-title {\n        background: linear-gradient(120deg, #0d6e8a, #1f8fae);\n        color: #ffffff;\n        border-radius: 14px;\n        padding: 18px 22px;\n        margin-bottom: 14px;\n        box-shadow: 0 12px 30px rgba(13, 110, 138, 0.22);\n      }\n\n      .main-title h2 {\n        margin: 0;\n        font-weight: 700;\n      }\n\n      .main-title p {\n        margin: 8px 0 0 0;\n        opacity: 0.95;\n      }\n\n      .hero-card, .info-card, .well, .tab-content {\n        background: var(--panel);\n        border: 1px solid var(--soft-border);\n        border-radius: 12px;\n        box-shadow: 0 8px 24px rgba(21, 58, 79, 0.08);\n      }\n\n      .hero-card {\n        padding: 18px;\n        margin-top: 8px;\n      }\n\n      .hero-logo {\n        display: block;\n        max-width: 340px;\n        width: 100%;\n        margin: 0 auto 10px auto;\n      }\n\n      .info-card {\n        padding: 14px 16px;\n        margin-top: 14px;\n      }\n\n      .tabbable > .nav > li > a {\n        font-weight: 600;\n        color: var(--brand-dark);\n      }\n\n      .tabbable > .nav > li.active > a,\n      .tabbable > .nav > li.active > a:focus,\n      .tabbable > .nav > li.active > a:hover {\n        color: #ffffff;\n        background-color: var(--brand);\n        border-color: var(--brand-dark);\n      }\n\n      .btn-primary {\n        background-color: var(--brand);\n        border-color: var(--brand-dark);\n        font-weight: 600;\n      }\n\n      .btn-primary:hover, .btn-primary:focus {\n        background-color: var(--brand-dark);\n        border-color: var(--brand-dark);\n      }\n\n      .btn-default {\n        border-color: #c7d6df;\n      }\n\n      h3, h4 {\n        color: #10324b;\n      }\n\n      .lead-note {\n        font-size: 1.05em;\n        line-height: 1.6;\n      }\n    "))
+# ── CSS ───────────────────────────────────────────────────────────────────────
+app_css <- "
+:root {
+  --brand:       #0a7490;
+  --brand-dark:  #065f76;
+  --brand-light: #e2f0f4;
+  --accent:      #f0a500;
+  --text:        #1a2e3a;
+  --muted:       #5f7d8a;
+  --bg:          #edf3f7;
+  --panel:       #ffffff;
+  --border:      #cee0e8;
+  --radius:      10px;
+  --shadow:      0 3px 14px rgba(10,116,144,.09);
+  --shadow-lg:   0 8px 26px rgba(10,116,144,.17);
+}
+
+/* ── Body ── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14.5px;
+}
+
+/* ── Navbar ── */
+.navbar.navbar-default {
+  background: linear-gradient(135deg,#054e62 0%,#0a7490 100%) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 2px 10px rgba(5,78,98,.35) !important;
+  min-height: 56px;
+}
+.navbar-brand {
+  color: #fff !important;
+  font-size: 1.22em !important;
+  font-weight: 700 !important;
+  padding: 10px 18px !important;
+  line-height: 36px !important;
+}
+.navbar-brand img {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 9px;
+  margin-top: -2px;
+  border-radius: 6px;
+}
+.navbar-nav > li > a {
+  color: rgba(255,255,255,.82) !important;
+  font-weight: 500;
+  padding: 19px 15px !important;
+  font-size: .91em;
+  transition: background .15s;
+}
+.navbar-nav > li > a:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+.navbar-nav > li.active > a,
+.navbar-nav > li.active > a:focus,
+.navbar-nav > li.active > a:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.18) !important;
+  border-bottom: 3px solid #f0a500 !important;
+}
+.navbar-toggle { border-color: rgba(255,255,255,.3) !important; }
+.navbar-toggle .icon-bar { background: rgba(255,255,255,.85) !important; }
+
+/* ── Layout ── */
+.container-fluid { max-width: 1360px; padding: 20px 26px; }
+.tab-content { padding-top: 4px; }
+
+/* ── Generic card ── */
+.md-card {
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+}
+.md-card-title {
+  font-size: .97em;
+  font-weight: 700;
+  color: var(--brand-dark);
+  margin: 0 0 14px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--brand-light);
+}
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg,#054e62 0%,#0a7490 60%,#0d96b5 100%);
+  border-radius: var(--radius);
+  padding: 36px 42px;
+  color: #fff;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; top: -70px; right: -70px;
+  width: 280px; height: 280px;
+  background: rgba(255,255,255,.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-title {
+  font-size: 2.1em; font-weight: 700; margin: 0 0 6px 0; letter-spacing: -.02em;
+}
+.hero-ver {
+  font-size: .75em; background: rgba(255,255,255,.22);
+  border-radius: 20px; padding: 2px 10px;
+  vertical-align: middle; margin-left: 8px; font-weight: 500;
+}
+.hero-sub {
+  font-size: 1.03em; opacity: .88;
+  max-width: 640px; line-height: 1.65; margin: 6px 0 18px 0;
+}
+.hero-logo {
+  width: 108px; height: 108px;
+  border-radius: 14px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.22);
+}
+.method-badge {
+  display: inline-block; border-radius: 4px;
+  padding: 3px 9px; font-size: .78em; font-weight: 600;
+  margin: 2px 3px 2px 0; color: #fff;
+}
+
+/* ── Pipeline figure ── */
+.fig-wrap {
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 24px; margin-bottom: 18px; text-align: center;
+}
+.fig-wrap img {
+  max-width: 100%; border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(10,116,144,.08);
+}
+.fig-caption {
+  margin-top: 12px; font-size: .84em; color: var(--muted); font-style: italic;
+}
+
+/* ── Step cards ── */
+.step-card {
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 22px 20px; height: 100%;
+  position: relative; overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.step-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.step-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+}
+.step-1::before { background: linear-gradient(90deg,#0a7490,#0d96b5); }
+.step-2::before { background: linear-gradient(90deg,#2e9e6b,#3dc98a); }
+.step-3::before { background: linear-gradient(90deg,#c0620a,#f0a500); }
+.step-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  color: #fff; font-weight: 700; font-size: 1em; margin-bottom: 12px;
+}
+.step-1 .step-badge { background: #0a7490; }
+.step-2 .step-badge { background: #2e9e6b; }
+.step-3 .step-badge { background: #c0620a; }
+.step-title { font-weight: 700; font-size: 1em; color: var(--text); margin-bottom: 8px; }
+.step-desc  { color: var(--muted); font-size: .9em; line-height: 1.55; margin: 0; }
+
+/* ── Citation ── */
+.citation-block {
+  background: var(--brand-light);
+  border-left: 4px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px; font-size: .9em; line-height: 1.65; margin-top: 10px;
+}
+
+/* ── Sidebar ── */
+.well {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  padding: 18px 18px 12px !important;
+}
+.sidebar-group {
+  font-size: .76em; font-weight: 700; color: var(--brand);
+  text-transform: uppercase; letter-spacing: .07em; margin: 14px 0 9px 0;
+}
+.sidebar-group:first-child { margin-top: 2px; }
+.sidebar-hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+/* ── Form controls ── */
+select.form-control,
+input.form-control,
+input[type='text'].form-control,
+input[type='password'].form-control,
+input[type='number'].form-control {
+  border-radius: 6px !important;
+  border: 1px solid var(--border) !important;
+  font-size: .9em !important; height: 34px !important;
+}
+textarea.form-control { border-radius: 6px !important; border: 1px solid var(--border) !important; font-size: .9em !important; }
+.form-control:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 2px rgba(10,116,144,.15) !important; outline: none !important;
+}
+.control-label { font-weight: 600; font-size: .87em; color: var(--text); }
+.checkbox label, .radio label { font-size: .9em; }
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--brand) !important;
+  border-color: var(--brand-dark) !important;
+  border-radius: 7px !important; font-weight: 600 !important;
+  padding: 9px 20px !important; width: 100%; font-size: .92em;
+  letter-spacing: .02em; transition: all .18s ease !important;
+  box-shadow: 0 2px 8px rgba(10,116,144,.22) !important;
+  margin-top: 4px;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--brand-dark) !important; border-color: #044f63 !important;
+  box-shadow: 0 5px 14px rgba(10,116,144,.3) !important;
+}
+.btn-default {
+  border-radius: 7px !important; border-color: var(--border) !important;
+  font-size: .88em; font-weight: 500 !important;
+  color: var(--brand-dark) !important; background: var(--brand-light) !important;
+}
+.btn-default:hover { background: #cce4eb !important; border-color: var(--brand) !important; }
+
+/* ── Output cards ── */
+.out-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px 22px; margin-bottom: 16px;
+}
+.sec-head {
+  font-size: .94em; font-weight: 700; color: var(--brand-dark);
+  margin: 0 0 12px 0; padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+.dl-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 2px; }
+.dl-row .btn { flex: 1; min-width: 160px; width: auto !important; }
+
+/* ── Status verbatim ── */
+pre.shiny-text-output {
+  background: #f5f9fb; border: 1px solid var(--border);
+  border-radius: 6px; font-size: .84em; color: var(--muted);
+  padding: 10px 14px; min-height: 36px;
+}
+
+/* ── Tables ── */
+.table { font-size: .87em; }
+.table > thead > tr > th {
+  background: var(--brand-light); color: var(--brand-dark);
+  font-weight: 700; border-bottom: 2px solid var(--border);
+}
+
+/* ── Footer ── */
+.app-footer {
+  text-align: center; padding: 20px 0;
+  color: var(--muted); font-size: .82em;
+  border-top: 1px solid var(--border); margin-top: 26px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-title { font-size: 1.5em; }
+  .hero { padding: 22px 18px; }
+  .hero-logo { width: 78px; height: 78px; }
+  .container-fluid { padding: 12px 14px; }
+}
+"
+
+# ── UI ────────────────────────────────────────────────────────────────────────
+ui <- navbarPage(
+  title = div(
+    tags$img(src = "logo.png", height = "34px",
+             style = "border-radius:6px; vertical-align:middle; margin-right:9px; margin-top:-2px;"),
+    "multideconv"
   ),
-  div(
-    class = "main-title",
-    h2(HTML("<strong>multideconv</strong>")),
-    p("Integrative deconvolution from bulk RNA-seq with user-friendly analysis and benchmarking")
-  ),
-  tabsetPanel(
-    tabPanel(
-      "Welcome",
+  windowTitle = "multideconv \u00b7 Integrative Cell Deconvolution",
+  id          = "main_nav",
+  collapsible = TRUE,
+
+  # ── Welcome ────────────────────────────────────────────────────────────────
+  tabPanel(
+    HTML('<span class="glyphicon glyphicon-home"></span>&nbsp; Welcome'),
+    value = "welcome",
+
+    tags$head(tags$style(HTML(app_css))),
+
+    # Hero banner
+    div(class = "hero",
       fluidRow(
-        column(
-          12,
+        column(9,
+          h1(class = "hero-title",
+             HTML('multi<strong style="font-weight:800;">deconv</strong>'),
+             tags$span(class = "hero-ver", "v0.0.1")),
+          p(class = "hero-sub",
+            "Integrative pipeline for cell type deconvolution from bulk RNA-seq \u2014 ",
+            "combining first- and second-generation methods to identify robust, ",
+            "cross-validated cell subgroups with minimal redundancy."),
           div(
-            class = "hero-card",
-            fluidRow(
-              column(
-                8,
-                p(
-                  class = "lead-note",
-                  style = "text-align: justify;",
-                  tags$strong("multideconv"),
-                  " is an integrative pipeline that combines multiple deconvolution approaches to estimate cell populations from bulk RNA-seq data. It helps reduce redundancy between methods and signatures, then summarizes robust cell signals you can interpret and compare across patients."
-                )
-              ),
-              column(
-                4,
-                tags$img(
-                  src = "logo.png",
-                  alt = "multideconv logo",
-                  style = "display:block; width:140px; max-width:100%; margin:6px 0 6px auto;"
-                )
-              )
-            )
-          ),
-          div(
-            class = "info-card",
-            h3("What you can do here"),
-            tags$ol(
-              tags$li("Estimate cell composition from your bulk RNA-seq matrix in the Deconvolution tab."),
-              tags$li("Refine noisy and redundant outputs into robust subgroups in Analysis."),
-              tags$li("Compare deconvolution estimates against known cell proportions in Benchmark.")
-            )
-          ),
-          div(
-            class = "info-card",
-            h3("Before you start"),
-            tags$ul(
-              tags$li("Use genes in rows and samples in columns for expression inputs."),
-              tags$li("If your matrix is already normalized, disable TPM normalization in the Deconvolution tab."),
-              tags$li("CIBERSORTx is optional and needs credentials/token if selected."),
-              tags$li("You can test the whole workflow using built-in example datasets first.")
-            )
-          ),
-          div(
-            class = "info-card",
-            h3("Citation"),
-            p(
-              style = "text-align: justify; color: #000000;",
-              "If you use ", tags$strong("multideconv"), " in your work, please cite:", tags$br(), tags$br(),
-              "Hurtado, M., Essabbar, A., Khajavi, L., & Pancaldi, V. (2025). ",
-              tags$strong("multideconv"),
-              " – Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods. bioRxiv. https://doi.org/10.1101/2025.04.29.651220"
-            )
-          ),
-          div(
-            class = "info-card",
-            h3("Authors"),
-            tags$ul(
-              tags$li("Authors: Marcelo Hurtado (marcelo.hurtado@inserm.fr), Vera Pancaldi (vera.pancaldi@inserm.fr)"),
-              tags$li("Maintainer: Marcelo Hurtado (marcelo.hurtado@inserm.fr)")
-            )
-          ),
-          p(
-            style = "text-align: center; font-style: italic; font-size: 1.2em; margin-top: 26px;",
-            "This app is designed for researchers and clinicians who want practical results without needing to write code."
+            tags$span(class = "method-badge", style = "background:#0a7490;", "Quantiseq"),
+            tags$span(class = "method-badge", style = "background:#2e9e6b;", "EpiDISH"),
+            tags$span(class = "method-badge", style = "background:#1565c0;", "DeconRNASeq"),
+            tags$span(class = "method-badge", style = "background:#7b4fa6;", "DWLS"),
+            tags$span(class = "method-badge", style = "background:#c0620a;", "CIBERSORTx"),
+            tags$span(class = "method-badge", style = "background:#37888c;", "MOMF"),
+            tags$span(class = "method-badge", style = "background:#444;",    "& more\u2026")
+          )
+        ),
+        column(3, style = "text-align:right; padding-top:8px;",
+          tags$img(src = "logo.png", class = "hero-logo", alt = "multideconv logo")
+        )
+      )
+    ),
+
+    # Pipeline overview figure
+    div(class = "fig-wrap",
+      div(class = "md-card-title",
+          HTML('<span class="glyphicon glyphicon-picture"></span>&nbsp; Pipeline Overview')),
+      tags$img(src = "overview.png", alt = "multideconv pipeline overview",
+               style = "max-width:960px; width:100%;"),
+      p(class = "fig-caption",
+        "multideconv orchestrates both first-generation (immunedeconv: Quantiseq, CIBERSORTx, EpiDISH, ",
+        "DeconRNASeq) and second-generation (omnideconv: DWLS, MOMF, BayesPrism, MuSiC, Bisque\u2026) ",
+        "deconvolution methods. Single-cell RNA-seq can be incorporated to build custom signatures.")
+    ),
+
+    # Three workflow steps
+    fluidRow(style = "margin-bottom:18px;",
+      column(4,
+        div(class = "step-card step-1",
+          div(class = "step-badge",
+              HTML('<span class="glyphicon glyphicon-cog"></span>')),
+          div(class = "step-title", "Step 1 \u00b7 Deconvolution"),
+          p(class  = "step-desc",
+            "Upload your bulk RNA-seq expression matrix and run multiple deconvolution ",
+            "methods simultaneously. Parallel execution is supported to accelerate the run.")
+        )
+      ),
+      column(4,
+        div(class = "step-card step-2",
+          div(class = "step-badge",
+              HTML('<span class="glyphicon glyphicon-stats"></span>')),
+          div(class = "step-title", "Step 2 \u00b7 Analysis"),
+          p(class  = "step-desc",
+            "Reduce cross-method redundancy via iterative correlation-based subgroup filtering. ",
+            "Consolidates highly correlated estimates into robust, interpretable cell signals.")
+        )
+      ),
+      column(4,
+        div(class = "step-card step-3",
+          div(class = "step-badge",
+              HTML('<span class="glyphicon glyphicon-ok-sign"></span>')),
+          div(class = "step-title", "Step 3 \u00b7 Benchmark"),
+          p(class  = "step-desc",
+            "Validate deconvolution outputs against known ground truth proportions. ",
+            "Correlation heatmaps reveal accuracy per cell type across all methods and signatures.")
+        )
+      )
+    ),
+
+    # Tips + Authors (two columns)
+    fluidRow(
+      column(6,
+        div(class = "md-card",
+          div(class = "md-card-title",
+              HTML('<span class="glyphicon glyphicon-info-sign"></span>&nbsp; Before You Start')),
+          tags$ul(style = "padding-left:18px; margin:0;",
+            tags$li(style = "margin-bottom:6px;",
+                    "Expression matrix: genes in rows, samples in columns."),
+            tags$li(style = "margin-bottom:6px;",
+                    "If already normalized, uncheck raw counts in the Deconvolution tab."),
+            tags$li(style = "margin-bottom:6px;",
+                    "CIBERSORTx requires valid credentials (email + token)."),
+            tags$li("Test with built-in example datasets before uploading your own data.")
           )
         )
+      ),
+      column(6,
+        div(class = "md-card",
+          div(class = "md-card-title",
+              HTML('<span class="glyphicon glyphicon-user"></span>&nbsp; Authors')),
+          p(style = "margin-bottom:8px;",
+            tags$strong("Marcelo Hurtado"),
+            tags$small(style = "display:block; color:#5f7d8a;",
+                       tags$a(href = "mailto:marcelo.hurtado@inserm.fr",
+                              "marcelo.hurtado@inserm.fr")),
+            tags$small(style = "color:#5f7d8a;", "Author \u00b7 Maintainer")),
+          tags$hr(style = "margin:8px 0;"),
+          p(style = "margin:0;",
+            tags$strong("Vera Pancaldi"),
+            tags$small(style = "display:block; color:#5f7d8a;",
+                       tags$a(href = "mailto:vera.pancaldi@inserm.fr",
+                              "vera.pancaldi@inserm.fr")),
+            tags$small(style = "color:#5f7d8a;", "Author")),
+          tags$hr(style = "margin:8px 0;"),
+          p(style = "margin:0; font-size:.87em; color:#5f7d8a;",
+            HTML('<span class="glyphicon glyphicon-map-marker"></span>'),
+            HTML("&nbsp;INSERM &bull; Toulouse, France"))
+        )
       )
     ),
-    tabPanel(
-      "Deconvolution",
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            "counts_source",
-            "Counts source",
-            choices = c("Example raw_counts", "Upload file")
-          ),
-          fileInput("counts_file", "Upload counts (CSV/TSV, genes in rows)"),
-          checkboxInput("counts_normalized", "Input is raw counts (apply TPM normalization)", value = TRUE),
-          checkboxGroupInput(
-            "methods",
-            "Methods",
-            choices = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
-            selected = c("Quantiseq", "Epidish", "DeconRNASeq")
-          ),
-          checkboxInput("do_parallel", "Parallelize supported methods", value = FALSE),
-          numericInput("workers", "Workers", value = 2, min = 1, step = 1),
-          textInput("credentials_mail", "CIBERSORTx mail (optional)", value = ""),
-          passwordInput("credentials_token", "CIBERSORTx token (optional)", value = ""),
-          textInput("deconv_file_name", "Output file name", value = "ShinyRun"),
-          checkboxInput("save_deconv_csv", "Save Results/Deconvolution_<file>.csv", value = FALSE),
-          actionButton("run_deconv", "Run compute.deconvolution", class = "btn-primary")
+
+    # Detailed algorithm flowchart
+    div(class = "fig-wrap",
+      div(class = "md-card-title",
+          HTML('<span class="glyphicon glyphicon-random"></span>&nbsp; Analysis Algorithm Flowchart')),
+      tags$img(src = "Deconvolution_pipeline.png", alt = "Analysis pipeline flowchart",
+               style = "max-width:100%; width:100%;"),
+      p(class = "fig-caption",
+        "Detailed flowchart of the subgroup computation algorithm: deconvolution matrix preprocessing, ",
+        "iterative pairwise correlation analysis, and cell subgroup identification.")
+    ),
+
+    # Citation
+    div(class = "md-card",
+      div(class = "md-card-title",
+          HTML('<span class="glyphicon glyphicon-book"></span>&nbsp; Citation')),
+      div(class = "citation-block",
+        "Hurtado, M., Essabbar, A., Khajavi, L., & Pancaldi, V. (2025). ",
+        tags$strong("multideconv"),
+        HTML(" &ndash; Integrative pipeline for cell type deconvolution from bulk RNAseq "),
+        "using first and second generation methods.",
+        tags$em(" bioRxiv."), HTML("&nbsp;"),
+        tags$a(href   = "https://doi.org/10.1101/2025.04.29.651220",
+               target = "_blank",
+               "https://doi.org/10.1101/2025.04.29.651220")
+      )
+    ),
+
+    # Footer
+    div(class = "app-footer",
+        HTML("multideconv &bull; v0.0.1 &bull; INSERM &bull; ",
+             "<a href='https://github.com/VeraPancaldiLab/multideconv' target='_blank'>",
+             "<span class='glyphicon glyphicon-link'></span>&nbsp;GitHub</a>"))
+  ),
+
+  # ── Deconvolution ──────────────────────────────────────────────────────────
+  tabPanel(
+    HTML('<span class="glyphicon glyphicon-cog"></span>&nbsp; Deconvolution'),
+    value = "deconvolution",
+    sidebarLayout(
+      sidebarPanel(
+        width = 3,
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-folder-open"></span>&nbsp; Input')),
+        selectInput("counts_source", "Counts source",
+                    choices = c("Example raw_counts", "Upload file")),
+        fileInput("counts_file", "Upload counts (CSV/TSV, genes in rows)"),
+        checkboxInput("counts_normalized",
+                      "Input is raw counts (apply TPM normalization)", value = TRUE),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-list-alt"></span>&nbsp; Methods')),
+        checkboxGroupInput(
+          "methods", label = NULL,
+          choices  = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
+          selected = c("Quantiseq", "Epidish", "DeconRNASeq")
         ),
-        mainPanel(
-          h4("Input preview"),
-          tableOutput("counts_preview"),
-          h4("Deconvolution status"),
+        checkboxInput("do_parallel", "Parallelize supported methods", value = FALSE),
+        numericInput("workers", "Workers", value = 2, min = 1, step = 1),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-lock"></span>&nbsp; CIBERSORTx Credentials')),
+        textInput("credentials_mail",  "Email", value = ""),
+        passwordInput("credentials_token", "Token", value = ""),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Output')),
+        textInput("deconv_file_name", "Output file name", value = "ShinyRun"),
+        checkboxInput("save_deconv_csv",
+                      "Save Results/Deconvolution_<file>.csv", value = FALSE),
+        br(),
+        actionButton("run_deconv",
+                     HTML('<span class="glyphicon glyphicon-play"></span>&nbsp; Run Deconvolution'),
+                     class = "btn-primary")
+      ),
+      mainPanel(
+        width = 9,
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-eye-open"></span>&nbsp; Input Preview')),
+          div(style = "overflow-x:auto;", tableOutput("counts_preview"))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-info-sign"></span>&nbsp; Run Status')),
           verbatimTextOutput("deconv_status"),
-          downloadButton("download_deconv_csv", "Download deconvolution CSV"),
-          h4("Deconvolution matrix preview"),
-          tableOutput("deconv_preview")
+          div(class = "dl-row",
+              downloadButton("download_deconv_csv",
+                             HTML('<span class="glyphicon glyphicon-download-alt"></span>&nbsp; Download CSV')))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-th"></span>&nbsp; Deconvolution Matrix Preview')),
+          div(style = "overflow-x:auto;", tableOutput("deconv_preview"))
         )
       )
-    ),
-    tabPanel(
-      "Analysis",
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            "deconv_source",
-            "Deconvolution input",
-            choices = c("From previous tab", "Example deconv_bulk", "Example deconvolution", "Upload file")
-          ),
-          fileInput("deconv_file", "Upload deconvolution matrix (CSV/TSV, samples in rows)"),
-          sliderInput("analysis_corr", "Correlation threshold", min = 0.5, max = 0.95, value = 0.7, step = 0.05),
-          selectInput("analysis_corr_type", "Correlation type", choices = c("spearman", "pearson"), selected = "spearman"),
-          numericInput("analysis_seed", "Seed", value = 123, min = 1, step = 1),
-          textInput("cells_extra", "Extra cell types (comma-separated)", value = ""),
-          textInput("analysis_file_name", "Output file name", value = "ShinySubgroups"),
-          checkboxInput("save_analysis_outputs", "Save subgroup outputs in Results/", value = FALSE),
-          actionButton("run_analysis", "Run compute.deconvolution.analysis", class = "btn-primary")
+    )
+  ),
+
+  # ── Analysis ───────────────────────────────────────────────────────────────
+  tabPanel(
+    HTML('<span class="glyphicon glyphicon-stats"></span>&nbsp; Analysis'),
+    value = "analysis",
+    sidebarLayout(
+      sidebarPanel(
+        width = 3,
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-folder-open"></span>&nbsp; Input')),
+        selectInput(
+          "deconv_source", "Deconvolution input",
+          choices = c("From previous tab", "Example deconv_bulk",
+                      "Example deconvolution", "Upload file")
         ),
-        mainPanel(
-          h4("Analysis status"),
+        fileInput("deconv_file", "Upload deconvolution matrix (CSV/TSV, samples in rows)"),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-equalizer"></span>&nbsp; Parameters')),
+        sliderInput("analysis_corr", "Correlation threshold",
+                    min = 0.5, max = 0.95, value = 0.7, step = 0.05),
+        selectInput("analysis_corr_type", "Correlation type",
+                    choices = c("spearman", "pearson"), selected = "spearman"),
+        numericInput("analysis_seed", "Seed", value = 123, min = 1, step = 1),
+        textInput("cells_extra", "Extra cell types (comma-separated)", value = ""),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Output')),
+        textInput("analysis_file_name", "Output file name", value = "ShinySubgroups"),
+        checkboxInput("save_analysis_outputs",
+                      "Save subgroup outputs in Results/", value = FALSE),
+        br(),
+        actionButton("run_analysis",
+                     HTML('<span class="glyphicon glyphicon-play"></span>&nbsp; Run Analysis'),
+                     class = "btn-primary")
+      ),
+      mainPanel(
+        width = 9,
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-info-sign"></span>&nbsp; Run Status')),
           verbatimTextOutput("analysis_status"),
-          downloadButton("download_analysis_csv", "Download processed matrix CSV"),
-          downloadButton("download_subgroups_csv", "Download subgroup composition CSV"),
-          h4("Processed deconvolution preview"),
-          tableOutput("analysis_preview"),
-          h4("Subgroup composition preview"),
-          tableOutput("subgroup_preview")
+          div(class = "dl-row",
+              downloadButton("download_analysis_csv",
+                             HTML('<span class="glyphicon glyphicon-download-alt"></span>&nbsp; Processed Matrix CSV')),
+              downloadButton("download_subgroups_csv",
+                             HTML('<span class="glyphicon glyphicon-download-alt"></span>&nbsp; Subgroup Composition CSV')))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-th"></span>&nbsp; Processed Deconvolution Preview')),
+          div(style = "overflow-x:auto;", tableOutput("analysis_preview"))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-list"></span>&nbsp; Subgroup Composition Preview')),
+          div(style = "overflow-x:auto;", tableOutput("subgroup_preview"))
         )
       )
-    ),
-    tabPanel(
-      "Benchmark",
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            "benchmark_deconv_source",
-            "Deconvolution matrix",
-            choices = c("Processed (from previous tab)", "Raw deconvolution (from previous tab)", "Example deconv_bulk", "Upload file")
-          ),
-          fileInput("benchmark_deconv_file", "Upload deconvolution for benchmark (CSV/TSV)"),
-          selectInput(
-            "groundtruth_source",
-            "Ground truth matrix",
-            choices = c("Example cells_groundtruth", "Upload file")
-          ),
-          fileInput("groundtruth_file", "Upload ground truth (CSV/TSV)"),
-          selectInput("benchmark_corr_type", "Correlation type", choices = c("spearman", "pearson"), selected = "spearman"),
-          numericInput("benchmark_pval", "P-value threshold", value = 0.05, min = 0.0001, max = 1, step = 0.01),
-          textInput("benchmark_cells_extra", "Extra cell types (comma-separated)", value = ""),
-          checkboxInput("save_benchmark_plot", "Save benchmark PDF in Results/", value = FALSE),
-          textInput("benchmark_file_name", "Output file name", value = "ShinyBenchmark"),
-          actionButton("run_benchmark", "Run compute.benchmark", class = "btn-primary")
+    )
+  ),
+
+  # ── Benchmark ──────────────────────────────────────────────────────────────
+  tabPanel(
+    HTML('<span class="glyphicon glyphicon-ok-sign"></span>&nbsp; Benchmark'),
+    value = "benchmark",
+    sidebarLayout(
+      sidebarPanel(
+        width = 3,
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-folder-open"></span>&nbsp; Deconvolution Input')),
+        selectInput(
+          "benchmark_deconv_source", "Deconvolution matrix",
+          choices = c("Processed (from previous tab)",
+                      "Raw deconvolution (from previous tab)",
+                      "Example deconv_bulk", "Upload file")
         ),
-        mainPanel(
-          h4("Benchmark status"),
+        fileInput("benchmark_deconv_file",
+                  "Upload deconvolution for benchmark (CSV/TSV)"),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-check"></span>&nbsp; Ground Truth')),
+        selectInput(
+          "groundtruth_source", "Ground truth matrix",
+          choices = c("Example cells_groundtruth", "Upload file")
+        ),
+        fileInput("groundtruth_file", "Upload ground truth (CSV/TSV)"),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-equalizer"></span>&nbsp; Parameters')),
+        selectInput("benchmark_corr_type", "Correlation type",
+                    choices = c("spearman", "pearson"), selected = "spearman"),
+        numericInput("benchmark_pval", "P-value threshold",
+                     value = 0.05, min = 0.0001, max = 1, step = 0.01),
+        textInput("benchmark_cells_extra",
+                  "Extra cell types (comma-separated)", value = ""),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Output')),
+        checkboxInput("save_benchmark_plot",
+                      "Save benchmark PDF in Results/", value = FALSE),
+        textInput("benchmark_file_name", "Output file name", value = "ShinyBenchmark"),
+        br(),
+        actionButton("run_benchmark",
+                     HTML('<span class="glyphicon glyphicon-play"></span>&nbsp; Run Benchmark'),
+                     class = "btn-primary")
+      ),
+      mainPanel(
+        width = 9,
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-info-sign"></span>&nbsp; Run Status')),
           verbatimTextOutput("benchmark_status"),
-          downloadButton("download_benchmark_csv", "Download benchmark matrix CSV"),
-          h4("Benchmark correlation matrix preview"),
-          tableOutput("benchmark_preview"),
-          h4("Heatmap"),
+          div(class = "dl-row",
+              downloadButton("download_benchmark_csv",
+                             HTML('<span class="glyphicon glyphicon-download-alt"></span>&nbsp; Download Benchmark CSV')))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-th"></span>&nbsp; Benchmark Matrix Preview')),
+          div(style = "overflow-x:auto;", tableOutput("benchmark_preview"))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-signal"></span>&nbsp; Benchmark Heatmap')),
           plotOutput("benchmark_plot", height = "550px")
         )
       )
@@ -237,14 +696,15 @@ ui <- fluidPage(
   )
 )
 
+# ── Server ────────────────────────────────────────────────────────────────────
 server <- function(input, output, session) {
   state <- reactiveValues(
-    counts = NULL,
-    deconv = NULL,
-    analysis = NULL,
+    counts    = NULL,
+    deconv    = NULL,
+    analysis  = NULL,
     benchmark = NULL,
-    deconv_msg = "No run yet.",
-    analysis_msg = "No run yet.",
+    deconv_msg    = "No run yet.",
+    analysis_msg  = "No run yet.",
     benchmark_msg = "No run yet."
   )
 
@@ -272,22 +732,22 @@ server <- function(input, output, session) {
       return()
     }
 
-    counts <- current_counts()
+    counts  <- current_counts()
     workers <- safe_workers(input$workers)
 
     state$deconv_msg <- "Running compute.deconvolution..."
 
     res <- tryCatch({
       multideconv::compute.deconvolution(
-        raw.counts = counts,
-        methods = methods,
-        normalized = isTRUE(input$counts_normalized),
-        doParallel = isTRUE(input$do_parallel),
-        workers = workers,
-        return = isTRUE(input$save_deconv_csv),
-        credentials.mail = if (nzchar(trimws(input$credentials_mail))) input$credentials_mail else NULL,
-        credentials.token = if (nzchar(trimws(input$credentials_token))) input$credentials_token else NULL,
-        file_name = input$deconv_file_name
+        raw.counts         = counts,
+        methods            = methods,
+        normalized         = isTRUE(input$counts_normalized),
+        doParallel         = isTRUE(input$do_parallel),
+        workers            = workers,
+        return             = isTRUE(input$save_deconv_csv),
+        credentials.mail   = if (nzchar(trimws(input$credentials_mail)))  input$credentials_mail  else NULL,
+        credentials.token  = if (nzchar(trimws(input$credentials_token))) input$credentials_token else NULL,
+        file_name          = input$deconv_file_name
       )
     }, error = function(e) e)
 
@@ -344,7 +804,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$run_analysis, {
-    deconv_mat <- current_deconv_for_analysis()
+    deconv_mat  <- current_deconv_for_analysis()
     cells_extra <- parse_extra_cells(input$cells_extra)
 
     state$analysis_msg <- "Running compute.deconvolution.analysis..."
@@ -352,13 +812,13 @@ server <- function(input, output, session) {
     res <- tryCatch({
       multideconv::compute.deconvolution.analysis(
         deconvolution = deconv_mat,
-        corr = input$analysis_corr,
-        corr_type = input$analysis_corr_type,
-        seed = as.integer(input$analysis_seed),
-        cells_extra = cells_extra,
-        file_name = input$analysis_file_name,
-        return = isTRUE(input$save_analysis_outputs),
-        verbose = TRUE
+        corr          = input$analysis_corr,
+        corr_type     = input$analysis_corr_type,
+        seed          = as.integer(input$analysis_seed),
+        cells_extra   = cells_extra,
+        file_name     = input$analysis_file_name,
+        return        = isTRUE(input$save_analysis_outputs),
+        verbose       = TRUE
       )
     }, error = function(e) e)
 
@@ -400,7 +860,7 @@ server <- function(input, output, session) {
         rows[[length(rows) + 1]] <- data.frame(
           CellType = cell,
           Subgroup = sub_name,
-          Members = paste(g[[sub_name]], collapse = " | "),
+          Members  = paste(g[[sub_name]], collapse = " | "),
           stringsAsFactors = FALSE
         )
       }
@@ -468,8 +928,8 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$run_benchmark, {
-    deconv_mat <- current_deconv_for_benchmark()
-    gt <- current_groundtruth()
+    deconv_mat  <- current_deconv_for_benchmark()
+    gt          <- current_groundtruth()
     cells_extra <- parse_extra_cells(input$benchmark_cells_extra)
 
     state$benchmark_msg <- "Running compute.benchmark..."
@@ -477,13 +937,13 @@ server <- function(input, output, session) {
     res <- tryCatch({
       multideconv::compute.benchmark(
         deconvolution = deconv_mat,
-        groundtruth = gt,
-        cells_extra = cells_extra,
-        corr_type = input$benchmark_corr_type,
-        scatter = FALSE,
-        plot = isTRUE(input$save_benchmark_plot),
-        pval = input$benchmark_pval,
-        file_name = input$benchmark_file_name
+        groundtruth   = gt,
+        cells_extra   = cells_extra,
+        corr_type     = input$benchmark_corr_type,
+        scatter       = FALSE,
+        plot          = isTRUE(input$save_benchmark_plot),
+        pval          = input$benchmark_pval,
+        file_name     = input$benchmark_file_name
       )
     }, error = function(e) e)
 
@@ -524,16 +984,23 @@ server <- function(input, output, session) {
 
     bm <- state$benchmark
     bm$CellType <- rownames(bm)
-    long <- reshape2::melt(bm, id.vars = "CellType", variable.name = "Combination", value.name = "Correlation")
+    long <- reshape2::melt(bm, id.vars = "CellType",
+                           variable.name = "Combination", value.name = "Correlation")
     long$Correlation <- as.numeric(long$Correlation)
 
     ggplot2::ggplot(long, ggplot2::aes(x = CellType, y = Combination, fill = Correlation)) +
-      ggplot2::geom_tile() +
-      ggplot2::scale_fill_gradient2(low = "#2166AC", mid = "#F7F7F7", high = "#B2182B", midpoint = 0, limits = c(-1, 1)) +
+      ggplot2::geom_tile(colour = "white", linewidth = .4) +
+      ggplot2::scale_fill_gradient2(
+        low = "#2166AC", mid = "#F7F7F7", high = "#B2182B",
+        midpoint = 0, limits = c(-1, 1)
+      ) +
       ggplot2::theme_minimal(base_size = 12) +
       ggplot2::theme(
-        axis.text.x = ggplot2::element_text(angle = 50, hjust = 1),
-        panel.grid = ggplot2::element_blank()
+        axis.text.x    = ggplot2::element_text(angle = 50, hjust = 1, size = 10),
+        axis.text.y    = ggplot2::element_text(size = 10),
+        panel.grid     = ggplot2::element_blank(),
+        plot.background = ggplot2::element_rect(fill = "white", colour = NA),
+        legend.position = "right"
       ) +
       ggplot2::labs(x = NULL, y = NULL, fill = "Correlation")
   })
