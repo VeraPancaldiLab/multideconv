@@ -106,6 +106,36 @@ already included in `compute.deconvolution` when setting
 deconv_sc = compute_sc_deconvolution_methods(raw_counts, sc_object, sc_metadata, cell_annotations, samples_ids, name_object, normalized = T, n_cores = 4, cbsx_name = "XXX", cbsx_token = "XXX")
 ```
 
+## Shiny app
+
+`multideconv` includes an interactive Shiny app for non-coding users
+with four tabs: **Welcome**, **Deconvolution**, **Analysis**, and
+**Benchmark**.
+
+From the repository root, run:
+
+``` bash
+Rscript -e "shiny::runApp('inst/shiny', host='127.0.0.1', port=3838, launch.browser=TRUE)"
+```
+
+Or from an R session:
+
+``` r
+setwd("~/path/to/multideconv")
+shiny::runApp("inst/shiny", host = "127.0.0.1", port = 3838, launch.browser = TRUE)
+```
+
+If port `3838` is already in use, choose another one (for example
+`3840`) and open:
+
+`http://127.0.0.1:3840`
+
+You can stop old Shiny processes with:
+
+``` bash
+pkill -f "shiny::runApp\\('inst/shiny'"
+```
+
 ## Cell types nomenclature
 
 `multideconv` works based on established cell naming conventions (Figure
