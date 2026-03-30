@@ -1,0 +1,118 @@
+---
+title: "Single-cell deconvolution"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Single-cell deconvolution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+link-citations: yes
+colorlinks: yes
+biblio-style: apalike
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(multideconv)
+```
+
+## **Single-cell metacell construction**
+
+If single-cell data is available, we recommend generating metacells to reduce computation time and prevent session crashes. Deconvolution methods that rely on single-cell data can be computationally intensive, especially with large matrices. We suggest using a maximum of 20k cells; if your object exceeds this size, creating metacells is strongly advised. However, if your computational resources are sufficient to handle the full single-cell dataset, you may skip this step.
+
+We adapted functions from the R package hdWGCNA (@morabito2023hdwgcna; @langfelder2008wgcna) for the construction of metacells using the KNN algorithm.
+
+-   **sc_object**: Normalized gene expression matrix with genes as rows and cells as columns
+
+-   **labels_column**: Vector of cell annotations
+
+-   **samples_column**: Vector of sample IDs for each cell
+
+-   **exclude_cells**: Vector specifying which cell types to ignore during metacell construction (default is NULL)
+
+-   **min_cells**: Minimum number of cells required to construct metacells in a group
+
+-   **k**: Number of nearest neighbors used for the KNN algorithm
+
+-   **max_shared**: Maximum number of cells shared between two metacells
+
+-   **n_workers**: Number of cores to use for parallelizing metacell construction
+
+-   **min_meta**: Minimum number of metacells required for a cell type to be retained
+
+Because of space limitations, we have not included a complete single-cell object in this tutorial. However, users are expected to provide their own single-cell data and supply it to the `sc_object` parameter in the function call.
+```{r, eval=FALSE}
+metacells = create_metacells(sc_object, 
+                             labels_column = cell_labels, 
+                             samples_column = sample_labels, 
+                             exclude_cells = NULL,
+                             min_cells = 50, 
+                             k = 15, 
+                             max_shared = 15, 
+                             n_workers = 4, 
+                             min_meta = 10)
+```
+
+## **Second-generation deconvolution methods**
+
+Once the single-cell data is prepared, users can supplement the default deconvolution methods with second-generation approaches such as `AutogeneS`, `BayesPrism`, `Bisque`, `CPM`, `MuSic`, and `SCDC`. These methods learn cell-type signatures directly from annotated single-cell RNA-seq data, rather than relying on predefined static signatures (@Dietrich2024.06.10.598226), to deconvolve bulk RNA-seq profiles.
+
+-   **sc_deconv**: Boolean indicating whether to run second-generation methods
+
+-   **sc_matrix**: Normalized single-cell gene expression matrix
+
+-   **sc_metadata**: Dataframe containing single-cell metadata
+
+-   **cell_annotations**: Vector of cell type labels
+
+-   **cell_samples**: Vector of sample IDs
+
+-   **name_sc_signature**: Name to assign to the resulting signature
+
+```{r}
+metacell_obj = multideconv::metacells_data
+metacell_metadata = multideconv::metacells_metadata
+head(metacell_obj[1:5,1:5])
+head(metacell_metadata)
+```
+
+This function computes cell type deconvolution using the six default methods (`quanTIseq`, `DeconRNASeq`, `EpiDISH`, `DWLS`, `MOMF`) and `CIBERSORTx` (if credentials are provided), along with second-generation deconvolution approaches. The output includes all combinations of methods and signatures.
+
+```{r, eval=FALSE}
+deconv = compute.deconvolution(raw.counts = bulk, 
+                               normalized = TRUE, 
+                               return = TRUE, 
+                               methods = c("Quantiseq", "Epidish", "DeconRNASeq"),
+                               file_name = "Tutorial", 
+                               sc_deconv = TRUE, 
+                               sc_matrix = metacell_obj, 
+                               sc_metadata = metacell_metadata, 
+                               methods_sc = c("Autogenes", "BayesPrism", 
+                                              "Bisque", "CPM", "MuSic", "SCDC"),
+                               cell_label = "annotated_ct", 
+                               sample_label = "sample", 
+                               name_sc_signature = "Test")
+```
+
+To run only the second-generation deconvolution methods based on single-cell data, without using any static cell-type signatures, use the following:
+
+```{r, eval=FALSE}
+deconv_sc = compute_sc_deconvolution_methods(raw_counts = bulk, 
+                                             normalized = TRUE, 
+                                             methods_sc = c("Autogenes", "BayesPrism", 
+                                                            "Bisque", "CPM", "MuSic", "SCDC"),
+                                             sc_object = metacell_obj, 
+                                             sc_metadata = metacell_metadata, 
+                                             cell_annotations = "annotated_ct", 
+                                             samples_ids = "sample", 
+                                             name_object = "Test", 
+                                             n_cores = 2, 
+                                             return = TRUE, 
+                                             file_name = "Tutorial")
+```

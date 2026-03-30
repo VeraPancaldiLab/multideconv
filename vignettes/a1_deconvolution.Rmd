@@ -1,0 +1,78 @@
+---
+title: "Deconvolution with default methods"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Deconvolution with default methods}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(multideconv)
+```
+
+## **Deconvolution with default methods**
+
+The basic function is to perform cell type deconvolution using six default methods (`quanTIseq`, `DeconRNASeq`, `CIBERSORTx`, `EpiDISH`, `DWLS`, `MOMF`) and nine default signatures (see paper [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info)). The function accepts either raw counts or TPM-normalized counts as input (with genes as SYMBOL).
+
+**NOTE:** If you plan to use `CIBERSORTx`, you must provide your credentials (see README for details). The resulting deconvolution matrix is automatically saved in the `Results/` directory.
+
+The output includes all combinations of deconvolution features, method-signature-cell type.
+
+```{r, eval = FALSE}
+bulk = multideconv::raw_counts
+deconv = compute.deconvolution(raw.counts = bulk, 
+                               methods = c("Quantiseq", "Epidish", 
+                                           "DeconRNASeq", "DWLS","MOMF"), 
+                               normalized = TRUE, 
+                               return = TRUE, 
+                               file_name = "Tutorial")
+```
+
+To exclude specific methods or signatures, use the methods or signatures_exclude arguments:
+
+```{r, eval = FALSE}
+deconv = compute.deconvolution(raw.counts = bulk, 
+                               methods = c("Quantiseq", "DeconRNASeq"), 
+                               normalized = TRUE,
+                               signatures_exclude = "BPRNACan", 
+                               return = TRUE, 
+                               file_name = "Tutorial")
+```
+
+To speed up computation, `multideconv` supports parallelization. Set `doParallel = TRUE` and specify the number of workers based on your system's resources:
+
+```{r, eval = FALSE}
+deconv = compute.deconvolution(raw.counts = bulk, 
+                               methods = "DWLS", 
+                               normalized = TRUE, 
+                               return = TRUE, 
+                               file_name = "Tutorial", 
+                               doParallel = TRUE, 
+                               workers = 3)
+```
+
+## **Cell type signatures**
+
+In order to access the default signatures `multideconv` provides, you can do the following:
+
+To list all signatures
+
+```{r}
+path <- system.file("signatures/", package = "multideconv")
+list.files(path)
+```
+
+To access a specific signature
+
+```{r}
+signature = read.delim(paste0(path, "CBSX-Melanoma-scRNAseq.txt"))
+head(signature)
+```

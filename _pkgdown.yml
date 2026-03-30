@@ -2,6 +2,34 @@ url: https://verapancaldilab.github.io/multideconv/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:  [intro, articles, reference, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: "Deconvolution with default methods"
+        href: articles/a1_deconvolution.html
+      - text: "Single-cell deconvolution"
+        href: articles/a2_single_cell.html
+      - text: "Pseudo-bulk profiles and benchmarking"
+        href: articles/a3_benchmark.html
+      - text: "Cell type subgroup analysis"
+        href: articles/a4_subgroups.html
+      - text: "Machine learning workflows"
+        href: articles/a5_machine_learning.html
+
+articles:
+- title: "Tutorial"
+  contents:
+  - a1_deconvolution
+  - a2_single_cell
+  - a3_benchmark
+  - a4_subgroups
+  - a5_machine_learning
+
 reference:
 - title: Main
   desc: >
