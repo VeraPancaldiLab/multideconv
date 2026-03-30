@@ -18,8 +18,37 @@ knitr::opts_chunk$set(
 )
 ```
 
-This tutorial demonstrates how to use the `multideconv` package and explains the main functions of the pipeline for deconvolving RNA-seq data.
+`multideconv` is an integrative pipeline for combining first- and second-generation cell type deconvolution methods from bulk RNA-seq data, as described in [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info).
 
-```{r setup}
-library(multideconv)
+## Installation
+
+To avoid GitHub API rate limit issues, set up a Personal Access Token (PAT) before installing:
+
+```{r, eval=FALSE}
+# install.packages(c("usethis", "gitcreds"))
+usethis::create_github_token()
+gitcreds::gitcreds_set()
 ```
+
+Install `multideconv` from GitHub:
+
+```{r, eval=FALSE}
+# install.packages("pak")
+pak::pkg_install("VeraPancaldiLab/multideconv")
+```
+
+## Tutorials
+
+Step-by-step tutorials are available in the **Articles** section of the navigation bar:
+
+- **Deconvolution with default methods** — run first-generation deconvolution and access built-in signatures
+- **Single-cell deconvolution** — construct metacells and apply second-generation methods
+- **Pseudo-bulk profiles and benchmarking** — create pseudo-bulk data, generate custom signatures, and benchmark performance
+- **Cell type subgroup analysis** — derive cell-type subgroups and build a deconvolution dictionary
+- **Machine learning workflows** — use subgroup features in cross-validated ML models
+
+## Citation
+
+If you use `multideconv` in a scientific publication, please cite:
+
+> Hurtado, M., Essabbar, A., Khajavi, L., & Pancaldi, V. (2025). *multideconv – Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods.* bioRxiv. <https://doi.org/10.1101/2025.04.29.651220>
