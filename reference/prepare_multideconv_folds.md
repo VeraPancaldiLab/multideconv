@@ -48,7 +48,7 @@ A list of two elements:
 ## Details
 
 The function runs the
-[`compute.deconvolution.analysis()`](https://mhurtado13.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
 function on each fold's training set and uses the trained projection to
 compute the test set representation. It also runs multideconv on the
 full dataset to return the complete processed training set.

@@ -24,7 +24,7 @@ deconvolution_dictionary(deconv_subgroups, pathway_matrix)
 - deconv_subgroups:
 
   Output of
-  [`compute.deconvolution.analysis()`](https://mhurtado13.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
 
 - pathway_matrix:
 

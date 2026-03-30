@@ -64,622 +64,336 @@
 
     
     
-<p>This tutorial demonstrates how to use the <code>multideconv</code>
-package and explains the main functions of the pipeline for deconvolving
-RNA-seq data.</p>
+<p>This vignette presents a practical, end-to-end workflow for cell type
+deconvolution with <code>multideconv</code>, including first-generation
+and second-generation methods, subgroup processing, benchmarking, and
+downstream machine learning use.</p>
+<div class="section level3">
+<h3 class="tabset tabset-pills" id="tutorial">Tutorial<a class="anchor" aria-label="anchor" href="#tutorial"></a>
+</h3>
+<div class="section level4">
+<h4 id="get-started">Get started<a class="anchor" aria-label="anchor" href="#get-started"></a>
+</h4>
+<p>This tab contains README-level onboarding for installation and basic
+usage.</p>
+<p>For the complete practical workflow, open the
+<strong>Articles</strong> tab.</p>
+<div class="section level5">
+<h5 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h5>
+<p>To avoid GitHub API rate limit issues during installation, configure
+a GitHub Personal Access Token (PAT):</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="deconvolution-with-default-methods">
-<strong>Deconvolution with default methods</strong><a class="anchor" aria-label="anchor" href="#deconvolution-with-default-methods"></a>
-</h3>
-<p>The basic function is to perform cell type deconvolution using six
-default methods (<code>quanTIseq</code>, <code>DeconRNASeq</code>,
-<code>CIBERSORTx</code>, <code>EpiDISH</code>, <code>DWLS</code>,
-<code>MOMF</code>) and nine default signatures (see paper <a href="https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info" class="external-link">Hurtado
-et al., 2025</a>). The function accepts either raw counts or
-TPM-normalized counts as input (with genes as SYMBOL).</p>
-<p><strong>NOTE:</strong> If you plan to use <code>CIBERSORTx</code>,
-you must provide your credentials (see README for details). The
-resulting deconvolution matrix is automatically saved in the
-<code>Results/</code> directory.</p>
-<p>The output includes all combinations of deconvolution features,
-method-signature-cell type.</p>
+<code class="sourceCode R"><span><span class="co"># install.packages(c("usethis", "gitcreds"))</span></span>
+<span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/github-token.html" class="external-link">create_github_token</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">gitcreds</span><span class="fu">::</span><span class="fu"><a href="https://gitcreds.r-lib.org/reference/gitcreds_get.html" class="external-link">gitcreds_set</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Install <code>multideconv</code> from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bulk</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
-<span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                               methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"Epidish"</span>, </span>
-<span>                                           <span class="st">"DeconRNASeq"</span>, <span class="st">"DWLS"</span>,<span class="st">"MOMF"</span><span class="op">)</span>, </span>
-<span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
-<p>To exclude specific methods or signatures, use the methods or
-signatures_exclude arguments:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                               methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>, </span>
-<span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                               signatures_exclude <span class="op">=</span> <span class="st">"BPRNACan"</span>, </span>
-<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
-<p>To speed up computation, <code>multideconv</code> supports
-parallelization. Set <code>doParallel = TRUE</code> and specify the
-number of workers based on your system’s resources:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                               methods <span class="op">=</span> <span class="st">"DWLS"</span>, </span>
-<span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                               doParallel <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               workers <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"VeraPancaldiLab/multideconv"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="cell-type-signatures">
-<strong>Cell type signatures</strong><a class="anchor" aria-label="anchor" href="#cell-type-signatures"></a>
-</h3>
-<p>In order to access the default signatures <code>multideconv</code>
-provides, you can do the following:</p>
-<p>To list all signatures</p>
+<div class="section level5">
+<h5 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
+</h5>
+<p>All outputs are written to a local <code>Results/</code> folder in
+your working directory.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"~/path/to/project"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a></span><span class="op">)</span></span>
+<span><span class="va">raw.counts</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
+<span></span>
+<span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span></span>
+<span>  <span class="va">raw.counts</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><code>CIBERSORTx</code> requires valid credentials and Docker
+configured for non-root use.</p>
+</div>
+</div>
+<div class="section level4">
+<h4 id="articles">Articles<a class="anchor" aria-label="anchor" href="#articles"></a>
+</h4>
+<div class="section level5">
+<h5 id="run-deconvolution-with-default-signatures">1) Run deconvolution with default signatures<a class="anchor" aria-label="anchor" href="#run-deconvolution-with-default-signatures"></a>
+</h5>
+<p><code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code> combines multiple methods and
+signatures on bulk RNA-seq expression data (raw counts or TPM-normalized
+values with gene symbols).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bulk</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
+<span></span>
+<span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span></span>
+<span>  raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"Epidish"</span>, <span class="st">"DeconRNASeq"</span>, <span class="st">"DWLS"</span>, <span class="st">"MOMF"</span><span class="op">)</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Use <code>methods</code>, <code>methods_sc</code>,
+<code>signatures_exclude</code>, and <code>doParallel</code> to
+customize runtime and scope.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span></span>
+<span>  raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>,</span>
+<span>  signatures_exclude <span class="op">=</span> <span class="st">"BPRNACan"</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span></span>
+<span>  raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>  methods <span class="op">=</span> <span class="st">"DWLS"</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  doParallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  workers <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level5">
+<h5 id="inspect-available-signatures">2) Inspect available signatures<a class="anchor" aria-label="anchor" href="#inspect-available-signatures"></a>
+</h5>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"signatures/"</span>, package <span class="op">=</span> <span class="st">"multideconv"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "BPRNACan.txt"                  "BPRNACan3DProMet.txt"         </span></span>
-<span><span class="co">#&gt;  [3] "BPRNACanProMet.txt"            "CBSX-HNSCC-scRNAseq.txt"      </span></span>
-<span><span class="co">#&gt;  [5] "CBSX-Melanoma-scRNAseq.txt"    "CBSX-NSCLC-PBMCs-scRNAseq.txt"</span></span>
-<span><span class="co">#&gt;  [7] "CBSX-NSCLC-scRNAseq.txt"       "CCLE-TIL10.txt"               </span></span>
-<span><span class="co">#&gt;  [9] "LM22.txt"                      "MCPcounter"                   </span></span>
-<span><span class="co">#&gt; [11] "TIL10.txt"</span></span></code></pre></div>
-<p>To access a specific signature</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">signature</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"CBSX-Melanoma-scRNAseq.txt"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">signature</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     NAME Malignant Endothelial.cells      CAF T.cells.CD8 NK.cells Macrophages</span></span>
-<span><span class="co">#&gt; 1    A2M 272.91408         212.14093  1.00000     1.00000   1.0000    700.2033</span></span>
-<span><span class="co">#&gt; 2 A4GALT   1.00000          67.08075  1.00000     1.00000   1.0000      1.0000</span></span>
-<span><span class="co">#&gt; 3  ABCA1   1.00000          84.22255  1.00000     1.00000   1.0000    128.7594</span></span>
-<span><span class="co">#&gt; 4  ABCB1   1.00000           1.00000  1.00000     1.00000 133.5748      1.0000</span></span>
-<span><span class="co">#&gt; 5  ABCB5 117.86677           1.00000  1.00000    19.94351   1.0000      1.0000</span></span>
-<span><span class="co">#&gt; 6  ABCB6  49.62804           1.00000 41.38285     1.00000   1.0000      1.0000</span></span>
-<span><span class="co">#&gt;   T.cells.CD4 B.cells</span></span>
-<span><span class="co">#&gt; 1           1       1</span></span>
-<span><span class="co">#&gt; 2           1       1</span></span>
-<span><span class="co">#&gt; 3           1       1</span></span>
-<span><span class="co">#&gt; 4           1       1</span></span>
-<span><span class="co">#&gt; 5           1       1</span></span>
-<span><span class="co">#&gt; 6           1       1</span></span></code></pre></div>
+<span></span>
+<span><span class="va">signature</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"CBSX-Melanoma-scRNAseq.txt"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">signature</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="single-cell-metacell-construction">
-<strong>Single-cell metacell construction</strong><a class="anchor" aria-label="anchor" href="#single-cell-metacell-construction"></a>
-</h3>
-<p>If single-cell data is available, we recommend generating metacells
-to reduce computation time and prevent session crashes. Deconvolution
-methods that rely on single-cell data can be computationally intensive,
-especially with large matrices. We suggest using a maximum of 20k cells;
-if your object exceeds this size, creating metacells is strongly
-advised. However, if your computational resources are sufficient to
-handle the full single-cell dataset, you may skip this step.</p>
-<p>We adapted functions from the R package hdWGCNA (<span class="citation">Morabito et al. (<a href="#ref-morabito2023hdwgcna">2023</a>)</span>; <span class="citation">Langfelder and Horvath (<a href="#ref-langfelder2008wgcna">2008</a>)</span>) for the construction
-of metacells using the KNN algorithm.</p>
-<ul>
-<li><p><strong>sc_object</strong>: Normalized gene expression matrix
-with genes as rows and cells as columns</p></li>
-<li><p><strong>labels_column</strong>: Vector of cell
-annotations</p></li>
-<li><p><strong>samples_column</strong>: Vector of sample IDs for each
-cell</p></li>
-<li><p><strong>exclude_cells</strong>: Vector specifying which cell
-types to ignore during metacell construction (default is NULL)</p></li>
-<li><p><strong>min_cells</strong>: Minimum number of cells required to
-construct metacells in a group</p></li>
-<li><p><strong>k</strong>: Number of nearest neighbors used for the KNN
-algorithm</p></li>
-<li><p><strong>max_shared</strong>: Maximum number of cells shared
-between two metacells</p></li>
-<li><p><strong>n_workers</strong>: Number of cores to use for
-parallelizing metacell construction</p></li>
-<li><p><strong>min_meta</strong>: Minimum number of metacells required
-for a cell type to be retained</p></li>
-</ul>
-<p>Because of space limitations, we have not included a complete
-single-cell object in this tutorial. However, users are expected to
-provide their own single-cell data and supply it to the
-<code>sc_object</code> parameter in the function call.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metacells</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_metacells.html">create_metacells</a></span><span class="op">(</span><span class="va">sc_object</span>, </span>
-<span>                             labels_column <span class="op">=</span> <span class="va">cell_labels</span>, </span>
-<span>                             samples_column <span class="op">=</span> <span class="va">sample_labels</span>, </span>
-<span>                             exclude_cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                             min_cells <span class="op">=</span> <span class="fl">50</span>, </span>
-<span>                             k <span class="op">=</span> <span class="fl">15</span>, </span>
-<span>                             max_shared <span class="op">=</span> <span class="fl">15</span>, </span>
-<span>                             n_workers <span class="op">=</span> <span class="fl">4</span>, </span>
-<span>                             min_meta <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="second-generation-deconvolution-methods">
-<strong>Second-generation deconvolution methods</strong><a class="anchor" aria-label="anchor" href="#second-generation-deconvolution-methods"></a>
-</h3>
-<p>Once the single-cell data is prepared, users can supplement the
-default deconvolution methods with second-generation approaches such as
-<code>AutogeneS</code>, <code>BayesPrism</code>, <code>Bisque</code>,
-<code>CPM</code>, <code>MuSic</code>, and <code>SCDC</code>. These
-methods learn cell-type signatures directly from annotated single-cell
-RNA-seq data, rather than relying on predefined static signatures (<span class="citation">Dietrich et al. (<a href="#ref-Dietrich2024.06.10.598226">2024</a>)</span>), to deconvolve
-bulk RNA-seq profiles.</p>
-<ul>
-<li><p><strong>sc_deconv</strong>: Boolean indicating whether to run
-second-generation methods</p></li>
-<li><p><strong>sc_matrix</strong>: Normalized single-cell gene
-expression matrix</p></li>
-<li><p><strong>sc_metadata</strong>: Dataframe containing single-cell
-metadata</p></li>
-<li><p><strong>cell_annotations</strong>: Vector of cell type
-labels</p></li>
-<li><p><strong>cell_samples</strong>: Vector of sample IDs</p></li>
-<li><p><strong>name_sc_signature</strong>: Name to assign to the
-resulting signature</p></li>
-</ul>
+<div class="section level5">
+<h5 id="prepare-single-cell-inputs-and-metacells">3) Prepare single-cell inputs and metacells<a class="anchor" aria-label="anchor" href="#prepare-single-cell-inputs-and-metacells"></a>
+</h5>
+<p>For large scRNA-seq references, metacells can reduce memory use and
+execution time before running second-generation methods.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metacell_obj</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_data.html">metacells_data</a></span></span>
-<span><span class="va">metacell_metadata</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_metadata.html">metacells_metadata</a></span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metacell_obj</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            B cells#Sample_15002_393 CD4+ T cells#Sample_14958_193</span></span>
-<span><span class="co">#&gt; AL627309.1                        0                             0</span></span>
-<span><span class="co">#&gt; AL732372.1                        0                             0</span></span>
-<span><span class="co">#&gt; AC114498.1                        0                             0</span></span>
-<span><span class="co">#&gt; FAM87B                            0                             0</span></span>
-<span><span class="co">#&gt; LINC00115                         0                             0</span></span>
-<span><span class="co">#&gt;            Plasma B cells#Sample_15467_117 CD4+ T cells#Sample_12889_54</span></span>
-<span><span class="co">#&gt; AL627309.1                      0.00000000                   0.00000000</span></span>
-<span><span class="co">#&gt; AL732372.1                      0.00000000                   0.00000000</span></span>
-<span><span class="co">#&gt; AC114498.1                      0.00000000                   0.00000000</span></span>
-<span><span class="co">#&gt; FAM87B                          0.00000000                   0.00000000</span></span>
-<span><span class="co">#&gt; LINC00115                       0.01454298                   0.05538857</span></span>
-<span><span class="co">#&gt;            B cells#Sample_11817_97</span></span>
-<span><span class="co">#&gt; AL627309.1                       0</span></span>
-<span><span class="co">#&gt; AL732372.1                       0</span></span>
-<span><span class="co">#&gt; AC114498.1                       0</span></span>
-<span><span class="co">#&gt; FAM87B                           0</span></span>
-<span><span class="co">#&gt; LINC00115                        0</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metacell_metadata</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                            orig.ident nCount_RNA nFeature_RNA</span></span>
-<span><span class="co">#&gt; B cells#Sample_15002_393               B cells#Sample   2085.014         7927</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_14958_193     CD4+ T cells#Sample   1699.248         6390</span></span>
-<span><span class="co">#&gt; Plasma B cells#Sample_15467_117 Plasma B cells#Sample   1397.391         9314</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_12889_54      CD4+ T cells#Sample   1798.458         7164</span></span>
-<span><span class="co">#&gt; B cells#Sample_11817_97                B cells#Sample   1944.183         7765</span></span>
-<span><span class="co">#&gt; CD8+ T cells#Sample_11522_665     CD8+ T cells#Sample   2317.216         7862</span></span>
-<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  cells_merged</span></span>
-<span><span class="co">#&gt; B cells#Sample_15002_393            CTGTTTATCGCCATAA-1,TGCTGCTTCGGAGCAA-1,ACTTTCATCGACAGCC-1,GCTGCAGTCATTGCGA-1,CGTAGGCGTGGCTCCA-1,TCAGCTCAGACTAAGT-1,CACCAGGCACCAGCAC-1,CATCAAGTCAGCGATT-1,CGATGGCTCGTTACGA-1,CAGTCCTGTGTGAATA-1,CTTGGCTCAAGTCATC-1,CCAATCCAGCCACGTC-1,TTTGGTTCAGATGGCA-1,TGGTTAGAGAGTAATC-1,TAGTTGGGTTATGTGC-1,GACACGCGTCGAGTTT-1,AGGGATGGTACACCGC-1,ACTTACTTCGAGAACG-1,GGCAATTCATTAGGCT-1,GAAACTCAGACTGGGT-1,ATTGGTGGTAGCTTGT-1,TTGAACGAGACGCAAC-1,TGTTCCGGTACTTAGC-1,CAGCTGGCAGGTGGAT-1,GGACATTAGCCCAATT-1,TAAGCGTCAGCCTGTG-1,CTCTAATAGATCTGAA-1,CACACCTAGCCTTGAT-1,CTTACCGAGCGCTCCA-1,CACTCCAGTCGACTGC-1</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_14958_193     AAGGAGCTCCAAATGC-1,ACACCCTTCTGCGTAA-1,CGGACGTGTAGGCTGA-1,CGACCTTCAAGTCATC-1,TTAGGCACAGGAACGT-1,GTATTCTAGTGTGAAT-1,TCAATCTCAAGAAAGG-1,GGCAATTTCTTGTTTG-1,GCGCAACGTCTAGCCG-1,CCTTACGCATCGACGC-1,TCCCGATAGACAATAC-1,ACAGCTAGTTCCACTC-1,TGAGAGGAGATCTGAA-1,GCGCCAAAGCCACCTG-1,TAAGTGCGTCTCACCT-1,ATGCGATTCGTTACGA-1,CAAGTTGAGCTACCGC-1,TACCTTACATTCTTAC-1,GCATGTATCAGTCAGT-1,GATGCTACATATGGTC-1,CCATGTCTCTGGGCCA-1,TACACGAGTCATTAGC-1,GATTCAGAGCACACAG-1,TTGCCGTAGCAATATG-1,TCGTACCAGCCAACAG-1,CAGTCCTTCGCCAGCA-1,CTACATTCAGTCGATT-1,AGGGTGATCTTGACGA-1,GTCTCGTGTCTCTTAT-1,TCGGGACAGCACACAG-1-1</span></span>
-<span><span class="co">#&gt; Plasma B cells#Sample_15467_117     GCGCAACAGTACATGA-1,GTCATTTCACGCGAAA-1,ACGATACTCATAAAGG-1,CCCATACCACCAACCG-1,AGCCTAAAGTGTTAGA-1,TGTATTCCAGGGTACA-1,CATATTCTCAACGGCC-1,CACACCTGTCCAACTA-1,CCGTACTTCCGAGCCA-1,GGGACCTTCCAGAAGG-1,ACACCCTGTGTAACGG-1,AGCCTAACAGAAGCAC-1,GCTTCCATCCATGCTC-1,AGTGTCAGTCCTGCTT-1,CGAGCACAGAAACGCC-1,GAACGGATCGGGAGTA-1,TGCCAAACACTCAGGC-1,TACAGTGCAGTGGGAT-1,TATGCCCCAGTATCTG-1,GTCGGGTGTAAGAGGA-1,AAGGCAGCATCTATGG-1,TCGAGGCGTAGCTCCG-1,CTGCTGTTCGCGCCAA-1,CGGACACAGACTACAA-1,CGTGTAAAGCCCAATT-1,CTTTGCGAGGAGTCTG-1,TGCCCTAAGCCAACAG-1,CTCAGAACACCTCGGA-1,CTGCCTAGTGTCTGAT-1,ACACCAATCGACGGAA-1</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_12889_54        GCGAGAATCGCACTCT-1,GTTACAGTCTTCGAGA-1,CAGTAACGTAACGACG-1,TCGCGTTCAATCCGAT-1,CACCTTGGTGTCGCTG-1,ATTACTCCAAACAACA-1,TACAGTGTCAGTGCAT-1,ACGCAGCGTCTGCCAG-1,TTGTAGGAGCCACGTC-1,CTTGGCTGTTCGTGAT-1,CCACTACAGACACTAA-1,CCCAGTTTCAGGCCCA-1,GAACGGAAGGCACATG-1,CGTAGCGAGAGGGCTT-1,ATTCTACTCGGTTAAC-1,CATGACAGTGGTCCGT-1,TCAGCAAGTGCTTCTC-1,AGCTTGAGTCCTCCAT-1,CATTCGCCATCGATTG-1,TCAGGATAGCACAGGT-1,CCCTCCTTCTGCGTAA-1,AAATGCCTCCTTGACC-1,TACTCGCTCCTATTCA-1,GAAATGATCGCATGGC-1,ACTGCTCTCGGTCTAA-1,AACGTTGTCATAGCAC-1,GTGTGCGGTCTAGGTT-1,GCACTCTCAAGCCGTC-1,CCGTTCACATCCTTGC-1,CCACTACGTCGAGTTT-1</span></span>
-<span><span class="co">#&gt; B cells#Sample_11817_97         AAACCTGGTACCGGCT-1,ACAGCTAGTAAGTAGT-1,ACGATACAGTACGACG-1,TAAACCGAGGAGTACC-1,GGACGTCGTCTGCAAT-1,TAGCCGGAGGGCATGT-1,CGGACACCACATCCAA-1,GGTATTGTCACTTCAT-1,GGAAAGCAGTACGATA-1,AAACGGGTCGTGGGAA-1,TTTCCTCCAGGCGATA-1,GTCATTTAGGAACTGC-1,CAACCAAGTCCGTTAA-1-1,GTCGTAAGTACAGTGG-1,GTTTCTAAGCCCAATT-1,GACCAATCATTCCTCG-1,CAACCAAGTTCTGAAC-1,AGATCTGAGCAGGTCA-1,GTTCGGGCAGTTCCCT-1,GCAAACTCATGAACCT-1,CTCTGGTGTGATGATA-1,TTATGCTCAAACTGTC-1,GACGTTAGTACCGTTA-1,GGGACCTGTTTGACAC-1,ACAGCCGTCTGCGGCA-1,GGCGTGTTCTAAGCCA-1,CGGACACGTGCTTCTC-1-1,GGTGAAGAGCTCAACT-1,GCTTGAACATCCGTGG-1,GGGAGATAGGGCACTA-1</span></span>
-<span><span class="co">#&gt; CD8+ T cells#Sample_11522_665     ACACCGGAGCCAGTAG-1-1,GAAATGATCCCACTTG-1,GAGTCCGAGTACGCGA-1,CTGAAACAGTCGCCGT-1,GTCGGGTGTGGTGTAG-1,ACGATGTCAGACGCTC-1,ATCATCTGTCTGCAAT-1,TGCTGCTAGACACTAA-1,TACTTGTTCGCAAGCC-1,CGAGCACAGTTAGGTA-1,GCTTGAATCTACTCAT-1,ATCATCTCAAGACGTG-1,GTGTTAGGTCAACATC-1,CGGGTCAGTAAGCACG-1,GAACCTAAGAGTGAGA-1,TCATTACGTGCAACGA-1,GACGTGCGTATGCTTG-1,TCGTACCTCATGCTCC-1,TGCGCAGTCGCCAGCA-1,CACACTCGTAGCAAAT-1,GATGAAAGTATCAGTC-1,TCATTTGAGGCTATCT-1,CTAACTTTCAACTCTT-1,CTTGGCTCAAAGAATC-1,GACTACATCTGACCTC-1,TTTCCTCTCAACGAAA-1,AAAGCAAGTCAGAAGC-1,CATCAAGTCCGAATGT-1,CGATGGCTCGCAAACT-1,CGAGAAGTCAGTGTTG-1</span></span>
-<span><span class="co">#&gt;                                   annotated_ct       sample</span></span>
-<span><span class="co">#&gt; B cells#Sample_15002_393               B cells Sample_15002</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_14958_193     CD4+ T cells Sample_14958</span></span>
-<span><span class="co">#&gt; Plasma B cells#Sample_15467_117 Plasma B cells Sample_15467</span></span>
-<span><span class="co">#&gt; CD4+ T cells#Sample_12889_54      CD4+ T cells Sample_12889</span></span>
-<span><span class="co">#&gt; B cells#Sample_11817_97                B cells Sample_11817</span></span>
-<span><span class="co">#&gt; CD8+ T cells#Sample_11522_665     CD8+ T cells Sample_11522</span></span></code></pre></div>
-<p>This function computes cell type deconvolution using the six default
-methods (<code>quanTIseq</code>, <code>DeconRNASeq</code>,
-<code>EpiDISH</code>, <code>DWLS</code>, <code>MOMF</code>) and
-<code>CIBERSORTx</code> (if credentials are provided), along with
-second-generation deconvolution approaches. The output includes all
-combinations of methods and signatures.</p>
+<code class="sourceCode R"><span><span class="va">metacells</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_metacells.html">create_metacells</a></span><span class="op">(</span></span>
+<span>  <span class="va">sc_object</span>,</span>
+<span>  labels_column <span class="op">=</span> <span class="va">cell_labels</span>,</span>
+<span>  samples_column <span class="op">=</span> <span class="va">sample_labels</span>,</span>
+<span>  exclude_cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  min_cells <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  max_shared <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  n_workers <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  min_meta <span class="op">=</span> <span class="fl">10</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Example built-in data:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"Epidish"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>,</span>
-<span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                               sc_deconv <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                               sc_matrix <span class="op">=</span> <span class="va">metacell_obj</span>, </span>
-<span>                               sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>, </span>
-<span>                               methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>, </span>
-<span>                                              <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
-<span>                               cell_label <span class="op">=</span> <span class="st">"annotated_ct"</span>, </span>
-<span>                               sample_label <span class="op">=</span> <span class="st">"sample"</span>, </span>
-<span>                               name_sc_signature <span class="op">=</span> <span class="st">"Test"</span><span class="op">)</span></span></code></pre></div>
-<p>To run only the second-generation deconvolution methods based on
-single-cell data, without using any static cell-type signatures, use the
-following:</p>
+<code class="sourceCode R"><span><span class="va">metacell_obj</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_data.html">metacells_data</a></span></span>
+<span><span class="va">metacell_metadata</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_metadata.html">metacells_metadata</a></span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metacell_obj</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metacell_metadata</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level5">
+<h5 id="run-second-generation-deconvolution">4) Run second-generation deconvolution<a class="anchor" aria-label="anchor" href="#run-second-generation-deconvolution"></a>
+</h5>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods</a></span><span class="op">(</span>raw_counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                                             normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                                             methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>, </span>
-<span>                                                            <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
-<span>                                             sc_object <span class="op">=</span> <span class="va">metacell_obj</span>, </span>
-<span>                                             sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>, </span>
-<span>                                             cell_annotations <span class="op">=</span> <span class="st">"annotated_ct"</span>, </span>
-<span>                                             samples_ids <span class="op">=</span> <span class="st">"sample"</span>, </span>
-<span>                                             name_object <span class="op">=</span> <span class="st">"Test"</span>, </span>
-<span>                                             n_cores <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>                                             return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                                             file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="pseudo-bulk-profiles">
-<strong>Pseudo-bulk profiles</strong><a class="anchor" aria-label="anchor" href="#pseudo-bulk-profiles"></a>
-</h3>
-<p>To create pseudo-bulk profiles from the original single-cell objects,
-simulating a bulk RNA-seq dataset, you can use the following
-function:</p>
-<p><strong>NOTE:</strong> You can input either your original single-cell
-object or the metacell object. Just be sure to select the same object
-when examining the real cell proportions (if needed).</p>
+<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span></span>
+<span>  raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"Epidish"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>,</span>
+<span>  sc_deconv <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  sc_matrix <span class="op">=</span> <span class="va">metacell_obj</span>,</span>
+<span>  sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>,</span>
+<span>  methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>, <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
+<span>  cell_label <span class="op">=</span> <span class="st">"annotated_ct"</span>,</span>
+<span>  sample_label <span class="op">=</span> <span class="st">"sample"</span>,</span>
+<span>  name_sc_signature <span class="op">=</span> <span class="st">"Test"</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>To compute only second-generation methods:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metacells_seurat</span> <span class="op">=</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">metacell_obj</span>, meta.data <span class="op">=</span> <span class="va">metacell_metadata</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Data is of class matrix. Coercing to dgCMatrix.</span></span>
-<span><span class="va">pseudobulk</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_sc_pseudobulk.html">create_sc_pseudobulk</a></span><span class="op">(</span><span class="va">metacells_seurat</span>, cells_labels <span class="op">=</span> <span class="st">"annotated_ct"</span>, sample_labels <span class="op">=</span> <span class="st">"sample"</span>, normalized <span class="op">=</span> <span class="cn">TRUE</span>, file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Layer 'data' is empty</span></span>
-<span><span class="co">#&gt; Warning: Layer 'scale.data' is empty</span></span>
-<span><span class="co">#&gt; Aggregating assay 'counts' using 'rowMeans2'.</span></span>
-<span><span class="co">#&gt; Converting input to matrix.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods</a></span><span class="op">(</span></span>
+<span>  raw_counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>, <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
+<span>  sc_object <span class="op">=</span> <span class="va">metacell_obj</span>,</span>
+<span>  sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>,</span>
+<span>  cell_annotations <span class="op">=</span> <span class="st">"annotated_ct"</span>,</span>
+<span>  samples_ids <span class="op">=</span> <span class="st">"sample"</span>,</span>
+<span>  name_object <span class="op">=</span> <span class="st">"Test"</span>,</span>
+<span>  n_cores <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="creating-cell-type-signatures">
-<strong>Creating cell type signatures</strong><a class="anchor" aria-label="anchor" href="#creating-cell-type-signatures"></a>
-</h3>
-<p>To create cell type signatures, <code>multideconv</code> uses four
-methods: <code>CIBERSORTx</code>, <code>DWLS</code>, <code>MOMF</code>,
-and <code>BSeq-SC</code>. You must provide single-cell data as input.
-Signatures are saved in the <code>Results/custom_signatures</code>
-directory, and returned as a list. From now and after
-<code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code> will use these signatures
-additionally to the default ones! So if you would like to have the
-deconvolution results based on your new files, make sure to run
-<code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code></p>
-<p>To run <code>BSeq-SC</code>, supply the <code>cell_markers</code>
-argument, which should contain the differential markers for each cell
-type (these can be obtained using <code>FindMarkers()</code> or
-<code>FindAllMarkers()</code> from Seurat).</p>
+<div class="section level5">
+<h5 id="build-pseudo-bulk-and-benchmark-signatures">5) Build pseudo-bulk and benchmark signatures<a class="anchor" aria-label="anchor" href="#build-pseudo-bulk-and-benchmark-signatures"></a>
+</h5>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bulk_pseudo</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/pseudobulk.html">pseudobulk</a></span></span>
-<span><span class="va">signatures</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_sc_signatures.html">create_sc_signatures</a></span><span class="op">(</span><span class="va">metacell_obj</span>, </span>
-<span>                                  <span class="va">metacell_metadata</span>, </span>
-<span>                                  cells_labels <span class="op">=</span> <span class="st">"annotated_ct"</span>, </span>
-<span>                                  sample_labels <span class="op">=</span> <span class="st">"sample"</span>, </span>
-<span>                                  bulk_rna <span class="op">=</span> <span class="va">bulk_pseudo</span>, </span>
-<span>                                  cell_markers <span class="op">=</span> <span class="cn">NULL</span>, </span>
-<span>                                  name_signature <span class="op">=</span> <span class="st">"Test"</span>,</span>
-<span>                                  methods_sig <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DWLS"</span>, <span class="st">"CIBERSORTx"</span>, <span class="st">"MOMF"</span>, <span class="st">"BSeqsc"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="cell-types-signatures-benchmark">
-<strong>Cell types signatures benchmark</strong><a class="anchor" aria-label="anchor" href="#cell-types-signatures-benchmark"></a>
-</h3>
-<p>To validate the generated signatures, we provide a benchmarking
-function to compare deconvolution outputs against known cell proportions
-(e.g., from single-cell or imaging data). The <code>cells_extra</code>
-argument should include any non-standard cell types present in your
-ground truth. Make sure cell names match those in the deconvolution
-matrix (e.g., use B.cells instead of B cells if that is the naming
-convention used - see README for more information).</p>
+<code class="sourceCode R"><span><span class="va">metacells_seurat</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">metacell_obj</span>, meta.data <span class="op">=</span> <span class="va">metacell_metadata</span><span class="op">)</span></span>
+<span><span class="va">pseudobulk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_sc_pseudobulk.html">create_sc_pseudobulk</a></span><span class="op">(</span></span>
+<span>  <span class="va">metacells_seurat</span>,</span>
+<span>  cells_labels <span class="op">=</span> <span class="st">"annotated_ct"</span>,</span>
+<span>  sample_labels <span class="op">=</span> <span class="st">"sample"</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Generate signatures from scRNA-seq:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_pseudo</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconvolution.html">deconvolution</a></span></span>
-<span><span class="va">cells_groundtruth</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/cells_groundtruth.html">cells_groundtruth</a></span></span>
-<span><span class="va">benchmark</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.benchmark.html">compute.benchmark</a></span><span class="op">(</span><span class="va">deconv_pseudo</span>, </span>
-<span>                              <span class="va">cells_groundtruth</span>, </span>
-<span>                              cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mural.cells"</span>, <span class="st">"Myeloid.cells"</span><span class="op">)</span>, </span>
-<span>                              corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
-<span>                              scatter <span class="op">=</span> <span class="cn">FALSE</span>, </span>
-<span>                              plot <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                              pval <span class="op">=</span> <span class="fl">0.05</span>, </span>
-<span>                              file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                              width <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>                              height <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
-<span><span class="co">#&gt; No id variables; using all as measure variables</span></span>
-<span><span class="co">#&gt; No id variables; using all as measure variables</span></span></code></pre></div>
-<p><img src="Results/Benchmark.png" class="r-plt" alt="" width="70%" style="display: block; margin: auto;"></p>
-<div style="text-align: center;">
-<p><em>Figure 1. Example of performance of different methods and
-signature combinations on the pseudo bulk.</em></p>
-</div>
-</div>
-<div class="section level3">
-<h3 id="cell-type-processing">
-<strong>Cell type processing</strong><a class="anchor" aria-label="anchor" href="#cell-type-processing"></a>
-</h3>
-<p>Deconvolution analysis reduces the dimensionality and heterogeneity
-of the deconvolution results. It uses the cell type processing algorithm
-described in the paper <a href="https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info" class="external-link">Hurtado
-et al., 2025</a>. It returns the cell type subgroups composition and the
-reduced deconvolution matrix, saved in the <code>Results/</code>
-directory.</p>
-<ul>
-<li><p><strong>deconvolution</strong>: Matrix of raw deconvolution
-results (output of <code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code>)</p></li>
-<li><p><strong>corr</strong>: Minimum correlation threshold to group
-features</p></li>
-<li><p><strong>seed</strong>: Random seed for reproducibility</p></li>
-<li><p><strong>return</strong>: Whether to return results and save
-output files to the <code>Results/</code> directory</p></li>
-</ul>
+<code class="sourceCode R"><span><span class="va">signatures</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_sc_signatures.html">create_sc_signatures</a></span><span class="op">(</span></span>
+<span>  <span class="va">metacell_obj</span>,</span>
+<span>  <span class="va">metacell_metadata</span>,</span>
+<span>  cells_labels <span class="op">=</span> <span class="st">"annotated_ct"</span>,</span>
+<span>  sample_labels <span class="op">=</span> <span class="st">"sample"</span>,</span>
+<span>  bulk_rna <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/pseudobulk.html">pseudobulk</a></span>,</span>
+<span>  cell_markers <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  name_signature <span class="op">=</span> <span class="st">"Test"</span>,</span>
+<span>  methods_sig <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DWLS"</span>, <span class="st">"CIBERSORTx"</span>, <span class="st">"MOMF"</span>, <span class="st">"BSeqsc"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Benchmark against known cell proportions:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_bulk</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span></span>
-<span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_bulk</span>, </span>
-<span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>, </span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>, </span>
-<span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span></code></pre></div>
-<p>Subgroups composition can be extracted with:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">B.cells</span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
-<span><span class="co">#&gt; [3] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_BPRNACan_B.cells"                        </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_BPRNACan_B.cells"       "DeconRNASeq_BPRNACanProMet_B.cells"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "B.cells_Subgroup.2.Iteration.1"            </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CCLE.TIL10_B.cells" "DeconRNASeq_TIL10_B.cells"     </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "CBSX_BPRNACan3DProMet_B.cells"  "B.cells_Subgroup.4.Iteration.1"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "B.cells_Subgroup.5.Iteration.1"        </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.3</span></span>
-<span><span class="co">#&gt; [1] "B.cells_Subgroup.2.Iteration.2" "B.cells_Subgroup.4.Iteration.2"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.4</span></span>
-<span><span class="co">#&gt; [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"</span></span>
-<span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Macrophages.M2</span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CCLE.TIL10_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.2.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.4.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_LM22_Macrophages.M2" "DWLS_LM22_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_LM22_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DWLS_BPRNACan_Macrophages.M2"        </span></span>
-<span><span class="co">#&gt; [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"</span></span>
-<span><span class="co">#&gt; [3] "DWLS_BPRNACanProMet_Macrophages.M2"</span></span>
-<span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Dendritic.cells</span></span>
-<span><span class="co">#&gt; $Dendritic.cells_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span>
-<span><span class="co">#&gt; [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span></code></pre></div>
-<p>Reduced deconvolution matrix:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                 Quantiseq_T.cells.non.regulatory</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                       0.01070804</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                       0.00000000</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                       0.00000000</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                       0.00000000</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                       0.00000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                       0.00000000</span></span>
-<span><span class="co">#&gt;                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                  0.06177058</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                  0.20596451</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                  0.10081728</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                  0.16370762</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                  0.18693083</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                  0.05430822</span></span>
-<span><span class="co">#&gt;                 DWLS_BPRNACanProMet_Macrophages.M1</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                        0.000000000</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                        0.000000000</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                        0.000000000</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                        0.003182723</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                        0.000000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                        0.000000000</span></span>
-<span><span class="co">#&gt;                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_CD8.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                           0</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                           0</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                           0</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                           0</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                           0</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                           0</span></span>
-<span><span class="co">#&gt;                 DWLS_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                0.000000</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                0.000000</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                0.000000</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                0.000000</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                0.000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                0.118806</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                       0.1332183</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                       0.1410772</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                       0.1134181</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                       0.1362632</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                       0.1496804</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                       0.1424695</span></span>
-<span><span class="co">#&gt;                 CBSX_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                              0.00000000</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                              0.00000000</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                              0.00000000</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                              0.00000000</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                              0.00000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                              0.02834543</span></span>
-<span><span class="co">#&gt;                 Endothelial_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                         0.05480971</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                         0.02591334</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                         0.05501908</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                         0.01745065</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                         0.00000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                         0.00000000</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_CBSX.Melanoma.scRNAseq_CAF</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                              0.4362575</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                              0.2159553</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                              0.2789918</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                              0.3163672</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                              0.2855141</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                              0.4346621</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_LM22_Macrophages.M2</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                     0.025825608</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                     0.000000000</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                     0.027464529</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                     0.081372076</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                     0.000000000</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                     0.004871071</span></span></code></pre></div>
-<p>If your deconvolution matrix contains non-standard cell types (see
-README), specify them using <code>cells_extra</code> to ensure proper
-subgrouping. If not, they are going to be discarded automatically.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_pseudo</span>, </span>
-<span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>, </span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>, </span>
-<span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                                                  cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mural.cells"</span>, <span class="st">"Myeloid.cells"</span><span class="op">)</span>, </span>
-<span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span> </span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">benchmark</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.benchmark.html">compute.benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconvolution.html">deconvolution</a></span>,</span>
+<span>  <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/cells_groundtruth.html">cells_groundtruth</a></span>,</span>
+<span>  cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mural.cells"</span>, <span class="st">"Myeloid.cells"</span><span class="op">)</span>,</span>
+<span>  corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
+<span>  scatter <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  pval <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>,</span>
+<span>  width <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  height <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="deconvolution-dictionary">
-<strong>Deconvolution dictionary</strong><a class="anchor" aria-label="anchor" href="#deconvolution-dictionary"></a>
-</h3>
-<p>The deconvolution dictionary step integrates deconvolution features
-with pathway activity information to provide a functional interpretation
-of each cell-type–specific component. This process identifies groups of
-pathways that show coordinated behavior across samples (e.g.,
-immunoactive vs. immunosuppressive signaling) and assigns each
-deconvolution feature to one of these pathway clusters based on
-correlation patterns. The resulting dictionary can then be used to
-understand whether a cell-type feature is more associated with
-activation or suppression programs.</p>
-<p>For this, we start from normalized gene expression data, compute
-pathway activity scores (see <a href="https://github.com/VeraPancaldiLab/CellTFusion" class="external-link">CellTFusion</a>
-package), and link them to deconvolution results obtained in previous
-steps. Finally, we use the deconvolution_dictionary() function to
-classify each deconvolution feature according to its dominant pathway
-cluster.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">counts</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
-<span><span class="va">counts.norm</span> <span class="op">=</span> <span class="fu">ADImpute</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">NormalizeTPM</a></span><span class="op">(</span><span class="va">counts</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">pathways</span> <span class="op">=</span> <span class="fu">CellTFusion</span><span class="fu">::</span><span class="fu">compute.pathway.activity</span><span class="op">(</span><span class="va">counts.norm</span><span class="op">)</span></span>
-<span><span class="va">deconv</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span><span class="op">)</span><span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>,<span class="op">]</span></span>
-<span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv</span>, </span>
-<span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>, </span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>, </span>
-<span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
-<span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/deconvolution_dictionary.html">deconvolution_dictionary</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>, <span class="va">pathways</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<div class="section level5">
+<h5 id="process-cell-types-and-derive-subgroup-features">6) Process cell types and derive subgroup features<a class="anchor" aria-label="anchor" href="#process-cell-types-and-derive-subgroup-features"></a>
+</h5>
+<p><code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> reduces redundancy
+across deconvolution outputs and builds subgroup-level representations
+for downstream analysis.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv_bulk</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span></span>
+<span></span>
+<span><span class="va">deconv_subgroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span></span>
+<span>  deconvolution <span class="op">=</span> <span class="va">deconv_bulk</span>,</span>
+<span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Include custom cell names when needed:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv_subgroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span></span>
+<span>  deconvolution <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconvolution.html">deconvolution</a></span>,</span>
+<span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mural.cells"</span>, <span class="st">"Myeloid.cells"</span><span class="op">)</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level5">
+<h5 id="create-a-deconvolution-dictionary">7) Create a deconvolution dictionary<a class="anchor" aria-label="anchor" href="#create-a-deconvolution-dictionary"></a>
+</h5>
+<p>This step links deconvolution-derived features with pathway activity
+states.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
+<span><span class="va">counts.norm</span> <span class="op">&lt;-</span> <span class="fu">ADImpute</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">NormalizeTPM</a></span><span class="op">(</span><span class="va">counts</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pathways</span> <span class="op">&lt;-</span> <span class="fu">CellTFusion</span><span class="fu">::</span><span class="fu">compute.pathway.activity</span><span class="op">(</span><span class="va">counts.norm</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">deconv</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">deconv_subgroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span></span>
+<span>  deconvolution <span class="op">=</span> <span class="va">deconv</span>,</span>
+<span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">deconv_subgroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/deconvolution_dictionary.html">deconvolution_dictionary</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>, <span class="va">pathways</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"States"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="replicate-deconvolution-subgroups-in-an-independent-set">
-<strong>Replicate deconvolution subgroups in an independent
-set</strong><a class="anchor" aria-label="anchor" href="#replicate-deconvolution-subgroups-in-an-independent-set"></a>
-</h3>
-<p>Cell subgroup identification through deconvolution is
-cohort-specific, as it relies on correlation patterns across samples.
-This means that subgroup definitions may vary across different splits or
-datasets. If you aim to replicate the same subgroups identified in one
-dataset onto another (e.g., for model validation), you can use the
-following function.</p>
-<p>The function below reconstructs and applies the subgroup signatures
-derived from a previous deconvolution, making it especially useful when
-transferring learned patterns across datasets—such as when training and
-evaluating machine learning models.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_1</span> <span class="op">=</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>,<span class="op">]</span></span>
-<span><span class="va">deconv_2</span> <span class="op">=</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">101</span><span class="op">:</span><span class="fl">192</span>,<span class="op">]</span></span>
+<div class="section level5">
+<h5 id="replicate-subgroup-definitions-in-an-external-cohort">8) Replicate subgroup definitions in an external cohort<a class="anchor" aria-label="anchor" href="#replicate-subgroup-definitions-in-an-external-cohort"></a>
+</h5>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv_1</span> <span class="op">&lt;-</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="op">]</span></span>
+<span><span class="va">deconv_2</span> <span class="op">&lt;-</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">101</span><span class="op">:</span><span class="fl">192</span>, <span class="op">]</span></span>
 <span></span>
-<span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_1</span>, </span>
-<span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>, </span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>, </span>
-<span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
-<span>                                                  return <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span>
-<span><span class="va">deconv_subgroups_replicate</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>, </span>
-<span>                                                               <span class="va">deconv_2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">subgroups_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span></span>
+<span>  deconvolution <span class="op">=</span> <span class="va">deconv_1</span>,</span>
+<span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"Tutorial"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">deconv_subgroups_replicate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">subgroups_train</span>, <span class="va">deconv_2</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="machine-learning-models-using-deconvolution-subgroups">
-<strong>Machine learning models using deconvolution
-subgroups</strong><a class="anchor" aria-label="anchor" href="#machine-learning-models-using-deconvolution-subgroups"></a>
-</h3>
-<p>The deconvolution subgroups generated by <code>multideconv</code> can
-be used as input features for training machine learning (ML) models.
-However, since these subgroups are derived based on sample-level
-correlations, special care is needed to avoid data leakage. If you
-compute the full subgroup matrix on the entire dataset before splitting
-into training and test sets (or before performing k-fold
-cross-validation), the model may indirectly access information from the
-test set during training.</p>
-<p>To address this issue, we provide the function
-<code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>, which ensures proper
-separation between training and test data during the computation of
-deconvolution subgroups. This function constructs ML folds in a way that
-subgroup features are learned only from the training data of each fold
-and then projected onto the corresponding test fold out.</p>
-<p>Below is an example usage of the <code>multideconv</code> subgroups
-using <code>pipeML</code>, an R package that includes direct flexibility
-into k-fold construction. We will add our custom function to compute the
-folds of the model using <code>multideconv</code> in the argument
-<code>fold_construction_fun</code>. For more information about the
-functions arguments visit the documentation of <a href="https://github.com/VeraPancaldiLab/pipeML" class="external-link">pipeML</a> :</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="section level5">
+<h5 id="use-subgroup-features-in-machine-learning-workflows">9) Use subgroup features in machine learning workflows<a class="anchor" aria-label="anchor" href="#use-subgroup-features-in-machine-learning-workflows"></a>
+</h5>
+<p>To avoid data leakage, build subgroup features inside each training
+fold and then project to test folds.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pipeML</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># traitData_train: Subset of clinical data used for training </span></span>
-<span><span class="co"># traitData_test: Subset of clinical data used for testing </span></span>
-<span><span class="co"># deconv_train: Deconvolution of samples used for training</span></span>
-<span><span class="co"># deconv_test: Deconvolution of samples used for testing</span></span>
+<span><span class="co"># traitData_train / traitData_test: clinical labels</span></span>
+<span><span class="co"># deconv_train / deconv_test: deconvolution matrices</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_features.training.ML</span><span class="op">(</span></span>
+<span>  <span class="va">deconv_train</span>,</span>
+<span>  <span class="va">traitData_train</span><span class="op">$</span><span class="va">Response</span>,</span>
+<span>  trait.positive <span class="op">=</span> <span class="st">"R"</span>,</span>
+<span>  metric <span class="op">=</span> <span class="st">"AUROC"</span>,</span>
+<span>  stack <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  k_folds <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  n_rep <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  feature.selection <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  LODO <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  ncores <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Training in deconv subgroups</span></span>
-<span><span class="va">res</span> <span class="op">=</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_features.training.ML</span><span class="op">(</span><span class="va">deconv_train</span>, </span>
-<span>                                           <span class="va">traitData_train</span><span class="op">$</span><span class="va">Response</span>, </span>
-<span>                                           trait.positive <span class="op">=</span> <span class="st">"R"</span>, </span>
-<span>                                           metric <span class="op">=</span> <span class="st">"AUROC"</span>, </span>
-<span>                                           stack <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           k_folds <span class="op">=</span> <span class="fl">5</span>, </span>
-<span>                                           n_rep <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>                                           feature.selection <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           LODO <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           ncores <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                                           return <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span><span class="op">)</span></span>
+<span><span class="va">dt_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span></span>
+<span>  <span class="va">res</span><span class="op">$</span><span class="va">Custom_output</span><span class="op">$</span><span class="va">Processed_deconvolution</span>,</span>
+<span>  <span class="va">deconv_test</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Replicate deconvolution subgroups</span></span>
-<span><span class="va">dt_test</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">Custom_output</span><span class="op">$</span><span class="va">Processed_deconvolution</span>, </span>
-<span>                                            <span class="va">deconv_test</span><span class="op">)</span> </span>
-<span></span>
-<span><span class="co"># Predict in deconv subgroups</span></span>
-<span><span class="va">pred</span> <span class="op">=</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_prediction</span><span class="op">(</span><span class="va">res</span>, </span>
-<span>                                  <span class="va">dt_test</span>, </span>
-<span>                                  <span class="va">traitData_test</span><span class="op">$</span><span class="va">Response</span>, </span>
-<span>                                  trait.positive <span class="op">=</span> <span class="st">"R"</span>, </span>
-<span>                                  stack <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                  maximize <span class="op">=</span> <span class="st">"Accuracy"</span>, </span>
-<span>                                  return <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<p><strong>NOTE:</strong> <code>multideconv</code> is built on top of
-existing frameworks and makes extensive use of the R packages
-<code>immunedeconv</code> (<span class="citation">Sturm et al. (<a href="#ref-10.1093/bioinformatics/btz363">2019</a>)</span>) and
-<code>omnideconv</code> (<span class="citation">Dietrich et al. (<a href="#ref-Dietrich2024.06.10.598226">2024</a>)</span>). If you use
-<code>multideconv</code> in your work, please cite our package along
-with these foundational packages. We also encourage you to cite the
-individual deconvolution algorithms you employ in your analysis.</p>
+<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_prediction</span><span class="op">(</span></span>
+<span>  <span class="va">res</span>,</span>
+<span>  <span class="va">dt_test</span>,</span>
+<span>  <span class="va">traitData_test</span><span class="op">$</span><span class="va">Response</span>,</span>
+<span>  trait.positive <span class="op">=</span> <span class="st">"R"</span>,</span>
+<span>  stack <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  maximize <span class="op">=</span> <span class="st">"Accuracy"</span>,</span>
+<span>  return <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level5">
+<h5 id="practical-notes">Practical notes<a class="anchor" aria-label="anchor" href="#practical-notes"></a>
+</h5>
+<ul>
+<li>If you plan to use <code>CIBERSORTx</code>, provide valid
+credentials through <code>credentials.mail</code> and
+<code>credentials.token</code>.</li>
+<li>Ensure Docker is installed and available for non-root execution if
+<code>CIBERSORTx</code> is enabled.</li>
+<li>For patched compatibility with <code>omnideconv</code>, use:</li>
+</ul>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/MuSiC"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/SCDC"</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>If you use <code>multideconv</code> in publications, cite
+<code>multideconv</code> and the underlying deconvolution frameworks and
+methods used in your analysis.</li>
+</ul>
+</div>
+</div>
+<div class="section level4">
+<h4 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h4>
+<div class="section level5">
+<h5 id="core-method-list">Core method list<a class="anchor" aria-label="anchor" href="#core-method-list"></a>
+</h5>
 <table class="table">
 <colgroup>
 <col width="23%">
@@ -713,12 +427,8 @@ Studies.” Nature Methods, 15(12), 1059. <a href="https://doi.org/10.1038/s4159
 <tr class="odd">
 <td><a href="https://git.bioconductor.org/packages/DeconRNASeq" class="external-link">DeconRNASeq</a></td>
 <td>free (<a href="https://www.bioconductor.org/packages/release/bioc/html/DeconRNASeq.html" class="external-link">GPL-2</a>)</td>
-<td>
-<a href="mailto:joseph.szustakowski@novartis.com" class="email">joseph.szustakowski@novartis.com</a> TGJDS (2025).
-DeconRNASeq: Deconvolution of Heterogeneous Tissue Samples for mRNA-Seq
-data. <a href="doi:10.18129/B9.bioc.DeconRNASeq" class="uri">doi:10.18129/B9.bioc.DeconRNASeq</a>, R package version
-1.50.0, <a href="https://bioconductor.org/packages/DeconRNASeq" class="external-link uri">https://bioconductor.org/packages/DeconRNASeq</a>
-</td>
+<td>Szustakowski, J. et al. DeconRNASeq: Deconvolution of Heterogeneous
+Tissue Samples for mRNA-Seq data. Bioconductor package.</td>
 </tr>
 <tr class="even">
 <td><a href="https://github.com/theislab/AutoGeneS/" class="external-link">AutoGeneS</a></td>
@@ -732,120 +442,69 @@ selection using multi-objective optimization for RNA-seq deconvolution.
 <td><a href="https://github.com/Danko-Lab/BayesPrism" class="external-link">BayesPrism</a></td>
 <td>free (<a href="https://github.com/Danko-Lab/BayesPrism/blob/main/BayesPrism/DESCRIPTION" class="external-link">GPL
 3.0</a>)</td>
-<td>Chu, T., Wang, Z., Pe’er, D. et al. Cell type and gene expression
-deconvolution with BayesPrism enables Bayesian integrative analysis
-across bulk and single-cell RNA sequencing in oncology. Nat Cancer 3,
-505–517 (2022). <a href="https://doi.org/10.1038/s43018-022-00356-3" class="external-link uri">https://doi.org/10.1038/s43018-022-00356-3</a>
+<td>Chu, T., Wang, Z., Pe’er, D. et al. Nat Cancer 3, 505–517 (2022). <a href="https://doi.org/10.1038/s43018-022-00356-3" class="external-link uri">https://doi.org/10.1038/s43018-022-00356-3</a>
 </td>
 </tr>
 <tr class="even">
 <td><a href="https://github.com/cozygene/bisque" class="external-link">Bisque</a></td>
 <td>free (<a href="https://github.com/cozygene/bisque/blob/master/DESCRIPTION" class="external-link">GPL
 3.0</a>)</td>
-<td>Jew, B., Alvarez, M., Rahmani, E., Miao, Z., Ko, A., Garske, K. M.,
-Sul, J. H., Pietiläinen, K. H., Pajukanta, P., &amp; Halperin, E.
-(2020). Publisher Correction: Accurate estimation of cell composition in
-bulk expression through robust integration of single-cell information.
-Nature Communications, 11(1), 2891. <a href="https://doi.org/10.1038/s41467-020-16607-9" class="external-link uri">https://doi.org/10.1038/s41467-020-16607-9</a>
+<td>Jew, B. et al. Nature Communications, 11(1), 2891 (2020). <a href="https://doi.org/10.1038/s41467-020-16607-9" class="external-link uri">https://doi.org/10.1038/s41467-020-16607-9</a>
 </td>
 </tr>
 <tr class="odd">
 <td><a href="https://github.com/shenorrLab/bseqsc" class="external-link">BSeq-sc</a></td>
 <td>free (<a href="https://github.com/shenorrLab/bseqsc/blob/master/DESCRIPTION" class="external-link">GPL
 2.0</a>)</td>
-<td>Baron, M., Veres, A., Wolock, S. L., Faust, A. L., Gaujoux, R.,
-Vetere, A., Ryu, J. H., Wagner, B. K., Shen-Orr, S. S., Klein, A. M.,
-Melton, D. A., &amp; Yanai, I. (2016). A Single-Cell Transcriptomic Map
-of the Human and Mouse Pancreas Reveals Inter- and Intra-cell Population
-Structure. In Cell Systems (Vol. 3, Issue 4, pp. 346–360.e4). <a href="https://doi.org/10.1016/j.cels.2016.08.011" class="external-link uri">https://doi.org/10.1016/j.cels.2016.08.011</a>
+<td>Baron, M. et al. Cell Systems, 3(4), 346–360.e4 (2016). <a href="https://doi.org/10.1016/j.cels.2016.08.011" class="external-link uri">https://doi.org/10.1016/j.cels.2016.08.011</a>
 </td>
 </tr>
 <tr class="even">
 <td><a href="https://cibersortx.stanford.edu/" class="external-link">CIBERSORTx</a></td>
-<td>free for non-commerical use only</td>
-<td>Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W.,
-Xu, Y., Hoang, C. D., Diehn, M., &amp; Alizadeh, A. A. (2015). Robust
-enumeration of cell subsets from tissue expression profiles. Nature
-Methods, 12(5), 453–457. <a href="https://doi.org/10.1038/s41587-019-0114-2" class="external-link uri">https://doi.org/10.1038/s41587-019-0114-2</a>
-</td>
+<td>free for non-commercial use</td>
+<td>Newman, A. M. et al. Nature Methods, 12(5), 453–457 (2015).</td>
 </tr>
 <tr class="odd">
 <td><a href="https://github.com/amitfrish/scBio" class="external-link">CPM</a></td>
 <td>free (<a href="https://github.com/amitfrish/scBio/blob/master/DESCRIPTION" class="external-link">GPL
 2.0</a>)</td>
-<td>Frishberg, A., Peshes-Yaloz, N., Cohn, O., Rosentul, D., Steuerman,
-Y., Valadarsky, L., Yankovitz, G., Mandelboim, M., Iraqi, F. A., Amit,
-I., Mayo, L., Bacharach, E., &amp; Gat-Viks, I. (2019). Cell composition
-analysis of bulk genomics using single-cell data. Nature Methods, 16(4),
-327–332. <a href="https://doi.org/10.1038/s41592-019-0355-5" class="external-link uri">https://doi.org/10.1038/s41592-019-0355-5</a>
+<td>Frishberg, A. et al. Nature Methods, 16(4), 327–332 (2019). <a href="https://doi.org/10.1038/s41592-019-0355-5" class="external-link uri">https://doi.org/10.1038/s41592-019-0355-5</a>
 </td>
 </tr>
 <tr class="even">
 <td><a href="https://bitbucket.org/yuanlab/dwls/src/master/" class="external-link">DWLS</a></td>
 <td>free (<a href="https://bitbucket.org/yuanlab/dwls/src/master/DESCRIPTION" class="external-link">GPL</a>)</td>
-<td>Tsoucas, D., Dong, R., Chen, H., Zhu, Q., Guo, G., &amp; Yuan, G.-C.
-(2019). Accurate estimation of cell-type composition from gene
-expression data. Nature Communications, 10(1), 2975. <a href="https://doi.org/10.1038/s41467-019-10802-z" class="external-link uri">https://doi.org/10.1038/s41467-019-10802-z</a>
+<td>Tsoucas, D. et al. Nature Communications, 10(1), 2975 (2019). <a href="https://doi.org/10.1038/s41467-019-10802-z" class="external-link uri">https://doi.org/10.1038/s41467-019-10802-z</a>
 </td>
 </tr>
 <tr class="odd">
 <td><a href="https://github.com/sqsun/MOMF" class="external-link">MOMF</a></td>
 <td>free (<a href="https://github.com/sqsun/MOMF/blob/master/LICENSE.md" class="external-link">GPL
 3.0</a>)</td>
-<td>Xifang Sun, Shiquan Sun, and Sheng Yang. An efficient and flexible
-method for deconvoluting bulk RNAseq data with single-cell RNAseq data,
-2019, DOI: 10.5281/zenodo.3373980</td>
+<td>Sun, X., Sun, S., &amp; Yang, S. (2019). <a href="https://doi.org/10.5281/zenodo.3373980" class="external-link uri">https://doi.org/10.5281/zenodo.3373980</a>
+</td>
 </tr>
 <tr class="even">
 <td><a href="https://github.com/xuranw/MuSiC/" class="external-link">MuSiC</a></td>
 <td>free (<a href="https://github.com/xuranw/MuSiC/blob/master/LICENSE" class="external-link">GPL
 3.0</a>)</td>
-<td>Wang, X., Park, J., Susztak, K., Zhang, N. R., &amp; Li, M. (2019).
-Bulk tissue cell type deconvolution with multi-subject single-cell
-expression reference. Nature Communications, 10(1), 380. <a href="https://doi.org/10.1038/s41467-018-08023-x" class="external-link uri">https://doi.org/10.1038/s41467-018-08023-x</a>
+<td>Wang, X. et al. Nature Communications, 10(1), 380 (2019). <a href="https://doi.org/10.1038/s41467-018-08023-x" class="external-link uri">https://doi.org/10.1038/s41467-018-08023-x</a>
 </td>
 </tr>
 <tr class="odd">
 <td><a href="https://github.com/meichendong/SCDC" class="external-link">SCDC</a></td>
-<td>(<a href="https://github.com/meichendong/SCDC/blob/master/README.md" class="external-link">MIT</a>)</td>
-<td>Dong, M., Thennavan, A., Urrutia, E., Li, Y., Perou, C. M., Zou, F.,
-&amp; Jiang, Y. (2020). SCDC: bulk gene expression deconvolution by
-multiple single-cell RNA sequencing references. Briefings in
-Bioinformatics. <a href="https://doi.org/10.1093/bib/bbz166" class="external-link uri">https://doi.org/10.1093/bib/bbz166</a>
+<td>free (<a href="https://github.com/meichendong/SCDC/blob/master/README.md" class="external-link">MIT</a>)</td>
+<td>Dong, M. et al. Briefings in Bioinformatics (2020). <a href="https://doi.org/10.1093/bib/bbz166" class="external-link uri">https://doi.org/10.1093/bib/bbz166</a>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
+</div>
+</div>
 <div class="section level2">
-<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h2 id="references-1">References<a class="anchor" aria-label="anchor" href="#references-1"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
-<div id="ref-Dietrich2024.06.10.598226" class="csl-entry">
-Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, Bernhard Eder,
-Constantin Zackl, Katharina Reinisch, Frank Edenhofer, et al. 2024.
-<span>“Benchmarking Second-Generation Methods for Cell-Type
-Deconvolution of Transcriptomic Data.”</span> <em>bioRxiv</em>. <a href="https://doi.org/10.1101/2024.06.10.598226" class="external-link">https://doi.org/10.1101/2024.06.10.598226</a>.
-</div>
-<div id="ref-langfelder2008wgcna" class="csl-entry">
-Langfelder, Peter, and Steve Horvath. 2008. <span>“WGCNA: An r Package
-for Weighted Correlation Network Analysis.”</span> <em>BMC
-Bioinformatics</em> 9 (1): 559. <a href="https://doi.org/10.1186/1471-2105-9-559" class="external-link">https://doi.org/10.1186/1471-2105-9-559</a>.
-</div>
-<div id="ref-morabito2023hdwgcna" class="csl-entry">
-Morabito, Samuel, Fairlie Reese, Negin Rahimzadeh, Emily Miyoshi, and
-Vivek Swarup. 2023. <span>“hdWGCNA Identifies Co-Expression Networks in
-High-Dimensional Transcriptomics Data.”</span> <em>Cell Reports
-Methods</em> 3 (6): 100498. <a href="https://doi.org/10.1016/j.crmeth.2023.100498" class="external-link">https://doi.org/10.1016/j.crmeth.2023.100498</a>.
-</div>
-<div id="ref-10.1093/bioinformatics/btz363" class="csl-entry">
-Sturm, Gregor, Francesca Finotello, Florent Petitprez, Jitao David
-Zhang, Jan Baumbach, Wolf H Fridman, Markus List, and Tatsiana Aneichyk.
-2019. <span>“Comprehensive Evaluation of Transcriptome-Based Cell-Type
-Quantification Methods for Immuno-Oncology.”</span>
-<em>Bioinformatics</em> 35 (14): i436–45. <a href="https://doi.org/10.1093/bioinformatics/btz363" class="external-link">https://doi.org/10.1093/bioinformatics/btz363</a>.
-</div>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

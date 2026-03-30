@@ -151,7 +151,7 @@ these formats.
 
 If you want `multideconv` to consider other cells, it is pretty simple!
 Just use the argument cells_extra in the function
-[`compute.deconvolution.analysis()`](https://mhurtado13.github.io/multideconv/reference/compute.deconvolution.analysis.md).
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
 
 Let’s say you want to add mesenchymal and basophils cells:
 
