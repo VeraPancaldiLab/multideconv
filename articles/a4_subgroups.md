@@ -1,0 +1,249 @@
+# Cell type subgroup analysis
+
+``` r
+library(multideconv)
+```
+
+## **Cell type processing**
+
+Deconvolution analysis reduces the dimensionality and heterogeneity of
+the deconvolution results. It uses the cell type processing algorithm
+described in the paper [Hurtado et al.,
+2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info).
+It returns the cell type subgroups composition and the reduced
+deconvolution matrix, saved in the `Results/` directory.
+
+- **deconvolution**: Matrix of raw deconvolution results (output of
+  [`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md))
+
+- **corr**: Minimum correlation threshold to group features
+
+- **seed**: Random seed for reproducibility
+
+- **return**: Whether to return results and save output files to the
+  `Results/` directory
+
+``` r
+deconv_bulk = multideconv::deconv_bulk
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk, 
+                                                  corr = 0.7, 
+                                                  seed = 123, 
+                                                  file_name = "Tutorial", 
+                                                  return = TRUE) 
+```
+
+Subgroups composition can be extracted with:
+
+``` r
+deconv_subgroups[[3]]$B.cells
+#> $B.cells_Subgroup.2.Iteration.1
+#> [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"
+#> [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       
+#> 
+#> $B.cells_Subgroup.3.Iteration.1
+#> [1] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"
+#> [2] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   
+#> [3] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   
+#> 
+#> $B.cells_Subgroup.4.Iteration.1
+#> [1] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> [2] "CBSX_BPRNACan_B.cells"                        
+#> 
+#> $B.cells_Subgroup.5.Iteration.1
+#> [1] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> [2] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   
+#> 
+#> $B.cells_Subgroup.1.Iteration.2
+#> [1] "DeconRNASeq_BPRNACan_B.cells"       "DeconRNASeq_BPRNACanProMet_B.cells"
+#> 
+#> $B.cells_Subgroup.2.Iteration.2
+#> [1] "DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells"
+#> [2] "B.cells_Subgroup.2.Iteration.1"            
+#> 
+#> $B.cells_Subgroup.3.Iteration.2
+#> [1] "DeconRNASeq_CCLE.TIL10_B.cells" "DeconRNASeq_TIL10_B.cells"     
+#> 
+#> $B.cells_Subgroup.4.Iteration.2
+#> [1] "CBSX_BPRNACan3DProMet_B.cells"  "B.cells_Subgroup.4.Iteration.1"
+#> 
+#> $B.cells_Subgroup.5.Iteration.2
+#> [1] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"
+#> [2] "B.cells_Subgroup.5.Iteration.1"        
+#> 
+#> $B.cells_Subgroup.1.Iteration.3
+#> [1] "B.cells_Subgroup.2.Iteration.2" "B.cells_Subgroup.4.Iteration.2"
+#> 
+#> $B.cells_Subgroup.1.Iteration.4
+#> [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"
+deconv_subgroups[[3]]$Macrophages.M2
+#> $Macrophages.M2_Subgroup.1.Iteration.1
+#> [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   
+#> [3] "CBSX_CCLE.TIL10_Macrophages.M2"   
+#> 
+#> $Macrophages.M2_Subgroup.2.Iteration.1
+#> [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   
+#> 
+#> $Macrophages.M2_Subgroup.4.Iteration.1
+#> [1] "Epidish_LM22_Macrophages.M2" "DWLS_LM22_Macrophages.M2"   
+#> [3] "CBSX_LM22_Macrophages.M2"   
+#> 
+#> $Macrophages.M2_Subgroup.1.Iteration.2
+#> [1] "DWLS_BPRNACan_Macrophages.M2"        
+#> [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"
+#> [3] "DWLS_BPRNACanProMet_Macrophages.M2"
+deconv_subgroups[[3]]$Dendritic.cells
+#> $Dendritic.cells_Subgroup.1.Iteration.1
+#> [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"
+#> [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   
+#> [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"
+```
+
+Reduced deconvolution matrix:
+
+``` r
+head(subgroups[[1]][,sample(colnames(subgroups[[1]]), 10)])
+#>                 Quantiseq_T.cells.non.regulatory
+#> SAM7f0d9cc7f001                       0.01070804
+#> SAM4305ab968b90                       0.00000000
+#> SAMcf018fee2acd                       0.00000000
+#> SAMcc4675f394a1                       0.00000000
+#> SAM49f9b2e57aa5                       0.00000000
+#> SAM2e7aa8fa0ab3                       0.00000000
+#>                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells
+#> SAM7f0d9cc7f001                                  0.06177058
+#> SAM4305ab968b90                                  0.20596451
+#> SAMcf018fee2acd                                  0.10081728
+#> SAMcc4675f394a1                                  0.16370762
+#> SAM49f9b2e57aa5                                  0.18693083
+#> SAM2e7aa8fa0ab3                                  0.05430822
+#>                 DWLS_BPRNACanProMet_Macrophages.M1
+#> SAM7f0d9cc7f001                        0.000000000
+#> SAM4305ab968b90                        0.000000000
+#> SAMcf018fee2acd                        0.000000000
+#> SAMcc4675f394a1                        0.003182723
+#> SAM49f9b2e57aa5                        0.000000000
+#> SAM2e7aa8fa0ab3                        0.000000000
+#>                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_CD8.cells
+#> SAM7f0d9cc7f001                                           0
+#> SAM4305ab968b90                                           0
+#> SAMcf018fee2acd                                           0
+#> SAMcc4675f394a1                                           0
+#> SAM49f9b2e57aa5                                           0
+#> SAM2e7aa8fa0ab3                                           0
+#>                 DWLS_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells
+#> SAM7f0d9cc7f001                                0.000000
+#> SAM4305ab968b90                                0.000000
+#> SAMcf018fee2acd                                0.000000
+#> SAMcc4675f394a1                                0.000000
+#> SAM49f9b2e57aa5                                0.000000
+#> SAM2e7aa8fa0ab3                                0.118806
+#>                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells
+#> SAM7f0d9cc7f001                                       0.1332183
+#> SAM4305ab968b90                                       0.1410772
+#> SAMcf018fee2acd                                       0.1134181
+#> SAMcc4675f394a1                                       0.1362632
+#> SAM49f9b2e57aa5                                       0.1496804
+#> SAM2e7aa8fa0ab3                                       0.1424695
+#>                 CBSX_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells
+#> SAM7f0d9cc7f001                              0.00000000
+#> SAM4305ab968b90                              0.00000000
+#> SAMcf018fee2acd                              0.00000000
+#> SAMcc4675f394a1                              0.00000000
+#> SAM49f9b2e57aa5                              0.00000000
+#> SAM2e7aa8fa0ab3                              0.02834543
+#>                 Endothelial_Subgroup.1.Iteration.1
+#> SAM7f0d9cc7f001                         0.05480971
+#> SAM4305ab968b90                         0.02591334
+#> SAMcf018fee2acd                         0.05501908
+#> SAMcc4675f394a1                         0.01745065
+#> SAM49f9b2e57aa5                         0.00000000
+#> SAM2e7aa8fa0ab3                         0.00000000
+#>                 DeconRNASeq_CBSX.Melanoma.scRNAseq_CAF
+#> SAM7f0d9cc7f001                              0.4362575
+#> SAM4305ab968b90                              0.2159553
+#> SAMcf018fee2acd                              0.2789918
+#> SAMcc4675f394a1                              0.3163672
+#> SAM49f9b2e57aa5                              0.2855141
+#> SAM2e7aa8fa0ab3                              0.4346621
+#>                 DeconRNASeq_LM22_Macrophages.M2
+#> SAM7f0d9cc7f001                     0.025825608
+#> SAM4305ab968b90                     0.000000000
+#> SAMcf018fee2acd                     0.027464529
+#> SAMcc4675f394a1                     0.081372076
+#> SAM49f9b2e57aa5                     0.000000000
+#> SAM2e7aa8fa0ab3                     0.004871071
+```
+
+If your deconvolution matrix contains non-standard cell types (see
+README), specify them using `cells_extra` to ensure proper subgrouping.
+If not, they are going to be discarded automatically.
+
+``` r
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo, 
+                                                  corr = 0.7, 
+                                                  seed = 123, 
+                                                  return = TRUE,
+                                                  cells_extra = c("Mural.cells", "Myeloid.cells"), 
+                                                  file_name = "Tutorial") 
+```
+
+## **Deconvolution dictionary**
+
+The deconvolution dictionary step integrates deconvolution features with
+pathway activity information to provide a functional interpretation of
+each cell-type–specific component. This process identifies groups of
+pathways that show coordinated behavior across samples (e.g.,
+immunoactive vs. immunosuppressive signaling) and assigns each
+deconvolution feature to one of these pathway clusters based on
+correlation patterns. The resulting dictionary can then be used to
+understand whether a cell-type feature is more associated with
+activation or suppression programs.
+
+For this, we start from normalized gene expression data, compute pathway
+activity scores (see
+[CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) package),
+and link them to deconvolution results obtained in previous steps.
+Finally, we use the deconvolution_dictionary() function to classify each
+deconvolution feature according to its dominant pathway cluster.
+
+``` r
+counts = multideconv::raw_counts
+counts.norm = ADImpute::NormalizeTPM(counts, log = TRUE)
+pathways = CellTFusion::compute.pathway.activity(counts.norm)
+deconv = multideconv::deconv_bulk[rownames(multideconv::deconv_bulk)%in%colnames(counts),]
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv, 
+                                                  corr = 0.7, 
+                                                  seed = 123, 
+                                                  file_name = "Tutorial", 
+                                                  return = TRUE) 
+deconv_subgroups = deconvolution_dictionary(deconv_subgroups, pathways)
+head(deconv_subgroups[[1]][,1:5])
+print(deconv_subgroups[["States"]])
+```
+
+## **Replicate deconvolution subgroups in an independent set**
+
+Cell subgroup identification through deconvolution is cohort-specific,
+as it relies on correlation patterns across samples. This means that
+subgroup definitions may vary across different splits or datasets. If
+you aim to replicate the same subgroups identified in one dataset onto
+another (e.g., for model validation), you can use the following
+function.
+
+The function below reconstructs and applies the subgroup signatures
+derived from a previous deconvolution, making it especially useful when
+transferring learned patterns across datasets—such as when training and
+evaluating machine learning models.
+
+``` r
+deconv_1 = deconv_bulk[1:100,]
+deconv_2 = deconv_bulk[101:192,]
+
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1, 
+                                                  corr = 0.7, 
+                                                  seed = 123, 
+                                                  file_name = "Tutorial", 
+                                                  return = FALSE) 
+deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups, 
+                                                               deconv_2)
+```
