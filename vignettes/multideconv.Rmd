@@ -14,370 +14,358 @@ biblio-style: apalike
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
-This tutorial demonstrates how to use the `multideconv` package and explains the main functions of the pipeline for deconvolving RNA-seq data.
+This vignette presents a practical, end-to-end workflow for cell type deconvolution with `multideconv`, including first-generation and second-generation methods, subgroup processing, benchmarking, and downstream machine learning use.
 
-```{r setup}
+## Tutorial {.tabset .tabset-pills}
+
+### Get started
+
+This tab contains README-level onboarding for installation and basic usage.
+
+For the complete practical workflow, open the **Articles** tab.
+
+#### Installation
+
+To avoid GitHub API rate limit issues during installation, configure a GitHub Personal Access Token (PAT):
+
+```{r}
+# install.packages(c("usethis", "gitcreds"))
+usethis::create_github_token()
+gitcreds::gitcreds_set()
+```
+
+Install `multideconv` from GitHub:
+
+```{r}
+# install.packages("pak")
+pak::pkg_install("VeraPancaldiLab/multideconv")
+```
+
+#### Basic usage
+
+All outputs are written to a local `Results/` folder in your working directory.
+
+```{r}
+setwd("~/path/to/project")
 library(multideconv)
+raw.counts <- multideconv::raw_counts
+
+deconv <- compute.deconvolution(
+  raw.counts,
+  normalized = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-## **Deconvolution with default methods**
+`CIBERSORTx` requires valid credentials and Docker configured for non-root use.
 
-The basic function is to perform cell type deconvolution using six default methods (`quanTIseq`, `DeconRNASeq`, `CIBERSORTx`, `EpiDISH`, `DWLS`, `MOMF`) and nine default signatures (see paper [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info)). The function accepts either raw counts or TPM-normalized counts as input (with genes as SYMBOL).
+### Articles
 
-**NOTE:** If you plan to use `CIBERSORTx`, you must provide your credentials (see README for details). The resulting deconvolution matrix is automatically saved in the `Results/` directory.
+#### 1) Run deconvolution with default signatures
 
-The output includes all combinations of deconvolution features, method-signature-cell type.
+`compute.deconvolution()` combines multiple methods and signatures on bulk RNA-seq expression data (raw counts or TPM-normalized values with gene symbols).
 
-```{r, eval = FALSE}
-bulk = multideconv::raw_counts
-deconv = compute.deconvolution(raw.counts = bulk, 
-                               methods = c("Quantiseq", "Epidish", 
-                                           "DeconRNASeq", "DWLS","MOMF"), 
-                               normalized = TRUE, 
-                               return = TRUE, 
-                               file_name = "Tutorial")
+```{r}
+bulk <- multideconv::raw_counts
+
+deconv <- compute.deconvolution(
+  raw.counts = bulk,
+  methods = c("Quantiseq", "Epidish", "DeconRNASeq", "DWLS", "MOMF"),
+  normalized = TRUE,
+  return = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-To exclude specific methods or signatures, use the methods or signatures_exclude arguments:
+Use `methods`, `methods_sc`, `signatures_exclude`, and `doParallel` to customize runtime and scope.
 
-```{r, eval = FALSE}
-deconv = compute.deconvolution(raw.counts = bulk, 
-                               methods = c("Quantiseq", "DeconRNASeq"), 
-                               normalized = TRUE,
-                               signatures_exclude = "BPRNACan", 
-                               return = TRUE, 
-                               file_name = "Tutorial")
+```{r}
+deconv <- compute.deconvolution(
+  raw.counts = bulk,
+  methods = c("Quantiseq", "DeconRNASeq"),
+  signatures_exclude = "BPRNACan",
+  normalized = TRUE,
+  return = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-To speed up computation, `multideconv` supports parallelization. Set `doParallel = TRUE` and specify the number of workers based on your system's resources:
-
-```{r, eval = FALSE}
-deconv = compute.deconvolution(raw.counts = bulk, 
-                               methods = "DWLS", 
-                               normalized = TRUE, 
-                               return = TRUE, 
-                               file_name = "Tutorial", 
-                               doParallel = TRUE, 
-                               workers = 3)
+```{r}
+deconv <- compute.deconvolution(
+  raw.counts = bulk,
+  methods = "DWLS",
+  normalized = TRUE,
+  doParallel = TRUE,
+  workers = 3,
+  return = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-## **Cell type signatures**
-
-In order to access the default signatures `multideconv` provides, you can do the following:
-
-To list all signatures
+#### 2) Inspect available signatures
 
 ```{r}
 path <- system.file("signatures/", package = "multideconv")
 list.files(path)
-```
 
-To access a specific signature
-
-```{r}
-signature = read.delim(paste0(path, "CBSX-Melanoma-scRNAseq.txt"))
+signature <- read.delim(paste0(path, "CBSX-Melanoma-scRNAseq.txt"))
 head(signature)
 ```
 
-## **Single-cell metacell construction**
+#### 3) Prepare single-cell inputs and metacells
 
-If single-cell data is available, we recommend generating metacells to reduce computation time and prevent session crashes. Deconvolution methods that rely on single-cell data can be computationally intensive, especially with large matrices. We suggest using a maximum of 20k cells; if your object exceeds this size, creating metacells is strongly advised. However, if your computational resources are sufficient to handle the full single-cell dataset, you may skip this step.
-
-We adapted functions from the R package hdWGCNA (@morabito2023hdwgcna; @langfelder2008wgcna) for the construction of metacells using the KNN algorithm.
-
--   **sc_object**: Normalized gene expression matrix with genes as rows and cells as columns
-
--   **labels_column**: Vector of cell annotations
-
--   **samples_column**: Vector of sample IDs for each cell
-
--   **exclude_cells**: Vector specifying which cell types to ignore during metacell construction (default is NULL)
-
--   **min_cells**: Minimum number of cells required to construct metacells in a group
-
--   **k**: Number of nearest neighbors used for the KNN algorithm
-
--   **max_shared**: Maximum number of cells shared between two metacells
-
--   **n_workers**: Number of cores to use for parallelizing metacell construction
-
--   **min_meta**: Minimum number of metacells required for a cell type to be retained
-
-Because of space limitations, we have not included a complete single-cell object in this tutorial. However, users are expected to provide their own single-cell data and supply it to the `sc_object` parameter in the function call.
-```{r, eval=FALSE}
-metacells = create_metacells(sc_object, 
-                             labels_column = cell_labels, 
-                             samples_column = sample_labels, 
-                             exclude_cells = NULL,
-                             min_cells = 50, 
-                             k = 15, 
-                             max_shared = 15, 
-                             n_workers = 4, 
-                             min_meta = 10)
-```
-
-## **Second-generation deconvolution methods**
-
-Once the single-cell data is prepared, users can supplement the default deconvolution methods with second-generation approaches such as `AutogeneS`, `BayesPrism`, `Bisque`, `CPM`, `MuSic`, and `SCDC`. These methods learn cell-type signatures directly from annotated single-cell RNA-seq data, rather than relying on predefined static signatures (@Dietrich2024.06.10.598226), to deconvolve bulk RNA-seq profiles.
-
--   **sc_deconv**: Boolean indicating whether to run second-generation methods
-
--   **sc_matrix**: Normalized single-cell gene expression matrix
-
--   **sc_metadata**: Dataframe containing single-cell metadata
-
--   **cell_annotations**: Vector of cell type labels
-
--   **cell_samples**: Vector of sample IDs
-
--   **name_sc_signature**: Name to assign to the resulting signature
+For large scRNA-seq references, metacells can reduce memory use and execution time before running second-generation methods.
 
 ```{r}
-metacell_obj = multideconv::metacells_data
-metacell_metadata = multideconv::metacells_metadata
-head(metacell_obj[1:5,1:5])
+metacells <- create_metacells(
+  sc_object,
+  labels_column = cell_labels,
+  samples_column = sample_labels,
+  exclude_cells = NULL,
+  min_cells = 50,
+  k = 15,
+  max_shared = 15,
+  n_workers = 4,
+  min_meta = 10
+)
+```
+
+Example built-in data:
+
+```{r}
+metacell_obj <- multideconv::metacells_data
+metacell_metadata <- multideconv::metacells_metadata
+head(metacell_obj[1:5, 1:5])
 head(metacell_metadata)
 ```
 
-This function computes cell type deconvolution using the six default methods (`quanTIseq`, `DeconRNASeq`, `EpiDISH`, `DWLS`, `MOMF`) and `CIBERSORTx` (if credentials are provided), along with second-generation deconvolution approaches. The output includes all combinations of methods and signatures.
-
-```{r, eval=FALSE}
-deconv = compute.deconvolution(raw.counts = bulk, 
-                               normalized = TRUE, 
-                               return = TRUE, 
-                               methods = c("Quantiseq", "Epidish", "DeconRNASeq"),
-                               file_name = "Tutorial", 
-                               sc_deconv = TRUE, 
-                               sc_matrix = metacell_obj, 
-                               sc_metadata = metacell_metadata, 
-                               methods_sc = c("Autogenes", "BayesPrism", 
-                                              "Bisque", "CPM", "MuSic", "SCDC"),
-                               cell_label = "annotated_ct", 
-                               sample_label = "sample", 
-                               name_sc_signature = "Test")
-```
-
-To run only the second-generation deconvolution methods based on single-cell data, without using any static cell-type signatures, use the following:
-
-```{r, eval=FALSE}
-deconv_sc = compute_sc_deconvolution_methods(raw_counts = bulk, 
-                                             normalized = TRUE, 
-                                             methods_sc = c("Autogenes", "BayesPrism", 
-                                                            "Bisque", "CPM", "MuSic", "SCDC"),
-                                             sc_object = metacell_obj, 
-                                             sc_metadata = metacell_metadata, 
-                                             cell_annotations = "annotated_ct", 
-                                             samples_ids = "sample", 
-                                             name_object = "Test", 
-                                             n_cores = 2, 
-                                             return = TRUE, 
-                                             file_name = "Tutorial")
-```
-
-## **Pseudo-bulk profiles**
-
-To create pseudo-bulk profiles from the original single-cell objects, simulating a bulk RNA-seq dataset, you can use the following function:
-
-**NOTE:** You can input either your original single-cell object or the metacell object. Just be sure to select the same object when examining the real cell proportions (if needed).
+#### 4) Run second-generation deconvolution
 
 ```{r}
-metacells_seurat = Seurat::CreateSeuratObject(metacell_obj, meta.data = metacell_metadata)
-pseudobulk = create_sc_pseudobulk(metacells_seurat, cells_labels = "annotated_ct", sample_labels = "sample", normalized = TRUE, file_name = "Tutorial")
+deconv <- compute.deconvolution(
+  raw.counts = bulk,
+  normalized = TRUE,
+  methods = c("Quantiseq", "Epidish", "DeconRNASeq"),
+  sc_deconv = TRUE,
+  sc_matrix = metacell_obj,
+  sc_metadata = metacell_metadata,
+  methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"),
+  cell_label = "annotated_ct",
+  sample_label = "sample",
+  name_sc_signature = "Test",
+  return = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-## **Creating cell type signatures**
-
-To create cell type signatures, `multideconv` uses four methods: `CIBERSORTx`, `DWLS`, `MOMF`, and `BSeq-SC`. You must provide single-cell data as input. Signatures are saved in the `Results/custom_signatures` directory, and returned as a list. From now and after `compute.deconvolution()` will use these signatures additionally to the default ones! So if you would like to have the deconvolution results based on your new files, make sure to run `compute.deconvolution()`
-
-To run `BSeq-SC`, supply the `cell_markers` argument, which should contain the differential markers for each cell type (these can be obtained using `FindMarkers()` or `FindAllMarkers()` from Seurat).
-
-```{r, eval=FALSE}
-bulk_pseudo = multideconv::pseudobulk
-signatures = create_sc_signatures(metacell_obj, 
-                                  metacell_metadata, 
-                                  cells_labels = "annotated_ct", 
-                                  sample_labels = "sample", 
-                                  bulk_rna = bulk_pseudo, 
-                                  cell_markers = NULL, 
-                                  name_signature = "Test",
-                                  methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc"))
-```
-
-## **Cell types signatures benchmark**
-
-To validate the generated signatures, we provide a benchmarking function to compare deconvolution outputs against known cell proportions (e.g., from single-cell or imaging data). The `cells_extra` argument should include any non-standard cell types present in your ground truth. Make sure cell names match those in the deconvolution matrix (e.g., use B.cells instead of B cells if that is the naming convention used - see README for more information).
+To compute only second-generation methods:
 
 ```{r}
-deconv_pseudo = multideconv::deconvolution
-cells_groundtruth = multideconv::cells_groundtruth
-benchmark = compute.benchmark(deconv_pseudo, 
-                              cells_groundtruth, 
-                              cells_extra = c("Mural.cells", "Myeloid.cells"), 
-                              corr_type = "spearman",
-                              scatter = FALSE, 
-                              plot = TRUE, 
-                              pval = 0.05, 
-                              file_name = "Tutorial", 
-                              width = 10, 
-                              height = 15)
+deconv_sc <- compute_sc_deconvolution_methods(
+  raw_counts = bulk,
+  normalized = TRUE,
+  methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"),
+  sc_object = metacell_obj,
+  sc_metadata = metacell_metadata,
+  cell_annotations = "annotated_ct",
+  samples_ids = "sample",
+  name_object = "Test",
+  n_cores = 2,
+  return = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-```{r hdwgcna-figure, echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics("Results/Benchmark.png")
-```
-
-::: {style="text-align: center;"}
-<em>Figure 1. Example of performance of different methods and signature combinations on the pseudo bulk.</em>
-:::
-
-## **Cell type processing**
-
-Deconvolution analysis reduces the dimensionality and heterogeneity of the deconvolution results. It uses the cell type processing algorithm described in the paper [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info). It returns the cell type subgroups composition and the reduced deconvolution matrix, saved in the `Results/` directory.
-
--   **deconvolution**: Matrix of raw deconvolution results (output of `compute.deconvolution()`)
-
--   **corr**: Minimum correlation threshold to group features
-
--   **seed**: Random seed for reproducibility
-
--   **return**: Whether to return results and save output files to the `Results/` directory
-
-```{r, message=FALSE}
-deconv_bulk = multideconv::deconv_bulk
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = TRUE) 
-```
-
-Subgroups composition can be extracted with:
+#### 5) Build pseudo-bulk and benchmark signatures
 
 ```{r}
-deconv_subgroups[[3]]$B.cells
-deconv_subgroups[[3]]$Macrophages.M2
-deconv_subgroups[[3]]$Dendritic.cells
+metacells_seurat <- Seurat::CreateSeuratObject(metacell_obj, meta.data = metacell_metadata)
+pseudobulk <- create_sc_pseudobulk(
+  metacells_seurat,
+  cells_labels = "annotated_ct",
+  sample_labels = "sample",
+  normalized = TRUE,
+  file_name = "Tutorial"
+)
 ```
 
-Reduced deconvolution matrix:
+Generate signatures from scRNA-seq:
 
 ```{r}
-head(subgroups[[1]][,sample(colnames(subgroups[[1]]), 10)])
+signatures <- create_sc_signatures(
+  metacell_obj,
+  metacell_metadata,
+  cells_labels = "annotated_ct",
+  sample_labels = "sample",
+  bulk_rna = multideconv::pseudobulk,
+  cell_markers = NULL,
+  name_signature = "Test",
+  methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc")
+)
 ```
 
-If your deconvolution matrix contains non-standard cell types (see README), specify them using `cells_extra` to ensure proper subgrouping. If not, they are going to be discarded automatically.
+Benchmark against known cell proportions:
 
-```{r, eval = FALSE}
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  return = TRUE,
-                                                  cells_extra = c("Mural.cells", "Myeloid.cells"), 
-                                                  file_name = "Tutorial") 
+```{r}
+benchmark <- compute.benchmark(
+  multideconv::deconvolution,
+  multideconv::cells_groundtruth,
+  cells_extra = c("Mural.cells", "Myeloid.cells"),
+  corr_type = "spearman",
+  scatter = FALSE,
+  plot = TRUE,
+  pval = 0.05,
+  file_name = "Tutorial",
+  width = 10,
+  height = 15
+)
 ```
 
-## **Deconvolution dictionary**
+#### 6) Process cell types and derive subgroup features
 
-The deconvolution dictionary step integrates deconvolution features with pathway activity information to provide a functional interpretation of each cell-type–specific component. This process identifies groups of pathways that show coordinated behavior across samples (e.g., immunoactive vs. immunosuppressive signaling) and assigns each deconvolution feature to one of these pathway clusters based on correlation patterns. The resulting dictionary can then be used to understand whether a cell-type feature is more associated with activation or suppression programs.
+`compute.deconvolution.analysis()` reduces redundancy across deconvolution outputs and builds subgroup-level representations for downstream analysis.
 
-For this, we start from normalized gene expression data, compute pathway activity scores (see [CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) package), and link them to deconvolution results obtained in previous steps. Finally, we use the deconvolution_dictionary() function to classify each deconvolution feature according to its dominant pathway cluster.
-```{r, eval = FALSE}
-counts = multideconv::raw_counts
-counts.norm = ADImpute::NormalizeTPM(counts, log = TRUE)
-pathways = CellTFusion::compute.pathway.activity(counts.norm)
-deconv = multideconv::deconv_bulk[rownames(multideconv::deconv_bulk)%in%colnames(counts),]
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = TRUE) 
-deconv_subgroups = deconvolution_dictionary(deconv_subgroups, pathways)
-head(deconv_subgroups[[1]][,1:5])
+```{r}
+deconv_bulk <- multideconv::deconv_bulk
+
+deconv_subgroups <- compute.deconvolution.analysis(
+  deconvolution = deconv_bulk,
+  corr = 0.7,
+  seed = 123,
+  return = TRUE,
+  file_name = "Tutorial"
+)
+```
+
+Include custom cell names when needed:
+
+```{r}
+deconv_subgroups <- compute.deconvolution.analysis(
+  deconvolution = multideconv::deconvolution,
+  corr = 0.7,
+  seed = 123,
+  cells_extra = c("Mural.cells", "Myeloid.cells"),
+  return = TRUE,
+  file_name = "Tutorial"
+)
+```
+
+#### 7) Create a deconvolution dictionary
+
+This step links deconvolution-derived features with pathway activity states.
+
+```{r}
+counts <- multideconv::raw_counts
+counts.norm <- ADImpute::NormalizeTPM(counts, log = TRUE)
+pathways <- CellTFusion::compute.pathway.activity(counts.norm)
+
+deconv <- multideconv::deconv_bulk[rownames(multideconv::deconv_bulk) %in% colnames(counts), ]
+deconv_subgroups <- compute.deconvolution.analysis(
+  deconvolution = deconv,
+  corr = 0.7,
+  seed = 123,
+  return = TRUE,
+  file_name = "Tutorial"
+)
+
+deconv_subgroups <- deconvolution_dictionary(deconv_subgroups, pathways)
+head(deconv_subgroups[[1]][, 1:5])
 print(deconv_subgroups[["States"]])
 ```
 
-## **Replicate deconvolution subgroups in an independent set**
+#### 8) Replicate subgroup definitions in an external cohort
 
-Cell subgroup identification through deconvolution is cohort-specific, as it relies on correlation patterns across samples. This means that subgroup definitions may vary across different splits or datasets. If you aim to replicate the same subgroups identified in one dataset onto another (e.g., for model validation), you can use the following function.
-
-The function below reconstructs and applies the subgroup signatures derived from a previous deconvolution, making it especially useful when transferring learned patterns across datasets—such as when training and evaluating machine learning models. 
 ```{r}
-deconv_1 = deconv_bulk[1:100,]
-deconv_2 = deconv_bulk[101:192,]
+deconv_1 <- deconv_bulk[1:100, ]
+deconv_2 <- deconv_bulk[101:192, ]
 
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = FALSE) 
-deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups, 
-                                                               deconv_2)
+subgroups_train <- compute.deconvolution.analysis(
+  deconvolution = deconv_1,
+  corr = 0.7,
+  seed = 123,
+  return = FALSE,
+  file_name = "Tutorial"
+)
+
+deconv_subgroups_replicate <- replicate_deconvolution_subgroups(subgroups_train, deconv_2)
 ```
 
-## **Machine learning models using deconvolution subgroups**
+#### 9) Use subgroup features in machine learning workflows
 
-The deconvolution subgroups generated by `multideconv` can be used as input features for training machine learning (ML) models. However, since these subgroups are derived based on sample-level correlations, special care is needed to avoid data leakage. If you compute the full subgroup matrix on the entire dataset before splitting into training and test sets (or before performing k-fold cross-validation), the model may indirectly access information from the test set during training.
+To avoid data leakage, build subgroup features inside each training fold and then project to test folds.
 
-To address this issue, we provide the function `prepare_multideconv_folds()`, which ensures proper separation between training and test data during the computation of deconvolution subgroups. This function constructs ML folds in a way that subgroup features are learned only from the training data of each fold and then projected onto the corresponding test fold out.
-
-Below is an example usage of the `multideconv` subgroups using `pipeML`, an R package that includes direct flexibility into k-fold construction. We will add our custom function to compute the folds of the model using `multideconv` in the argument `fold_construction_fun`. For more information about the functions arguments visit the documentation of [pipeML](https://github.com/VeraPancaldiLab/pipeML) :
-
-```{r, eval = FALSE}
+```{r}
 library(pipeML)
 
-# traitData_train: Subset of clinical data used for training 
-# traitData_test: Subset of clinical data used for testing 
-# deconv_train: Deconvolution of samples used for training
-# deconv_test: Deconvolution of samples used for testing
+# traitData_train / traitData_test: clinical labels
+# deconv_train / deconv_test: deconvolution matrices
+res <- pipeML::compute_features.training.ML(
+  deconv_train,
+  traitData_train$Response,
+  trait.positive = "R",
+  metric = "AUROC",
+  stack = FALSE,
+  k_folds = 5,
+  n_rep = 10,
+  feature.selection = FALSE,
+  LODO = FALSE,
+  ncores = 3,
+  return = FALSE,
+  fold_construction_fun = prepare_multideconv_folds
+)
 
-# Training in deconv subgroups
-res = pipeML::compute_features.training.ML(deconv_train, 
-                                           traitData_train$Response, 
-                                           trait.positive = "R", 
-                                           metric = "AUROC", 
-                                           stack = F, 
-                                           k_folds = 5, 
-                                           n_rep = 10, 
-                                           feature.selection = F, 
-                                           LODO = F, 
-                                           ncores = 3, 
-                                           return = F, 
-                                           fold_construction_fun = prepare_multideconv_folds)
+dt_test <- replicate_deconvolution_subgroups(
+  res$Custom_output$Processed_deconvolution,
+  deconv_test
+)
 
-# Replicate deconvolution subgroups
-dt_test = replicate_deconvolution_subgroups(res$Custom_output$Processed_deconvolution, 
-                                            deconv_test) 
-
-# Predict in deconv subgroups
-pred = pipeML::compute_prediction(res, 
-                                  dt_test, 
-                                  traitData_test$Response, 
-                                  trait.positive = "R", 
-                                  stack = F, 
-                                  maximize = "Accuracy", 
-                                  return = T)
+pred <- pipeML::compute_prediction(
+  res,
+  dt_test,
+  traitData_test$Response,
+  trait.positive = "R",
+  stack = FALSE,
+  maximize = "Accuracy",
+  return = TRUE
+)
 ```
 
-**NOTE:** `multideconv` is built on top of existing frameworks and makes extensive use of the R packages `immunedeconv` (@10.1093/bioinformatics/btz363) and `omnideconv` (@Dietrich2024.06.10.598226). If you use `multideconv` in your work, please cite our package along with these foundational packages. We also encourage you to cite the individual deconvolution algorithms you employ in your analysis.
+#### Practical notes
+
+- If you plan to use `CIBERSORTx`, provide valid credentials through `credentials.mail` and `credentials.token`.
+- Ensure Docker is installed and available for non-root execution if `CIBERSORTx` is enabled.
+- For patched compatibility with `omnideconv`, use:
+
+```{r}
+devtools::install_github("omnideconv/MuSiC")
+devtools::install_github("omnideconv/SCDC")
+```
+
+- If you use `multideconv` in publications, cite `multideconv` and the underlying deconvolution frameworks and methods used in your analysis.
+
+### References
+
+#### Core method list
 
 | method | license | citation |
 |-----------------|-----------------|---------------------------------------|
 | [quanTIseq](http://icbi.at/software/quantiseq/doc/index.html) | free ([BSD](https://github.com/omnideconv/immunedeconv/blob/master/LICENSE.md)) | Finotello, F., Mayer, C., Plattner, C., Laschober, G., Rieder, D., Hackl, H., ..., Sopper, S. (2019). Molecular and pharmacological modulators of the tumor immune contexture revealed by deconvolution of RNA-seq data. Genome medicine, 11(1), 34. <https://doi.org/10.1186/s13073-019-0638-6> |
 | [EpiDISH](https://github.com/sjczheng/EpiDISH) | free ([GPL 2.0](https://github.com/sjczheng/EpiDISH/blob/devel/DESCRIPTION)) | Zheng SC, Breeze CE, Beck S, Teschendorff AE (2018). “Identification of differentially methylated cell-types in Epigenome-Wide Association Studies.” Nature Methods, 15(12), 1059. <https://doi.org/10.1038/s41592-018-0213-x> |
-| [DeconRNASeq](https://git.bioconductor.org/packages/DeconRNASeq) | free ([GPL-2](https://www.bioconductor.org/packages/release/bioc/html/DeconRNASeq.html)) | [joseph.szustakowski\@novartis.com](mailto:joseph.szustakowski@novartis.com){.email} TGJDS (2025). DeconRNASeq: Deconvolution of Heterogeneous Tissue Samples for mRNA-Seq data. <doi:10.18129/B9.bioc.DeconRNASeq>, R package version 1.50.0, <https://bioconductor.org/packages/DeconRNASeq> |
+| [DeconRNASeq](https://git.bioconductor.org/packages/DeconRNASeq) | free ([GPL-2](https://www.bioconductor.org/packages/release/bioc/html/DeconRNASeq.html)) | Szustakowski, J. et al. DeconRNASeq: Deconvolution of Heterogeneous Tissue Samples for mRNA-Seq data. Bioconductor package. |
 | [AutoGeneS](https://github.com/theislab/AutoGeneS/) | free ([MIT](https://github.com/theislab/AutoGeneS/blob/master/LICENSE)) | Aliee, H., & Theis, F. (2021). AutoGeneS: Automatic gene selection using multi-objective optimization for RNA-seq deconvolution. <https://doi.org/10.1101/2020.02.21.940650> |
-| [BayesPrism](https://github.com/Danko-Lab/BayesPrism) | free ([GPL 3.0](https://github.com/Danko-Lab/BayesPrism/blob/main/BayesPrism/DESCRIPTION)) | Chu, T., Wang, Z., Pe’er, D. et al. Cell type and gene expression deconvolution with BayesPrism enables Bayesian integrative analysis across bulk and single-cell RNA sequencing in oncology. Nat Cancer 3, 505–517 (2022). <https://doi.org/10.1038/s43018-022-00356-3> |
-| [Bisque](https://github.com/cozygene/bisque) | free ([GPL 3.0](https://github.com/cozygene/bisque/blob/master/DESCRIPTION)) | Jew, B., Alvarez, M., Rahmani, E., Miao, Z., Ko, A., Garske, K. M., Sul, J. H., Pietiläinen, K. H., Pajukanta, P., & Halperin, E. (2020). Publisher Correction: Accurate estimation of cell composition in bulk expression through robust integration of single-cell information. Nature Communications, 11(1), 2891. <https://doi.org/10.1038/s41467-020-16607-9> |
-| [BSeq-sc](https://github.com/shenorrLab/bseqsc) | free ([GPL 2.0](https://github.com/shenorrLab/bseqsc/blob/master/DESCRIPTION)) | Baron, M., Veres, A., Wolock, S. L., Faust, A. L., Gaujoux, R., Vetere, A., Ryu, J. H., Wagner, B. K., Shen-Orr, S. S., Klein, A. M., Melton, D. A., & Yanai, I. (2016). A Single-Cell Transcriptomic Map of the Human and Mouse Pancreas Reveals Inter- and Intra-cell Population Structure. In Cell Systems (Vol. 3, Issue 4, pp. 346–360.e4). <https://doi.org/10.1016/j.cels.2016.08.011> |
-| [CIBERSORTx](https://cibersortx.stanford.edu/) | free for non-commerical use only | Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., Hoang, C. D., Diehn, M., & Alizadeh, A. A. (2015). Robust enumeration of cell subsets from tissue expression profiles. Nature Methods, 12(5), 453–457. <https://doi.org/10.1038/s41587-019-0114-2> |
-| [CPM](https://github.com/amitfrish/scBio) | free ([GPL 2.0](https://github.com/amitfrish/scBio/blob/master/DESCRIPTION)) | Frishberg, A., Peshes-Yaloz, N., Cohn, O., Rosentul, D., Steuerman, Y., Valadarsky, L., Yankovitz, G., Mandelboim, M., Iraqi, F. A., Amit, I., Mayo, L., Bacharach, E., & Gat-Viks, I. (2019). Cell composition analysis of bulk genomics using single-cell data. Nature Methods, 16(4), 327–332. <https://doi.org/10.1038/s41592-019-0355-5> |
-| [DWLS](https://bitbucket.org/yuanlab/dwls/src/master/) | free ([GPL](https://bitbucket.org/yuanlab/dwls/src/master/DESCRIPTION)) | Tsoucas, D., Dong, R., Chen, H., Zhu, Q., Guo, G., & Yuan, G.-C. (2019). Accurate estimation of cell-type composition from gene expression data. Nature Communications, 10(1), 2975. <https://doi.org/10.1038/s41467-019-10802-z> |
-| [MOMF](https://github.com/sqsun/MOMF) | free ([GPL 3.0](https://github.com/sqsun/MOMF/blob/master/LICENSE.md)) | Xifang Sun, Shiquan Sun, and Sheng Yang. An efficient and flexible method for deconvoluting bulk RNAseq data with single-cell RNAseq data, 2019, DOI: 10.5281/zenodo.3373980 |
-| [MuSiC](https://github.com/xuranw/MuSiC/) | free ([GPL 3.0](https://github.com/xuranw/MuSiC/blob/master/LICENSE)) | Wang, X., Park, J., Susztak, K., Zhang, N. R., & Li, M. (2019). Bulk tissue cell type deconvolution with multi-subject single-cell expression reference. Nature Communications, 10(1), 380. <https://doi.org/10.1038/s41467-018-08023-x> |
-| [SCDC](https://github.com/meichendong/SCDC) | ([MIT](https://github.com/meichendong/SCDC/blob/master/README.md)) | Dong, M., Thennavan, A., Urrutia, E., Li, Y., Perou, C. M., Zou, F., & Jiang, Y. (2020). SCDC: bulk gene expression deconvolution by multiple single-cell RNA sequencing references. Briefings in Bioinformatics. <https://doi.org/10.1093/bib/bbz166> |
+| [BayesPrism](https://github.com/Danko-Lab/BayesPrism) | free ([GPL 3.0](https://github.com/Danko-Lab/BayesPrism/blob/main/BayesPrism/DESCRIPTION)) | Chu, T., Wang, Z., Pe’er, D. et al. Nat Cancer 3, 505–517 (2022). <https://doi.org/10.1038/s43018-022-00356-3> |
+| [Bisque](https://github.com/cozygene/bisque) | free ([GPL 3.0](https://github.com/cozygene/bisque/blob/master/DESCRIPTION)) | Jew, B. et al. Nature Communications, 11(1), 2891 (2020). <https://doi.org/10.1038/s41467-020-16607-9> |
+| [BSeq-sc](https://github.com/shenorrLab/bseqsc) | free ([GPL 2.0](https://github.com/shenorrLab/bseqsc/blob/master/DESCRIPTION)) | Baron, M. et al. Cell Systems, 3(4), 346–360.e4 (2016). <https://doi.org/10.1016/j.cels.2016.08.011> |
+| [CIBERSORTx](https://cibersortx.stanford.edu/) | free for non-commercial use | Newman, A. M. et al. Nature Methods, 12(5), 453–457 (2015). |
+| [CPM](https://github.com/amitfrish/scBio) | free ([GPL 2.0](https://github.com/amitfrish/scBio/blob/master/DESCRIPTION)) | Frishberg, A. et al. Nature Methods, 16(4), 327–332 (2019). <https://doi.org/10.1038/s41592-019-0355-5> |
+| [DWLS](https://bitbucket.org/yuanlab/dwls/src/master/) | free ([GPL](https://bitbucket.org/yuanlab/dwls/src/master/DESCRIPTION)) | Tsoucas, D. et al. Nature Communications, 10(1), 2975 (2019). <https://doi.org/10.1038/s41467-019-10802-z> |
+| [MOMF](https://github.com/sqsun/MOMF) | free ([GPL 3.0](https://github.com/sqsun/MOMF/blob/master/LICENSE.md)) | Sun, X., Sun, S., & Yang, S. (2019). <https://doi.org/10.5281/zenodo.3373980> |
+| [MuSiC](https://github.com/xuranw/MuSiC/) | free ([GPL 3.0](https://github.com/xuranw/MuSiC/blob/master/LICENSE)) | Wang, X. et al. Nature Communications, 10(1), 380 (2019). <https://doi.org/10.1038/s41467-018-08023-x> |
+| [SCDC](https://github.com/meichendong/SCDC) | free ([MIT](https://github.com/meichendong/SCDC/blob/master/README.md)) | Dong, M. et al. Briefings in Bioinformatics (2020). <https://doi.org/10.1093/bib/bbz166> |
 
 # References
