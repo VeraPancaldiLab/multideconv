@@ -15,8 +15,6 @@ Depends:
     R (>= 4.3)
 Imports: 
     ADImpute,
-    CellTFusion,
-    DeconRNASeq,
     doParallel,
     decoupleR,
     dplyr,
@@ -52,7 +50,6 @@ Imports:
     grid
 Remotes: 
     VeraPancaldiLab/CellTFusion,
-    bioc::DeconRNASeq,
     omnideconv/immunedeconv,
     omnideconv/omnideconv,
     omnideconv/DWLS,
@@ -60,8 +57,7 @@ Remotes:
     omnideconv/MOMF,
     smorabit/hdWGCNA,
     grst/MCPcounter,
-    cran/limSolve,
-    cran/bisque
+    cozygene/bisque
 Suggests: 
     testthat (>= 3.0.0),
     WGCNA,
@@ -69,6 +65,8 @@ Suggests:
     Seurat (>= 4.4.0),
     GenomicRanges,
     GeneOverlap,
+    CellTFusion,
+    DeconRNASeq,
     MCPcounter (>= 1.2.0),
     knitr,
     matlib,

@@ -1419,6 +1419,10 @@ computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
 #'
 #' @import pcaMethods
 computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
+  if (!requireNamespace("DeconRNASeq", quietly = TRUE)) {
+    stop("Package 'DeconRNASeq' is required for computeDeconRNASeq()")
+  }
+
   if (!requireNamespace("pcaMethods", quietly = TRUE)) {
     stop("Package 'pcaMethods' is required for computeDeconRNASeq()")
   }
@@ -2736,6 +2740,10 @@ prepare_multideconv_folds <- function(
 #' @importFrom factoextra fviz_nbclust hcut
 #'
 deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id = NULL){
+  if (!requireNamespace("CellTFusion", quietly = TRUE)) {
+    stop("Package 'CellTFusion' is required for deconvolution_dictionary()")
+  }
+
   pathway_matrix = pathway_matrix[,!colnames(pathway_matrix)%in%c("Androgen", "Estrogen")]
   cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
   cell_clusters = list()
@@ -3124,6 +3132,9 @@ compute_subgroups_pathways <- function(subgroups,
                                        width = 12,
                                        par_mar = c(4, 25, 5, 3),
                                        pval = 0.05) {
+  if (!requireNamespace("CellTFusion", quietly = TRUE)) {
+    stop("Package 'CellTFusion' is required for compute_subgroups_pathways()")
+  }
 
   subgroups_cells = subgroups[["Deconvolution subgroups per cell types"]]
 
