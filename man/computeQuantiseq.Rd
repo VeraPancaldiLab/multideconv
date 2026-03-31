@@ -4,10 +4,12 @@
 \alias{computeQuantiseq}
 \title{Computes QuanTIseq}
 \usage{
-computeQuantiseq(TPM_matrix)
+computeQuantiseq(TPM_matrix, name_signature = "TIL10")
 }
 \arguments{
 \item{TPM_matrix}{A matrix with TPM normalized counts (genes symbols as rows and samples as columns).}
+
+\item{name_signature}{Name used to tag output columns with the signature source.}
 }
 \value{
 A matrix with cell abundance deconvolve with QuanTIseq

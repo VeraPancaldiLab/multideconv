@@ -4,7 +4,7 @@
 \alias{deconvolution_dictionary}
 \title{Build a Deconvolution–Pathway Relationship Dictionary}
 \usage{
-deconvolution_dictionary(deconv_subgroups, pathway_matrix)
+deconvolution_dictionary(deconv_subgroups, pathway_matrix, batch_id = NULL)
 }
 \arguments{
 \item{deconv_subgroups}{Output of \code{compute.deconvolution.analysis()}}
@@ -12,6 +12,8 @@ deconvolution_dictionary(deconv_subgroups, pathway_matrix)
 \item{pathway_matrix}{A numeric matrix or data frame of pathway activities
 (rows = samples, columns = pathways), with the same row names as the
 deconvolution matrices. Can be any pathway or feature activity matrix.}
+
+\item{batch_id}{Optional batch covariate used when computing module relationships.}
 }
 \value{
 An updated version of \code{deconv_subgroups} containing:

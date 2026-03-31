@@ -23,7 +23,10 @@ load_multideconv <- function() {
 
 load_multideconv()
 
+# Ensure critical dependencies are loaded for deconvolution backends
 library(shiny)
+library(pcaMethods, quietly = TRUE)
+library(immunedeconv, quietly = TRUE)
 
 read_expression_table <- function(path) {
   ext <- tolower(tools::file_ext(path))
@@ -50,6 +53,38 @@ safe_workers <- function(x) {
     return(NULL)
   }
   as.integer(x)
+}
+
+escape_regex <- function(x) {
+  gsub("([][{}()+*^$|\\?.])", "\\\\\\1", x)
+}
+
+discover_dictionary_plot_files <- function(results_dir, file_name = "", previous_files = character()) {
+  if (!dir.exists(results_dir)) {
+    return(character(0))
+  }
+
+  all_files <- list.files(results_dir, full.names = TRUE)
+  all_files <- all_files[file.info(all_files)$isdir %in% FALSE]
+  if (!length(all_files)) {
+    return(character(0))
+  }
+
+  new_files <- setdiff(all_files, previous_files)
+  fgsea_files <- all_files[grepl("_FGSEA_top20\\.(pdf|png|jpg|jpeg)$", all_files, ignore.case = TRUE)]
+
+  pathway_files <- character(0)
+  if (nzchar(trimws(file_name))) {
+    prefix <- paste0("^", escape_regex(trimws(file_name)), ".*\\.(pdf|png|jpg|jpeg)$")
+    pathway_files <- all_files[grepl(prefix, basename(all_files), ignore.case = TRUE)]
+  }
+
+  keep <- unique(c(new_files, fgsea_files, pathway_files))
+  if (!length(keep)) {
+    return(character(0))
+  }
+
+  keep[order(file.info(keep)$mtime, decreasing = TRUE)]
 }
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
@@ -626,6 +661,79 @@ ui <- navbarPage(
     )
   ),
 
+  # ── Dictionary & Pathways ──────────────────────────────────────────────────
+  tabPanel(
+    HTML('<span class="glyphicon glyphicon-book"></span>&nbsp; Dictionary & Pathways'),
+    value = "dictionary",
+    sidebarLayout(
+      sidebarPanel(
+        width = 3,
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-folder-open"></span>&nbsp; Input')),
+        selectInput(
+          "dict_deconv_source", "Deconvolution (subgroups)",
+          choices = c("From Analysis tab", "Upload file")
+        ),
+        fileInput("dict_deconv_file", 
+                  "Upload deconvolution subgroups (from Analysis step)"),
+        selectInput(
+          "dict_counts_source", "Expression counts",
+          choices = c("Example raw_counts", "From Deconvolution tab", "Upload file")
+        ),
+        fileInput("dict_counts_file", "Upload normalized counts (genes in rows)"),
+        checkboxInput("dict_normalize_tpm",
+                      "Normalize to TPM (if raw counts)", value = TRUE),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-equalizer"></span>&nbsp; Parameters')),
+        checkboxInput("dict_plot_gsea",
+                      "Generate GSEA plots", value = FALSE),
+        tags$hr(class = "sidebar-hr"),
+        div(class = "sidebar-group",
+            HTML('<span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Output')),
+        textInput("dict_file_name", "Output file name", value = "ShinyDictionary"),
+        checkboxInput("dict_save_plots",
+                      "Save plots in Results/", value = FALSE),
+        br(),
+        actionButton("run_dict",
+                     HTML('<span class="glyphicon glyphicon-play"></span>&nbsp; Compute Dictionary'),
+                     class = "btn-primary"),
+        br(),
+        checkboxInput("run_pathways",
+                      "Also run pathway analysis", value = TRUE),
+        numericInput("pathway_height", "Plot height (inches)", value = 6, min = 2, max = 20),
+        numericInput("pathway_width", "Plot width (inches)", value = 12, min = 4, max = 30),
+        numericInput("pathway_pval", "P-value threshold", value = 0.05, min = 0.001, max = 1, step = 0.01)
+      ),
+      mainPanel(
+        width = 9,
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-info-sign"></span>&nbsp; Run Status')),
+          verbatimTextOutput("dict_status"),
+          div(class = "dl-row",
+              downloadButton("download_dict_matrix",
+                             HTML('<span class="glyphicon glyphicon-download-alt"></span>&nbsp; Download Dictionary Matrix CSV')))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-th"></span>&nbsp; Dictionary Matrix Preview')),
+          div(style = "overflow-x:auto;", tableOutput("dict_preview"))
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-stats"></span>&nbsp; Dictionary States')),
+          verbatimTextOutput("dict_states")
+        ),
+        div(class = "out-card",
+          div(class = "sec-head",
+              HTML('<span class="glyphicon glyphicon-picture"></span>&nbsp; Generated Plots (GSEA and Pathways)')),
+          uiOutput("dict_plots_ui")
+        )
+      )
+    )
+  ),
+
   # ── Benchmark ──────────────────────────────────────────────────────────────
   tabPanel(
     HTML('<span class="glyphicon glyphicon-ok-sign"></span>&nbsp; Benchmark'),
@@ -703,10 +811,17 @@ server <- function(input, output, session) {
     deconv    = NULL,
     analysis  = NULL,
     benchmark = NULL,
+    results_dir = normalizePath(file.path(getwd(), "Results"), winslash = "/", mustWork = FALSE),
+    dictionary_plot_files = character(0),
     deconv_msg    = "No run yet.",
     analysis_msg  = "No run yet.",
     benchmark_msg = "No run yet."
   )
+
+  if (!dir.exists(state$results_dir)) {
+    dir.create(state$results_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+  shiny::addResourcePath("results", state$results_dir)
 
   current_counts <- reactive({
     if (identical(input$counts_source, "Example raw_counts")) {
@@ -894,6 +1009,210 @@ server <- function(input, output, session) {
     content = function(file) {
       out <- subgroup_preview_df()
       utils::write.csv(out, file = file, row.names = FALSE)
+    }
+  )
+
+  # ── Dictionary & Pathways ──────────────────────────────────────────────────
+  state$dictionary_msg <- "No run yet."
+  state$dictionary    <- NULL
+
+  current_dict_deconv <- reactive({
+    src <- input$dict_deconv_source
+
+    if (identical(src, "From Analysis tab")) {
+      req(state$analysis)
+      return(state$analysis)
+    }
+
+    req(input$dict_deconv_file)
+    # Try to read as RDS (from Analysis tab) or CSV (fallback)
+    tryCatch({
+      readRDS(input$dict_deconv_file$datapath)
+    }, error = function(e) {
+      # Fallback to CSV - user must have manually saved the data
+      list(
+        "Deconvolution matrix" = read_expression_table(input$dict_deconv_file$datapath),
+        "Deconvolution subgroups per cell types" = list(),
+        "Deconvolution subgroups composition" = list()
+      )
+    })
+  })
+
+  current_dict_counts <- reactive({
+    src <- input$dict_counts_source
+
+    if (identical(src, "Example raw_counts")) {
+      counts <- multideconv::raw_counts
+    } else if (identical(src, "From Deconvolution tab")) {
+      req(state$counts)
+      counts <- state$counts
+    } else {
+      req(input$dict_counts_file)
+      counts <- read_expression_table(input$dict_counts_file$datapath)
+    }
+
+    if (isTRUE(input$dict_normalize_tpm)) {
+      if (requireNamespace("ADImpute", quietly = TRUE)) {
+        counts <- ADImpute::NormalizeTPM(counts, log = FALSE)
+      } else {
+        # Simple TPM normalization fallback
+        counts <- sweep(counts, 2, colSums(counts), "/") * 1e6
+      }
+    }
+
+    counts
+  })
+
+  observeEvent(input$run_dict, {
+    subgroups <- current_dict_deconv()
+    expr      <- current_dict_counts()
+    prev_files <- if (dir.exists(state$results_dir)) {
+      list.files(state$results_dir, full.names = TRUE)
+    } else {
+      character(0)
+    }
+
+    state$dictionary_plot_files <- character(0)
+
+    state$dictionary_msg <- "Running compute_deconvolution_dictionary..."
+
+    dict_res <- tryCatch({
+      multideconv::compute_deconvolution_dictionary(
+        subgroups = subgroups,
+        expr      = expr,
+        pathways  = NULL,
+        plot      = isTRUE(input$dict_plot_gsea)
+      )
+    }, error = function(e) e)
+
+    if (inherits(dict_res, "error")) {
+      state$dictionary_msg <- paste("Dictionary Error:", conditionMessage(dict_res))
+      showNotification(state$dictionary_msg, type = "error", duration = 8)
+      return()
+    }
+
+    state$dictionary <- dict_res
+    state$dictionary_msg <- paste(
+      "Dictionary completed.",
+      "Features:", ncol(dict_res[["Deconvolution matrix"]])
+    )
+    showNotification("Deconvolution dictionary computed.", type = "message")
+
+    # Optional: Run pathway analysis
+    if (isTRUE(input$run_pathways)) {
+      state$dictionary_msg <- paste(state$dictionary_msg, "\nRunning pathway analysis...")
+
+      path_res <- tryCatch({
+        multideconv::compute_subgroups_pathways(
+          subgroups   = dict_res,
+          counts_norm = expr,
+          file_name   = input$dict_file_name,
+          height      = as.numeric(input$pathway_height),
+          width       = as.numeric(input$pathway_width),
+          pval        = as.numeric(input$pathway_pval)
+        )
+      }, error = function(e) e)
+
+      if (inherits(path_res, "error")) {
+        state$dictionary_msg <- paste(state$dictionary_msg,
+                                      "\nPathway analysis error:", conditionMessage(path_res))
+        showNotification(paste("Pathway error:", conditionMessage(path_res)),
+                        type = "warning", duration = 8)
+      } else {
+        state$dictionary_msg <- paste(state$dictionary_msg, "Pathway plots generated.")
+        showNotification("Pathway analysis completed.", type = "message")
+      }
+    }
+
+    state$dictionary_plot_files <- discover_dictionary_plot_files(
+      results_dir = state$results_dir,
+      file_name = input$dict_file_name,
+      previous_files = prev_files
+    )
+
+    if (length(state$dictionary_plot_files)) {
+      state$dictionary_msg <- paste(
+        state$dictionary_msg,
+        "\nPlot files detected:",
+        length(state$dictionary_plot_files)
+      )
+    }
+  })
+
+  output$dict_status <- renderText(state$dictionary_msg)
+
+  output$dict_preview <- renderTable({
+    req(state$dictionary)
+    mat <- as.data.frame(state$dictionary[["Deconvolution matrix"]])
+    head(mat[, seq_len(min(8, ncol(mat))), drop = FALSE], 10)
+  }, rownames = TRUE)
+
+  output$dict_states <- renderText({
+    req(state$dictionary)
+    states <- state$dictionary[["States"]]
+    if (is.null(states)) {
+      return("No pathway states available.")
+    }
+    paste(
+      "Pathway states detected:",
+      "\n",
+      paste(names(states), ":", sapply(states, length), "pathways each", collapse = "\n")
+    )
+  })
+
+  output$dict_plots_ui <- renderUI({
+    files <- state$dictionary_plot_files
+    if (!length(files)) {
+      return(tags$p(
+        style = "margin: 0; color: #5f7d8a;",
+        "No generated plot files detected yet. Run Dictionary with GSEA plots and/or pathway analysis enabled."
+      ))
+    }
+
+    blocks <- lapply(files, function(f) {
+      fname <- basename(f)
+      ext <- tolower(tools::file_ext(fname))
+      src <- paste0("results/", utils::URLencode(fname, reserved = TRUE))
+
+      viewer <- if (ext %in% c("pdf")) {
+        tags$iframe(
+          src = src,
+          style = "width:100%; height:560px; border:1px solid #cee0e8; border-radius:8px; background:#fff;"
+        )
+      } else if (ext %in% c("png", "jpg", "jpeg")) {
+        tags$img(
+          src = src,
+          style = "max-width:100%; border:1px solid #cee0e8; border-radius:8px; padding:4px; background:#fff;"
+        )
+      } else {
+        tags$p(
+          style = "margin:0; color:#5f7d8a;",
+          paste("Preview not available for", ext, "files.")
+        )
+      }
+
+      tags$div(
+        style = "margin-bottom:18px;",
+        tags$div(
+          style = "font-weight:600; margin: 0 0 8px 0;",
+          fname,
+          tags$span(style = "font-weight:400; margin-left:8px;", format(file.info(f)$mtime, "%Y-%m-%d %H:%M:%S"))
+        ),
+        tags$div(style = "margin-bottom:8px;", tags$a(href = src, target = "_blank", "Open in new tab")),
+        viewer
+      )
+    })
+
+    do.call(tagList, blocks)
+  })
+
+  output$download_dict_matrix <- downloadHandler(
+    filename = function() {
+      paste0("dictionary_matrix_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+    },
+    content = function(file) {
+      req(state$dictionary)
+      utils::write.csv(state$dictionary[["Deconvolution matrix"]], file = file, row.names = TRUE)
     }
   )
 

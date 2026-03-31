@@ -4,7 +4,13 @@
 \alias{compute_subgroups}
 \title{Compute deconvolution subgroups}
 \usage{
-compute_subgroups(deconvolution, thres_corr, corr_type, file_name)
+compute_subgroups(
+  deconvolution,
+  thres_corr,
+  corr_type,
+  file_name,
+  batch = NULL
+)
 }
 \arguments{
 \item{deconvolution}{A matrix with unprocessed cell deconvolution results}
@@ -14,6 +20,8 @@ compute_subgroups(deconvolution, thres_corr, corr_type, file_name)
 \item{corr_type}{Correlation type whether "spearman" or "pearson".}
 
 \item{file_name}{Base name for subgroup}
+
+\item{batch}{Optional batch covariate used to compute partial correlations.}
 }
 \value{
 A list containing

@@ -33,28 +33,37 @@ articles:
 reference:
 - title: Main
   desc: >
-    Compute cell type deconvolution
+    Public user-facing functions
   contents:
   - compute.deconvolution
   - compute.deconvolution.analysis
-  - deconvolution_dictionary
-  - compute.deconvolution.preprocessing
-  - compute_methods_variable_signature
   - replicate_deconvolution_subgroups
+  - compute_deconvolution_dictionary
+  - compute_subgroups_pathways
   - prepare_multideconv_folds
+- title: Benchmarking
+  desc: >
+    Public benchmarking workflow
+  contents:
+  - compute.benchmark
 - title: Single cell functions
   desc: >
-    Single cell data manipulation for deconvolution
+    Public single-cell utilities
   contents:
   - create_metacells
   - create_sc_pseudobulk
   - create_sc_signatures
-  - compute_sc_deconvolution_methods
-  - compute.benchmark
 - title: Utils
   desc: >
     Internal use (not exported functions)
   contents:
+  - standardize_celltype_colnames
+  - compute.deconvolution.preprocessing
+  - compute_methods_variable_signature
+  - compute_sc_deconvolution_methods
+  - deconvolution_dictionary
+  - compute_data_driven_rank
+  - create_gsea_signature
   - computeCBSX
   - computeCBSX_parallel
   - computeDWLS
@@ -68,11 +77,11 @@ reference:
   - computeXCell
   - compute_subgroups
   - compute.cell.types
+  - corr_subgroups
   - remove_subgroups
   - remove_low_variance
   - find.maximum.iteration
   - removeCorrelatedFeatures
-  - correlation
 - title: Package Data
   desc: >
     Example data

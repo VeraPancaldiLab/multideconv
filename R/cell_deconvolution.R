@@ -1,6 +1,6 @@
 
 
-utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession", ".data", "Patient", "var", "id", "P", "sig_p", "r", "y", "p", "average", "Cells", "variable", "value", "pval_value"))
+utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession", ".data", "Patient", "var", "id", "P", "sig_p", "r", "y", "p", "average", "Cells", "variable", "value", "pval_value", "gene", "weight", "statistic", "condition", "score", "padj", "NES", "pathway", "size", "sig", "source"))
 
 #' Standardize Cell Type Column Names
 #'
@@ -9,11 +9,10 @@ utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession"
 #' @param mat A matrix with cell type data.
 #'
 #' @returns A matrix with standardized cell type column names.
-#' @export
 #' @examples
-#' mat <- matrix(rnorm(100), nrow = 10)
+#' mat <- matrix(rnorm(30), nrow = 10, ncol = 3)
 #' colnames(mat) <- c("Macrophage_M0", "Macrophage_M1", "Macrophage_M2")
-#' standardized_mat <- standardize_celltype_colnames(mat)
+#' standardized_mat <- multideconv:::standardize_celltype_colnames(mat)
 #' 
 #' 
 standardize_celltype_colnames <- function(mat) {
@@ -364,13 +363,11 @@ standardize_celltype_colnames <- function(mat) {
 #' @param deconv A dataframe with the unprocessed deconvolution features
 #'
 #' @return A matrix of the preprocessed deconvolution features with fixed and consistent names across the different methods and signatures following the nomenclature specified in multideconv (see Readme)
-#' @export
-#'
 #' @examples
 #'
 #' data("deconvolution")
 #'
-#' deconvolution = compute.deconvolution.preprocessing(deconvolution)
+#' deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 #'
 compute.deconvolution.preprocessing = function(deconv){
   cat("Preprocessing deconvolution features...............................................................\n\n")
@@ -425,16 +422,18 @@ compute.deconvolution.preprocessing = function(deconv){
 #' - A sublist with each cell type features as an element recover from the different signatures
 #' - Discarded cell types (this will happen if the cell types are not supported. See the READme for more information about this)
 #'
-#' @export
-#'
 #' @examples
 #'
 #' data("deconvolution")
 #'
-#' cells_types = compute.cell.types(deconvolution)
+#' cells_types = multideconv:::compute.cell.types(deconvolution)
 #' cells = cells_types[[1]]
 #' cells_discarded = cells_types[[2]]
-#' cells_types = compute.cell.types(deconvolution, cells_extra = c("mesenchymal", "basophils"))
+#' extra_cells <- c("mesenchymal", "basophils")
+#' cells_types <- multideconv:::compute.cell.types(
+#'   deconvolution,
+#'   cells_extra = extra_cells
+#' )
 #'
 compute.cell.types = function(data, cells_extra = NULL){
   ##### B cells
@@ -582,6 +581,7 @@ compute.cell.types = function(data, cells_extra = NULL){
 #' @param name Cell type name corresponding to the given matrix in 'data'
 #' @param n_seed Seed to ensure reproducibility regarding the choice of the feature.
 #' @param corr_method Correlation type whether "spearman" or "pearson".
+#' @param batch Optional batch covariate used to compute partial correlations.
 #'
 #' @return A list containing
 #'
@@ -617,8 +617,8 @@ removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method 
     set.seed(n_seed)
     feature = data.frame(corr_matrix[1, , drop = FALSE]) #Extract first row feature
     feature = feature %>%                                #Take only high corr above threshold
-      dplyr::mutate_all(~ifelse(. > threshold, ., NA)) %>%
-      dplyr::select_if(~all(!is.na(.)))
+      dplyr::mutate_all(~ifelse(. > threshold, ., NA))
+    feature <- feature[, colSums(!is.na(feature)) == nrow(feature), drop = FALSE]
 
     corr_matrix = corr_matrix[-which(rownames(corr_matrix)%in%colnames(feature)),-which(colnames(corr_matrix)%in%colnames(feature)), drop = F] #Remove already joined features
 
@@ -685,6 +685,7 @@ remove_subgroups = function(groups){
 #' @param thres_corr A numeric value with the minimum correlation allowed to group cell deconvolution features
 #' @param corr_type Correlation type whether "spearman" or "pearson".
 #' @param file_name Base name for subgroup
+#' @param batch Optional batch covariate used to compute partial correlations.
 #'
 #' @return A list containing
 #'
@@ -695,6 +696,7 @@ remove_subgroups = function(groups){
 #'
 compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, batch = NULL){
   data = data.frame(deconvolution)
+
   cell_subgroups = list()
   #cell_groups_similarity = list()
   cell_groups_discard = list()
@@ -783,7 +785,7 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
     terminate = FALSE
     iteration = 1
     while (terminate == FALSE) {
-      corr_df <- correlation(data, corr_type = corr_type, batch = batch)
+      corr_df <- corr_subgroups(data, corr_type = corr_type, batch = batch)
       vec = colnames(data)
       indice = 1
       subgroup = list()
@@ -839,10 +841,10 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
           for(i in 1:length(subgroup)){ #Create data frame with features subgroupped
             sub = data.frame(data[,colnames(data)%in%subgroup[[i]]]) #Map features that are inside each subgroup from input (deconvolution)
             sub$median = matrixStats::rowMedians(as.matrix(sub), useNames = FALSE) #Compute median of subgroup across patients
-            data_sub = data.frame(cbind(data_sub, sub$median)) #Save median in a new data frame
+            data_sub = cbind(data_sub, sub$median) #Save median in a new data frame
             colnames(data_sub)[i] = names(subgroup)[i]
             name = colnames(data)[which(!(colnames(data)%in%subgroup[[i]]))]
-            data = data.frame(data[,-which(colnames(data)%in%subgroup[[i]])]) #Remove from deconvolution features that are subgrouped
+            data = data.frame(data[,-which(colnames(data)%in%subgroup[[i]]), drop = FALSE]) #Remove from deconvolution features that are subgrouped
             if(ncol(data.frame(data))==1){
               data = as.data.frame(data)
               colnames(data)[1] = name
@@ -853,7 +855,7 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
 
           if(iteration == 1){ #Save what is inside the first subgroups
             cell_subgroups = subgroup
-            data_sub = data.frame(data_sub[,colnames(data_sub)%in%names(cell_subgroups)])
+            data_sub = data.frame(data_sub[,colnames(data_sub)%in%names(cell_subgroups), drop = FALSE])
             colnames(data_sub) = names(cell_subgroups)
           }else{
             for (i in 1:length(subgroup)) {
@@ -899,10 +901,11 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
 #'
 #' @param data Matrix with features to correlate
 #' @param corr_type Correlation type whether "spearman" or "pearson".
+#' @param batch Optional batch covariate used to compute partial correlations.
 #'
 #' @return Dataframe containing all significant correlations (pvalue < 0.05)
 #'
-correlation <- function(data, corr_type = "spearman", batch = NULL) {
+corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
   if (!is.null(batch)) {
     # Convert batch to numeric if factor or character
     if(is.factor(batch) || is.character(batch)){
@@ -988,6 +991,7 @@ remove_low_variance <- function(data, plot = FALSE) {
 #' @param corr Minimum correlation threshold for subgroupping the deconvolution features
 #' @param corr_type Correlation type for computing the cell subgroups, whether "spearman" or "pearson".
 #' @param seed A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.
+#' @param batch Optional batch covariate used to compute partial correlations.
 #' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
 #' @param file_name A string specifying the file name of the .csv file with the deconvolution subgroups
 #' @param return Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.
@@ -1176,6 +1180,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 #' Computes QuanTIseq
 #'
 #' @param TPM_matrix A matrix with TPM normalized counts (genes symbols as rows and samples as columns).
+#' @param name_signature Name used to tag output columns with the signature source.
 #'
 #' @return A matrix with cell abundance deconvolve with QuanTIseq
 #'
@@ -1246,8 +1251,7 @@ computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers)
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind) %dopar% {
-    library(multideconv)
+  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeCBSX(TPM_matrix, signature, name, password, signature_name)
@@ -1292,8 +1296,7 @@ computeDWLS_parallel = function(TPM_matrix, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind) %dopar% {
-    library(multideconv)
+  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeDWLS(TPM_matrix, signature, signature_name)
@@ -1375,8 +1378,7 @@ computeMOMF_parallel = function(TPM_matrix, sc_object, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  momf = foreach::foreach (i=1:length(signatures), .combine=cbind) %dopar% {
-    library(multideconv)
+  momf = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeMOMF(TPM_matrix, sc_object, signature, signature_name)
@@ -1417,7 +1419,9 @@ computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
 #'
 #' @import pcaMethods
 computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
-  library(pcaMethods) #Explicitly loading pcaMethods to access functions like prep(), which are not imported via @import. Problem with DeconRNASeq that uses not imported functions from pcaMethods
+  if (!requireNamespace("pcaMethods", quietly = TRUE)) {
+    stop("Package 'pcaMethods' is required for computeDeconRNASeq()")
+  }
 
   decon <- DeconRNASeq::DeconRNASeq(TPM_matrix, data.frame(signature_file))
   deconRNAseq = decon$out.all
@@ -1443,8 +1447,6 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 #' @param sc_obj A matrix with the counts from scRNAseq object (genes as rows and cells as columns) to run MOMF method. If NULL, MOMF is ignored.
 #'
 #' @return A matrix with the deconvolution features corresponding to all combinations of methods-signatures specified
-#' @export
-#'
 #' @references
 #'
 #' Sturm, G., Finotello, F., Petitprez, F., Zhang, J. D., Baumbach, J., Fridman, W. H., ..., List, M., Aneichyk, T. (2019). Comprehensive evaluation of transcriptome-based cell-type quantification methods for immuno-oncology.
@@ -1631,7 +1633,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 #' data("pseudobulk")
 #'
 #' deconv = compute.deconvolution(raw_counts, normalized = TRUE,
-#'                                methods = c("Epidish", "DeconRNASeq"), return = FALSE)
+#'                                methods = c("Epidish"), return = FALSE)
 #'
 #'
 #' @references
@@ -1749,8 +1751,6 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
 #' @param file_name File name for the .csv file to save with the deconvolution results.
 #'
 #' @return A matrix of deconvolution features across samples from your bulk counts based on the second generation methods.
-#' @export
-#'
 #' @references
 #' Sturm, G., Finotello, F., Petitprez, F., Zhang, J. D., Baumbach, J., Fridman, W. H., ..., List, M., Aneichyk, T. (2019). Comprehensive evaluation of transcriptome-based cell-type quantification methods for immuno-oncology.
 #' Bioinformatics, 35(14), i436-i445. https://doi.org/10.1093/bioinformatics/btz363
@@ -1759,9 +1759,6 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
 #' Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 #'
 compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"), sc_object, sc_metadata, cell_annotations, samples_ids, name_object, n_cores = NULL, return = FALSE, file_name = NULL){
-  library(MuSiC)
-  library(SCDC)
-
   if(normalized){
     bulk_counts = ADImpute::NormalizeTPM(raw_counts)
   } else {
@@ -2371,7 +2368,6 @@ create_sc_signatures = function(sc_obj,
   signature_dir = "Results/custom_signatures/"
   dir.create(signature_dir, showWarnings = FALSE, recursive = TRUE)
 
-  library(bseqsc)
   sc_obj = as.matrix(sc_obj)
   signatures = list()
 
@@ -2478,13 +2474,7 @@ process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_
 
   meta = hdWGCNA::GetMetacellObject(seurat_obj)
 
-  if (inherits(meta[["RNA"]], "Assay5")) {
-    # For Seurat v5
-    counts = LayerData(meta, layer = "counts")
-  } else {
-    # For Seurat v3/v4
-    counts = as.matrix(meta@assays[["RNA"]]@counts)
-  }
+  counts = as.matrix(SeuratObject::GetAssayData(meta, assay = "RNA", slot = "counts"))
 
   result <- list(
     counts = counts,
@@ -2534,6 +2524,12 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #'
 #' @param data A matrix or data frame of deconvolution features (samples x features) and a column named `target` indicating class labels.
 #' @param folds A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.
+#' @param bestune Optional tuning object; when provided, folds are skipped and full-data processing is returned.
+#' @param ncores Number of CPU cores for parallel fold processing.
+#' @param time_var Optional survival time vector used when target labels are not provided.
+#' @param event_var Optional survival event vector used when target labels are not provided.
+#' @param trait.positive Label in `event_var` that defines event = 1.
+#' @param cells_extra Optional character vector of additional cell labels to include.
 #'
 #' @return A list of two elements:
 #' \itemize{
@@ -2586,7 +2582,7 @@ prepare_multideconv_folds <- function(
 
     # Compute deconvolution on full dataset
     deconv_subgroups_final <- compute.deconvolution.analysis(
-      deconv = data,
+      deconvolution = data,
       corr = 0.7,
       seed = 123,
       cells_extra = cells_extra,
@@ -2639,7 +2635,7 @@ prepare_multideconv_folds <- function(
     }
 
     deconv_subgroups <- compute.deconvolution.analysis(
-      deconv = train_data,
+      deconvolution = train_data,
       corr = 0.7,
       seed = 123,
       cells_extra = cells_extra,
@@ -2704,6 +2700,7 @@ prepare_multideconv_folds <- function(
 #' @param pathway_matrix A numeric matrix or data frame of pathway activities
 #'   (rows = samples, columns = pathways), with the same row names as the
 #'   deconvolution matrices. Can be any pathway or feature activity matrix.
+#' @param batch_id Optional batch covariate used when computing module relationships.
 #'
 #' @return
 #' An updated version of \code{deconv_subgroups} containing:
@@ -2738,7 +2735,6 @@ prepare_multideconv_folds <- function(
 #' @importFrom stats dist hclust cutree
 #' @importFrom factoextra fviz_nbclust hcut
 #'
-#' @export
 deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id = NULL){
   pathway_matrix = pathway_matrix[,!colnames(pathway_matrix)%in%c("Androgen", "Estrogen")]
   cell_subgroups = deconv_subgroups[["Deconvolution subgroups per cell types"]]
@@ -2804,7 +2800,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
     sub_mat <- corr_matrix_global[, clusters_global[[k]], drop = FALSE]
 
     # Compute eigenvector (PC1) direction per feature (deconv row)
-    pca_res <- prcomp(sub_mat, center = TRUE, scale. = TRUE)
+    pca_res <- stats::prcomp(sub_mat, center = TRUE, scale. = TRUE)
     pc1_scores <- pca_res$x[, 1]  # first principal component
     corr_matrix_global[[paste0(cluster_name, "_Score")]] <- pc1_scores
   }
@@ -2830,7 +2826,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
         sub_mat <- corr_matrix[, clusters_global[[k]], drop = FALSE]
 
         # Compute eigenvector-based (PC1) score per cluster
-        pca_res <- prcomp(sub_mat, center = TRUE, scale. = TRUE)
+        pca_res <- stats::prcomp(sub_mat, center = TRUE, scale. = TRUE)
         pc1_scores <- pca_res$x[, 1]
         corr_matrix[[paste0(cluster_name, "_Score")]] <- pc1_scores
       }
@@ -2894,7 +2890,7 @@ aggregate_genes <- function(subgroup, default_quantiseq = "TIL10") {
 
   scores <- numeric()
   for (f in sel) {
-    df <- read.delim(f, row.names = 1) # Read the signature file
+    df <- utils::read.delim(f, row.names = 1) # Read the signature file
     df <- standardize_celltype_colnames(df) # Standardize column names to match cell types
     cols <- grep(ct, colnames(df), ignore.case = TRUE) # Extract columns that match the cell type
     if (!length(cols)) next # If no columns match, skip to the next file
@@ -2911,6 +2907,19 @@ aggregate_genes <- function(subgroup, default_quantiseq = "TIL10") {
   return(res)
 }
 
+#' Rank Genes by Correlation With a Deconvolution Subgroup
+#'
+#' Computes a data-driven gene ranking by correlating expression values with a
+#' selected deconvolution subgroup across matched samples.
+#'
+#' @param res Data frame containing at least a `gene` column with genes to evaluate.
+#' @param expr Gene expression matrix with genes in rows and samples in columns.
+#' @param deconv Deconvolution matrix with samples in rows and features/subgroups in columns.
+#' @param subgroup Character scalar indicating the subgroup/feature column in `deconv`.
+#' @param method Correlation method passed to [stats::cor()], typically `"spearman"` or `"pearson"`.
+#'
+#' @return A data frame sorted in descending correlation, with one column named `correlation`
+#' and row names corresponding to genes.
 compute_data_driven_rank <- function(res,
                                      expr,        # genes x samples
                                      deconv,      # samples x methods
@@ -2939,7 +2948,7 @@ compute_data_driven_rank <- function(res,
   # 4. Correlation
   # -----------------------------
   cors <- apply(expr_sub, 1, function(g) {
-    cor(g, sub_est, method = method, use = "pairwise.complete.obs")
+    stats::cor(g, sub_est, method = method, use = "pairwise.complete.obs")
   })
   
   # -----------------------------
@@ -2951,21 +2960,29 @@ compute_data_driven_rank <- function(res,
     stringsAsFactors = FALSE
   )
   rownames(ranked) <- ranked$gene
-  ranked <- ranked[order(ranked$correlation, decreasing = TRUE), ] %>%
-    dplyr::select(-gene)
+  ranked <- ranked[order(ranked$correlation, decreasing = TRUE), , drop = FALSE]
+  ranked$gene <- NULL
     
   return(ranked)
 }
 
-#GSEA analysis signatures
+#' Build a GSEA-Derived Signature Label for a Cell Subgroup
+#'
+#' Runs fgsea on ranked genes and creates a subgroup signature name based on the
+#' top positively enriched pathway.
+#'
+#' @param gene_scores Data frame of ranked scores (as produced by [compute_data_driven_rank()]).
+#' @param cell_type Character label used as prefix in the generated signature name.
+#' @param pathways Optional named list of pathways (`pathway -> genes`). If `NULL`,
+#' Hallmark pathways from `msigdbr` are used.
+#' @param plot Logical; if `TRUE`, save a top-20 fgsea dot plot in `Results/`.
+#'
+#' @return A list with two elements:
+#' `[[1]]` generated signature name, `[[2]]` a named list of enriched pathways.
 create_gsea_signature <- function(gene_scores,
                                   cell_type,
-                                  pathways = NULL) {
-
-  library(fgsea)
-  library(stringr)
-  library(dplyr)
-  library(msigdbr)
+                                  pathways = NULL,
+                                  plot = FALSE) {
 
   stats <- gene_scores[[1]]
   names(stats) <- rownames(gene_scores)   # attach gene names
@@ -2988,21 +3005,28 @@ create_gsea_signature <- function(gene_scores,
     dplyr::filter(!is.na(NES) & NES > 0) %>%  # Keep positive NES
     dplyr::arrange(dplyr::desc(NES)) # Arrange by descending NES
 
-  #fg_top <- fg %>%
-  #  dplyr::filter(!is.na(NES)) %>%
-  #  dplyr::arrange(dplyr::desc(dplyr::abs(NES))) %>%
-  #  dplyr::slice_head(n = 20) %>%
-  #  dplyr::mutate(pathway = factor(pathway, levels = rev(pathway)),
-  #                sig = -log10(padj + 1e-300))
+  fg_top <- fg %>%
+   dplyr::filter(!is.na(NES)) %>%
+   dplyr::arrange(dplyr::desc(abs(NES))) %>%
+   dplyr::slice_head(n = 20) %>%
+   dplyr::mutate(pathway = factor(pathway, levels = rev(pathway)),
+                 sig = -log10(padj + 1e-300))
 
-  #ggplot(fg_top, aes(x = NES, y = pathway, size = size, color = sig)) +
-  #  geom_point() +
-  #  scale_color_viridis_c(name = "-log10(padj)") +
-  #  scale_size_continuous(name = "pathway size") +
-  #  labs(title = "FGSEA — top 20 pathways", x = "NES", y = NULL) +
-  #  theme_minimal(base_size = 12)
+  if(plot){
+    grDevices::pdf(paste0("Results/",cell_type, "_FGSEA_top20.pdf"))
+    print(ggplot2::ggplot(fg_top, ggplot2::aes(x = NES, y = pathway, size = size, color = sig)) +
+      ggplot2::geom_point() +
+      ggplot2::scale_color_viridis_c(name = "-log10(padj)") +
+      ggplot2::scale_size_continuous(name = "pathway size") +
+      ggplot2::labs(title = paste0(cell_type, " FGSEA top 20 pathways"), x = "NES", y = NULL) +
+      ggplot2::theme_minimal(base_size = 12))
+    grDevices::dev.off()
+  }
   
-  if (nrow(pos) == 0) stop("No pathways with NES > 0 found")
+  if (nrow(pos) == 0) {
+    message("No pathways with NES > 0 found for ", cell_type, "; keeping original subgroup label.")
+    return(NULL)
+  }
   first_pathway <- as.character(pos$pathway[1]) 
   suffix <- stringr::str_replace_all(first_pathway, "[^A-Za-z0-9]+", "_") # Replace non-alphanumeric characters with underscores
   signature_name <- paste0(cell_type, "_", suffix) 
@@ -3024,7 +3048,22 @@ expand_subgroup_members <- function(subgroup, subgroup_map) {
 }
 
 
-compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL) {
+#' Compute a Deconvolution Dictionary From Subgroup Gene Programs
+#'
+#' For each subgroup, this function aggregates signature genes, ranks genes by
+#' correlation with subgroup abundance, performs GSEA, and renames subgroup
+#' labels using the top enriched pathway.
+#'
+#' @param subgroups Output list from [compute.deconvolution.analysis()].
+#' @param expr Gene expression matrix with genes in rows and samples in columns.
+#' @param pathways Optional named list of pathways (`pathway -> genes`) used by fgsea.
+#' If `NULL`, Hallmark pathways are used.
+#' @param plot Logical; if `TRUE`, save GSEA summary plots in `Results/`.
+#'
+#' @return Updated `subgroups` list with renamed subgroup labels in
+#' `"Deconvolution matrix"` and `"Deconvolution subgroups composition"`.
+#' @export
+compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL, plot = FALSE) {
 
   subgroup_map <- subgroups[["Deconvolution subgroups composition"]]
   deconv_mat = subgroups[["Deconvolution matrix"]]
@@ -3044,7 +3083,7 @@ compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL) {
                                          deconv = deconv_mat,
                                          subgroup = sub_name) # Compute correlation rankings for the subgroup
 
-      sig_out <- create_gsea_signature(ranked, sub_name, pathways) # create pathwyas signature
+      sig_out <- create_gsea_signature(ranked, sub_name, pathways, plot = plot) # create pathwyas signature
       if (is.null(sig_out)) next # No enrichment found, skip to next subgroup
       new_label <- sig_out[[1]]
       idx <- which(colnames(deconv_mat) == sub_name) # replace column name in deconv_mat if present
@@ -3063,6 +3102,21 @@ compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL) {
   return(subgroups)
 }
 
+#' Relate Deconvolution Subgroups to PROGENy Pathways
+#'
+#' Computes PROGENy pathway activity from normalized counts and evaluates module
+#' relationships between subgroup profiles and pathway activity profiles.
+#'
+#' @param subgroups Output list from [compute.deconvolution.analysis()].
+#' @param counts_norm Normalized expression matrix with genes in rows and samples in columns.
+#' @param file_name Prefix used to save output files.
+#' @param height Plot height in inches.
+#' @param width Plot width in inches.
+#' @param par_mar Numeric vector passed to plot margins.
+#' @param pval P-value threshold used in module relationship plots.
+#'
+#' @return Invisibly returns `NULL`; side effects are generated output files.
+#' @export
 compute_subgroups_pathways <- function(subgroups,
                                        counts_norm,
                                        file_name = "Test",
@@ -3091,7 +3145,13 @@ compute_subgroups_pathways <- function(subgroups,
   for(celltype in names(subgroups_cells)) {
     cells = subgroups_cells[[celltype]]
     if(ncol(cells) < 2) next 
-    compute.modules.relationship(cells, t(mat_consensus),file_name = paste0(file_name, "_", celltype), height = height, width = width, par_mar = par_mar, pval = pval)
+    CellTFusion::compute.modules.relationship(cells,
+                                             data.frame(t(mat_consensus)),
+                                             file_name = paste0(file_name, "_", celltype),
+                                             height = height,
+                                             width = width,
+                                             par_mar = par_mar,
+                                             pval = pval)
   }
   
 }

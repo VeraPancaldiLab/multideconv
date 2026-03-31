@@ -84,7 +84,7 @@ data("metacells_metadata")
 data("pseudobulk")
 
 deconv = compute.deconvolution(raw_counts, normalized = TRUE,
-                               methods = c("Epidish", "DeconRNASeq"), return = FALSE)
+                               methods = c("Epidish"), return = FALSE)
 
 
 }

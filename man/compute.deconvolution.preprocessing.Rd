@@ -19,6 +19,6 @@ Give consistent names and patterns following the method_signature_cell structure
 
 data("deconvolution")
 
-deconvolution = compute.deconvolution.preprocessing(deconvolution)
+deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 
 }

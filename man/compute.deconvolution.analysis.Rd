@@ -7,8 +7,9 @@
 compute.deconvolution.analysis(
   deconvolution,
   corr = 0.7,
-  corr_type = "pearson",
+  corr_type = "spearman",
   seed = NULL,
+  batch = NULL,
   cells_extra = NULL,
   file_name = NULL,
   return = FALSE,
@@ -23,6 +24,8 @@ compute.deconvolution.analysis(
 \item{corr_type}{Correlation type for computing the cell subgroups, whether "spearman" or "pearson".}
 
 \item{seed}{A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.}
+
+\item{batch}{Optional batch covariate used to compute partial correlations.}
 
 \item{cells_extra}{A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)}
 

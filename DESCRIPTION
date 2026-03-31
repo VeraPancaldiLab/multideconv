@@ -1,7 +1,7 @@
 Package: multideconv
 Title: Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods
 Version: 0.0.1
-Authors@R:c( 
+Authors@R: c( 
     person("Marcelo", "Hurtado", , "marcelo.hurtado@inserm.fr", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0004-6712-0864")),
     person("Vera", "Pancaldi", , "vera.pancaldi@inserm.fr", role = "aut",
@@ -10,43 +10,44 @@ Description: R package that reduces dimensionality and eliminates redundancy thr
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends:
     R (>= 4.3)
 Imports: 
     ADImpute,
+    CellTFusion,
+    DeconRNASeq,
     doParallel,
+    decoupleR,
     dplyr,
     EpiDISH,
-    limSolve,
+    fgsea,
     foreach,
     ggplot2,
     graphics,
     reshape2,
-    ComplexHeatmap,
     factoextra,
     grDevices,
     ggpubr,
     Hmisc (>= 5.2-3),
     immunedeconv (>= 2.1.0),
     matrixStats,
+    msigdbr,
     omnideconv (>= 0.1.0),
     parallel,
+    ppcor,
     glmGamPoi,
     future.apply,
     ggtext,
-    bisque,
     future,
     purrr (>= 1.0.2),
     hdWGCNA (>= 0.4.0),
-    DWLS (>= 0.4),
-    MOMF (>= 0.2),
-    BayesPrism (>= 0.2),
     stats,
     stringr,
     tibble,
     tidyr,
     pcaMethods (>= 1.94),
+    SeuratObject,
     utils,
     grid
 Remotes: 
@@ -69,6 +70,12 @@ Suggests:
     MCPcounter (>= 1.2.0),
     knitr,
     matlib,
+    limSolve,
+    ComplexHeatmap,
+    bisque,
+    DWLS (>= 0.4),
+    MOMF (>= 0.2),
+    BayesPrism (>= 0.2),
     rmarkdown,
     shiny,
     pkgload

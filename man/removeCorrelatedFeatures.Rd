@@ -9,7 +9,8 @@ removeCorrelatedFeatures(
   threshold,
   name,
   n_seed,
-  corr_method = "spearman"
+  corr_method = "spearman",
+  batch = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ removeCorrelatedFeatures(
 \item{n_seed}{Seed to ensure reproducibility regarding the choice of the feature.}
 
 \item{corr_method}{Correlation type whether "spearman" or "pearson".}
+
+\item{batch}{Optional batch covariate used to compute partial correlations.}
 }
 \value{
 A list containing

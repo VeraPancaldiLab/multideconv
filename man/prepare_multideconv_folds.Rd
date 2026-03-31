@@ -4,12 +4,33 @@
 \alias{prepare_multideconv_folds}
 \title{Prepare folds for multideconv cross-validation with processed training and test data}
 \usage{
-prepare_multideconv_folds(data, folds, cells_extra = NULL)
+prepare_multideconv_folds(
+  data,
+  folds = NULL,
+  bestune = NULL,
+  ncores = NULL,
+  time_var = NULL,
+  event_var = NULL,
+  trait.positive = NULL,
+  cells_extra = NULL
+)
 }
 \arguments{
 \item{data}{A matrix or data frame of deconvolution features (samples x features) and a column named \code{target} indicating class labels.}
 
 \item{folds}{A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.}
+
+\item{bestune}{Optional tuning object; when provided, folds are skipped and full-data processing is returned.}
+
+\item{ncores}{Number of CPU cores for parallel fold processing.}
+
+\item{time_var}{Optional survival time vector used when target labels are not provided.}
+
+\item{event_var}{Optional survival event vector used when target labels are not provided.}
+
+\item{trait.positive}{Label in \code{event_var} that defines event = 1.}
+
+\item{cells_extra}{Optional character vector of additional cell labels to include.}
 }
 \value{
 A list of two elements:
