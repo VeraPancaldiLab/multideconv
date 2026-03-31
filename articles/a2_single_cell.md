@@ -152,21 +152,25 @@ deconv = compute.deconvolution(raw.counts = bulk,
 
 To run only the second-generation deconvolution methods based on
 single-cell data, without using any static cell-type signatures, use the
-following:
+public
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md)
+workflow with an empty first-generation `methods` vector:
 
 ``` r
-deconv_sc = compute_sc_deconvolution_methods(raw_counts = bulk, 
-                                             normalized = TRUE, 
-                                             methods_sc = c("Autogenes", "BayesPrism", 
-                                                            "Bisque", "CPM", "MuSic", "SCDC"),
-                                             sc_object = metacell_obj, 
-                                             sc_metadata = metacell_metadata, 
-                                             cell_annotations = "annotated_ct", 
-                                             samples_ids = "sample", 
-                                             name_object = "Test", 
-                                             n_cores = 2, 
-                                             return = TRUE, 
-                                             file_name = "Tutorial")
+deconv_sc = compute.deconvolution(raw_counts = bulk,
+                                  normalized = TRUE,
+                                  methods = character(0),
+                                  sc_deconv = TRUE,
+                                  sc_matrix = metacell_obj,
+                                  sc_metadata = metacell_metadata,
+                                  methods_sc = c("Autogenes", "BayesPrism",
+                                                 "Bisque", "CPM", "MuSic", "SCDC"),
+                                  cell_label = "annotated_ct",
+                                  sample_label = "sample",
+                                  name_sc_signature = "Test",
+                                  workers = 2,
+                                  return = TRUE,
+                                  file_name = "Tutorial")
 ```
 
 Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, Bernhard Eder,

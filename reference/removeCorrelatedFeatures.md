@@ -11,7 +11,8 @@ removeCorrelatedFeatures(
   threshold,
   name,
   n_seed,
-  corr_method = "spearman"
+  corr_method = "spearman",
+  batch = NULL
 )
 ```
 
@@ -36,6 +37,10 @@ removeCorrelatedFeatures(
 - corr_method:
 
   Correlation type whether "spearman" or "pearson".
+
+- batch:
+
+  Optional batch covariate used to compute partial correlations.
 
 ## Value
 

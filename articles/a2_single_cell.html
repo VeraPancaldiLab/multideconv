@@ -214,20 +214,23 @@ combinations of methods and signatures.</p>
 <span>                               name_sc_signature <span class="op">=</span> <span class="st">"Test"</span><span class="op">)</span></span></code></pre></div>
 <p>To run only the second-generation deconvolution methods based on
 single-cell data, without using any static cell-type signatures, use the
-following:</p>
+public <code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code> workflow with an empty
+first-generation <code>methods</code> vector:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods</a></span><span class="op">(</span>raw_counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                                             normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                                             methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>, </span>
-<span>                                                            <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
-<span>                                             sc_object <span class="op">=</span> <span class="va">metacell_obj</span>, </span>
-<span>                                             sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>, </span>
-<span>                                             cell_annotations <span class="op">=</span> <span class="st">"annotated_ct"</span>, </span>
-<span>                                             samples_ids <span class="op">=</span> <span class="st">"sample"</span>, </span>
-<span>                                             name_object <span class="op">=</span> <span class="st">"Test"</span>, </span>
-<span>                                             n_cores <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>                                             return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                                             file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw_counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>                                  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                                  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                  sc_deconv <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                                  sc_matrix <span class="op">=</span> <span class="va">metacell_obj</span>,</span>
+<span>                                  sc_metadata <span class="op">=</span> <span class="va">metacell_metadata</span>,</span>
+<span>                                  methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Autogenes"</span>, <span class="st">"BayesPrism"</span>,</span>
+<span>                                                 <span class="st">"Bisque"</span>, <span class="st">"CPM"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>,</span>
+<span>                                  cell_label <span class="op">=</span> <span class="st">"annotated_ct"</span>,</span>
+<span>                                  sample_label <span class="op">=</span> <span class="st">"sample"</span>,</span>
+<span>                                  name_sc_signature <span class="op">=</span> <span class="st">"Test"</span>,</span>
+<span>                                  workers <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                                  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-Dietrich2024.06.10.598226" class="csl-entry">
 Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, Bernhard Eder,

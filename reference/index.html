@@ -42,7 +42,7 @@
     <div class="section level2">
       <h2 id="main">Main<a class="anchor" aria-label="anchor" href="#main"></a></h2>
 
-      <div class="section-desc"><p>Compute cell type deconvolution</p></div>
+      <div class="section-desc"><p>Public user-facing functions</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -65,31 +65,24 @@
 
         <dt>
 
-          <code><a href="deconvolution_dictionary.html">deconvolution_dictionary()</a></code>
-
-        </dt>
-        <dd>Build a Deconvolution–Pathway Relationship Dictionary</dd>
-
-        <dt>
-
-          <code><a href="compute.deconvolution.preprocessing.html">compute.deconvolution.preprocessing()</a></code>
-
-        </dt>
-        <dd>Compute deconvolution preprocessing</dd>
-
-        <dt>
-
-          <code><a href="compute_methods_variable_signature.html">compute_methods_variable_signature()</a></code>
-
-        </dt>
-        <dd>Compute deconvolution methods with variable signatures</dd>
-
-        <dt>
-
           <code><a href="replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code>
 
         </dt>
         <dd>Replicate deconvolution subgroups in a new dataset</dd>
+
+        <dt>
+
+          <code><a href="compute_deconvolution_dictionary.html">compute_deconvolution_dictionary()</a></code>
+
+        </dt>
+        <dd>Compute a Deconvolution Dictionary From Subgroup Gene Programs</dd>
+
+        <dt>
+
+          <code><a href="compute_subgroups_pathways.html">compute_subgroups_pathways()</a></code>
+
+        </dt>
+        <dd>Relate Deconvolution Subgroups to PROGENy Pathways</dd>
 
         <dt>
 
@@ -98,9 +91,25 @@
         </dt>
         <dd>Prepare folds for multideconv cross-validation with processed training and test data</dd>
       </dl></div><div class="section level2">
+      <h2 id="benchmarking">Benchmarking<a class="anchor" aria-label="anchor" href="#benchmarking"></a></h2>
+
+      <div class="section-desc"><p>Public benchmarking workflow</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="compute.benchmark.html">compute.benchmark()</a></code>
+
+        </dt>
+        <dd>Compute deconvolution benchmark</dd>
+      </dl></div><div class="section level2">
       <h2 id="single-cell-functions">Single cell functions<a class="anchor" aria-label="anchor" href="#single-cell-functions"></a></h2>
 
-      <div class="section-desc"><p>Single cell data manipulation for deconvolution</p></div>
+      <div class="section-desc"><p>Public single-cell utilities</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -127,20 +136,6 @@
 
         </dt>
         <dd>Create cell type signatures from scRNAseq</dd>
-
-        <dt>
-
-          <code><a href="compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods()</a></code>
-
-        </dt>
-        <dd>Compute second-generation deconvolution methods</dd>
-
-        <dt>
-
-          <code><a href="compute.benchmark.html">compute.benchmark()</a></code>
-
-        </dt>
-        <dd>Compute deconvolution benchmark</dd>
       </dl></div><div class="section level2">
       <h2 id="utils">Utils<a class="anchor" aria-label="anchor" href="#utils"></a></h2>
 
@@ -152,6 +147,55 @@
 
 
       <dl><dt>
+
+          <code><a href="standardize_celltype_colnames.html">standardize_celltype_colnames()</a></code>
+
+        </dt>
+        <dd>Standardize Cell Type Column Names</dd>
+
+        <dt>
+
+          <code><a href="compute.deconvolution.preprocessing.html">compute.deconvolution.preprocessing()</a></code>
+
+        </dt>
+        <dd>Compute deconvolution preprocessing</dd>
+
+        <dt>
+
+          <code><a href="compute_methods_variable_signature.html">compute_methods_variable_signature()</a></code>
+
+        </dt>
+        <dd>Compute deconvolution methods with variable signatures</dd>
+
+        <dt>
+
+          <code><a href="compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods()</a></code>
+
+        </dt>
+        <dd>Compute second-generation deconvolution methods</dd>
+
+        <dt>
+
+          <code><a href="deconvolution_dictionary.html">deconvolution_dictionary()</a></code>
+
+        </dt>
+        <dd>Build a Deconvolution–Pathway Relationship Dictionary</dd>
+
+        <dt>
+
+          <code><a href="compute_data_driven_rank.html">compute_data_driven_rank()</a></code>
+
+        </dt>
+        <dd>Rank Genes by Correlation With a Deconvolution Subgroup</dd>
+
+        <dt>
+
+          <code><a href="create_gsea_signature.html">create_gsea_signature()</a></code>
+
+        </dt>
+        <dd>Build a GSEA-Derived Signature Label for a Cell Subgroup</dd>
+
+        <dt>
 
           <code><a href="computeCBSX.html">computeCBSX()</a></code>
 
@@ -244,6 +288,13 @@
 
         <dt>
 
+          <code><a href="corr_subgroups.html">corr_subgroups()</a></code>
+
+        </dt>
+        <dd>Perform pairwise correlation across all features</dd>
+
+        <dt>
+
           <code><a href="remove_subgroups.html">remove_subgroups()</a></code>
 
         </dt>
@@ -269,13 +320,6 @@
 
         </dt>
         <dd>Remove high correlated cell deconvolution features</dd>
-
-        <dt>
-
-          <code><a href="correlation.html">correlation()</a></code>
-
-        </dt>
-        <dd>Perform pairwise correlation across all features</dd>
       </dl></div><div class="section level2">
       <h2 id="package-data">Package Data<a class="anchor" aria-label="anchor" href="#package-data"></a></h2>
 

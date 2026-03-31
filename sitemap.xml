@@ -30,10 +30,14 @@
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/computeMOMF_parallel.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/computeQuantiseq.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/computeXCell.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_data_driven_rank.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_deconvolution_dictionary.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_methods_variable_signature.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_subgroups.html</loc></url>
-<url><loc>https://verapancaldilab.github.io/multideconv/reference/correlation.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/compute_subgroups_pathways.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/corr_subgroups.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/create_gsea_signature.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/create_metacells.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/create_sc_pseudobulk.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.html</loc></url>
@@ -53,6 +57,7 @@
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/remove_subgroups.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/sample_labels.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/subgroups.html</loc></url>
 </urlset>
 

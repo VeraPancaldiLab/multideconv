@@ -9,7 +9,16 @@ provide a final processed training set.
 ## Usage
 
 ``` r
-prepare_multideconv_folds(data, folds, cells_extra = NULL)
+prepare_multideconv_folds(
+  data,
+  folds = NULL,
+  bestune = NULL,
+  ncores = NULL,
+  time_var = NULL,
+  event_var = NULL,
+  trait.positive = NULL,
+  cells_extra = NULL
+)
 ```
 
 ## Arguments
@@ -23,6 +32,33 @@ prepare_multideconv_folds(data, folds, cells_extra = NULL)
 
   A list of integer vectors indicating row indices for the training set
   in each fold. The test set is implicitly defined as the complement.
+
+- bestune:
+
+  Optional tuning object; when provided, folds are skipped and full-data
+  processing is returned.
+
+- ncores:
+
+  Number of CPU cores for parallel fold processing.
+
+- time_var:
+
+  Optional survival time vector used when target labels are not
+  provided.
+
+- event_var:
+
+  Optional survival event vector used when target labels are not
+  provided.
+
+- trait.positive:
+
+  Label in `event_var` that defines event = 1.
+
+- cells_extra:
+
+  Optional character vector of additional cell labels to include.
 
 ## Value
 

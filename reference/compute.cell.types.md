@@ -34,8 +34,12 @@ A list containing:
 ``` r
 data("deconvolution")
 
-cells_types = compute.cell.types(deconvolution)
+cells_types = multideconv:::compute.cell.types(deconvolution)
 cells = cells_types[[1]]
 cells_discarded = cells_types[[2]]
-cells_types = compute.cell.types(deconvolution, cells_extra = c("mesenchymal", "basophils"))
+extra_cells <- c("mesenchymal", "basophils")
+cells_types <- multideconv:::compute.cell.types(
+  deconvolution,
+  cells_extra = extra_cells
+)
 ```

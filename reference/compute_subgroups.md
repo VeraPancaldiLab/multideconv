@@ -5,7 +5,13 @@ Compute deconvolution subgroups
 ## Usage
 
 ``` r
-compute_subgroups(deconvolution, thres_corr, corr_type, file_name)
+compute_subgroups(
+  deconvolution,
+  thres_corr,
+  corr_type,
+  file_name,
+  batch = NULL
+)
 ```
 
 ## Arguments
@@ -26,6 +32,10 @@ compute_subgroups(deconvolution, thres_corr, corr_type, file_name)
 - file_name:
 
   Base name for subgroup
+
+- batch:
+
+  Optional batch covariate used to compute partial correlations.
 
 ## Value
 

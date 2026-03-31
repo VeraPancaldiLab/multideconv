@@ -26,7 +26,7 @@ the nomenclature specified in multideconv (see Readme)
 ``` r
 data("deconvolution")
 
-deconvolution = compute.deconvolution.preprocessing(deconvolution)
+deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 #> Preprocessing deconvolution features...............................................................
 #> 
 #> Checking consistency in deconvolution cell fractions across patients...............................................................

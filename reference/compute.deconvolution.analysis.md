@@ -8,8 +8,9 @@ Compute cell type processing
 compute.deconvolution.analysis(
   deconvolution,
   corr = 0.7,
-  corr_type = "pearson",
+  corr_type = "spearman",
   seed = NULL,
+  batch = NULL,
   cells_extra = NULL,
   file_name = NULL,
   return = FALSE,
@@ -38,6 +39,10 @@ compute.deconvolution.analysis(
 
   A numeric value to specificy the seed. This ensures reproducibility
   during the choice step of high correlated features.
+
+- batch:
+
+  Optional batch covariate used to compute partial correlations.
 
 - cells_extra:
 

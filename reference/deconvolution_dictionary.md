@@ -16,7 +16,7 @@ cluster with which it is most strongly associated.
 ## Usage
 
 ``` r
-deconvolution_dictionary(deconv_subgroups, pathway_matrix)
+deconvolution_dictionary(deconv_subgroups, pathway_matrix, batch_id = NULL)
 ```
 
 ## Arguments
@@ -31,6 +31,10 @@ deconvolution_dictionary(deconv_subgroups, pathway_matrix)
   A numeric matrix or data frame of pathway activities (rows = samples,
   columns = pathways), with the same row names as the deconvolution
   matrices. Can be any pathway or feature activity matrix.
+
+- batch_id:
+
+  Optional batch covariate used when computing module relationships.
 
 ## Value
 

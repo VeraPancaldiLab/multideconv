@@ -50,8 +50,9 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute.deconvolution.analysis</span><span class="op">(</span></span>
 <span>  <span class="va">deconvolution</span>,</span>
 <span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  corr_type <span class="op">=</span> <span class="st">"pearson"</span>,</span>
+<span>  corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  batch <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cells_extra <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -77,6 +78,10 @@
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.</p></dd>
+
+
+<dt id="arg-batch">batch<a class="anchor" aria-label="anchor" href="#arg-batch"></a></dt>
+<dd><p>Optional batch covariate used to compute partial correlations.</p></dd>
 
 
 <dt id="arg-cells-extra">cells_extra<a class="anchor" aria-label="anchor" href="#arg-cells-extra"></a></dt>

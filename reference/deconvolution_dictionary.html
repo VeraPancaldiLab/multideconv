@@ -77,7 +77,7 @@ with which it is most strongly associated.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">deconvolution_dictionary</span><span class="op">(</span><span class="va">deconv_subgroups</span>, <span class="va">pathway_matrix</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">deconvolution_dictionary</span><span class="op">(</span><span class="va">deconv_subgroups</span>, <span class="va">pathway_matrix</span>, batch_id <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -92,6 +92,10 @@ with which it is most strongly associated.</p>
 <dd><p>A numeric matrix or data frame of pathway activities
 (rows = samples, columns = pathways), with the same row names as the
 deconvolution matrices. Can be any pathway or feature activity matrix.</p></dd>
+
+
+<dt id="arg-batch-id">batch_id<a class="anchor" aria-label="anchor" href="#arg-batch-id"></a></dt>
+<dd><p>Optional batch covariate used when computing module relationships.</p></dd>
 
 </dl></div>
     <div class="section level2">
