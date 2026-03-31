@@ -49,7 +49,6 @@ Imports:
     utils,
     grid
 Remotes: 
-    VeraPancaldiLab/CellTFusion,
     omnideconv/immunedeconv,
     omnideconv/omnideconv,
     omnideconv/DWLS,
@@ -65,8 +64,6 @@ Suggests:
     Seurat (>= 4.4.0),
     GenomicRanges,
     GeneOverlap,
-    CellTFusion,
-    DeconRNASeq,
     MCPcounter (>= 1.2.0),
     knitr,
     matlib,
