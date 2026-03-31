@@ -99,7 +99,7 @@ deconv_dictionary[["States"]]
 
 To visualize pathway relationships for the learned subgroup structure, use `compute_subgroups_pathways()`. This function computes PROGENy pathway activity from the normalized counts and generates module relationship plots showing how well each deconvolution subgroup correlates with each pathway activity pattern.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, eval = FALSE}
 # Generate pathway relationship plots for all cell types
 # Plots will be saved to Results/ directory
 compute_subgroups_pathways(subgroups = deconv_dictionary,
