@@ -1,5 +1,10 @@
 # multideconv
 
+# multideconv
+
+[![R-CMD-check](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml)
+
 An integrative pipeline for combining first and second generation cell
 type deconvolution results
 

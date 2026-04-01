@@ -14,6 +14,8 @@ Public user-facing functions
   : Compute a Deconvolution Dictionary From Subgroup Gene Programs
 - [`compute_subgroups_pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute_subgroups_pathways.md)
   : Relate Deconvolution Subgroups to PROGENy Pathways
+- [`estimate_expression_profiles()`](https://verapancaldilab.github.io/multideconv/reference/estimate_expression_profiles.md)
+  : Estimate Cell-Type-Specific Expression Profiles from Bulk Data
 - [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
   : Prepare folds for multideconv cross-validation with processed
   training and test data
