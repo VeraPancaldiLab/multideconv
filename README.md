@@ -1,6 +1,11 @@
 multideconv
 ================
 
+# multideconv
+
+[![R-CMD-check](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml)
+
 An integrative pipeline for combining first and second generation cell
 type deconvolution results
 
@@ -108,8 +113,8 @@ deconv_sc = compute_sc_deconvolution_methods(raw_counts, sc_object, sc_metadata,
 
 ## Shiny app
 
-`multideconv` includes an interactive Shiny app for non-coding users with
-four tabs: **Welcome**, **Deconvolution**, **Analysis**, and
+`multideconv` includes an interactive Shiny app for non-coding users
+with four tabs: **Welcome**, **Deconvolution**, **Analysis**, and
 **Benchmark**.
 
 From the repository root, run:

@@ -47,7 +47,8 @@ Imports:
     pcaMethods (>= 1.94),
     SeuratObject,
     utils,
-    grid
+    grid,
+    nnls
 Remotes: 
     omnideconv/immunedeconv,
     omnideconv/omnideconv,

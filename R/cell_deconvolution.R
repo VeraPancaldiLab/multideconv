@@ -3166,3 +3166,57 @@ compute_subgroups_pathways <- function(subgroups,
   }
   
 }
+
+#' Estimate Cell-Type-Specific Expression Profiles from Bulk Data
+#'
+#' Uses non-negative least squares (NNLS) to decompose bulk gene expression
+#' into cell-type-specific expression estimates, given known cell-type fractions.
+#'
+#' @param bulk_expr A numeric matrix of bulk gene expression with genes as rows
+#'   and samples as columns.
+#' @param cell_fracs A numeric matrix of cell-type fractions with samples as rows
+#'   and cell types as columns. Row names must match column names of `bulk_expr`.
+#'
+#' @return A named list of matrices, one per cell type. Each matrix has samples
+#'   as rows and genes as columns, containing the estimated expression
+#'   contribution of that cell type.
+#'
+#' @importFrom nnls nnls
+#' @export
+estimate_expression_profiles <- function(bulk_expr, cell_fracs) {
+  if (!requireNamespace("nnls", quietly = TRUE)) {
+    stop("Package 'nnls' is required for estimate_expression_profiles()")
+  }
+  genes <- rownames(bulk_expr)
+  samples <- colnames(bulk_expr)
+  cell_types <- colnames(cell_fracs)
+  
+  # Initialize a list of matrices, one per cell type
+  expr_by_celltype <- lapply(cell_types, function(ct) {
+    matrix(0, nrow = length(samples), ncol = length(genes),
+           dimnames = list(samples, genes))
+  })
+  names(expr_by_celltype) <- cell_types
+  
+  # Iterate over each sample
+  for (s in seq_along(samples)) {
+    sample_name <- samples[s] # sample
+    p <- cell_fracs[s, ]  # deconvolution in sample
+    
+    # Iterate over each gene
+    for (g in seq_along(genes)) {
+      gene_name <- genes[g] # gene
+      y <- bulk_expr[g, s] # extract expression per gene and sample
+      X <- diag(p) # create a diagonal matrix with the proportions (to give the shape)
+      fit <- nnls::nnls(X, rep(y, length(p))) # compute non negative linear least squares (avoid negatives) to fit the model. Solve for X*beta = y
+      est_expr <- stats::coef(fit) # extract the beta coefficient 
+      
+      # Store result per cell type
+      for (c in seq_along(cell_types)) {
+        expr_by_celltype[[c]][s, g] <- t(est_expr[c])
+      }
+    }
+  }
+  
+  return(expr_by_celltype)  # one matrix per cell type
+}
