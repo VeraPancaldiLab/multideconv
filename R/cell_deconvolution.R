@@ -1421,7 +1421,8 @@ computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
 computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
   if (!requireNamespace("DeconRNASeq", quietly = TRUE)) {
     stop("Package 'DeconRNASeq' is required for computeDeconRNASeq(). ",
-         "Install it from Bioconductor with: BiocManager::install('DeconRNASeq')")
+         "Install it with: BiocManager::install('DeconRNASeq')",
+         call. = FALSE)
   }
 
   if (!requireNamespace("pcaMethods", quietly = TRUE)) {
@@ -2743,7 +2744,8 @@ prepare_multideconv_folds <- function(
 deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id = NULL){
   if (!requireNamespace("CellTFusion", quietly = TRUE)) {
     stop("Package 'CellTFusion' is required for deconvolution_dictionary(). ",
-         "Install it with: pak::pkg_install('VeraPancaldiLab/CellTFusion')")
+         "Install it with: pak::pkg_install('VeraPancaldiLab/CellTFusion')",
+         call. = FALSE)
   }
 
   pathway_matrix = pathway_matrix[,!colnames(pathway_matrix)%in%c("Androgen", "Estrogen")]
@@ -3136,7 +3138,8 @@ compute_subgroups_pathways <- function(subgroups,
                                        pval = 0.05) {
   if (!requireNamespace("CellTFusion", quietly = TRUE)) {
     stop("Package 'CellTFusion' is required for compute_subgroups_pathways(). ",
-         "Install it with: pak::pkg_install('VeraPancaldiLab/CellTFusion')")
+         "Install it with: pak::pkg_install('VeraPancaldiLab/CellTFusion')",
+         call. = FALSE)
   }
 
   subgroups_cells = subgroups[["Deconvolution subgroups per cell types"]]
