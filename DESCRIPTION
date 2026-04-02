@@ -57,7 +57,8 @@ Remotes:
     omnideconv/MOMF,
     smorabit/hdWGCNA,
     grst/MCPcounter,
-    cozygene/bisque
+    cozygene/bisque,
+    VeraPancaldiLab/CellTFusion
 Suggests: 
     testthat (>= 3.0.0),
     WGCNA,
