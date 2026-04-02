@@ -57,8 +57,7 @@ Remotes:
     omnideconv/MOMF,
     smorabit/hdWGCNA,
     grst/MCPcounter,
-    cozygene/bisque,
-    VeraPancaldiLab/CellTFusion
+    cozygene/bisque
 Suggests: 
     testthat (>= 3.0.0),
     WGCNA,
@@ -72,8 +71,6 @@ Suggests:
     limSolve,
     ComplexHeatmap,
     bisque,
-    CellTFusion,
-    DeconRNASeq,
     DWLS (>= 0.4),
     MOMF (>= 0.2),
     BayesPrism (>= 0.2),
