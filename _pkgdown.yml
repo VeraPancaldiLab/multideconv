@@ -1,6 +1,12 @@
 url: https://verapancaldilab.github.io/multideconv/
 template:
   bootstrap: 5
+  bslib:
+    pkgdown-nav-height: 100px
+
+home:
+  sidebar:
+    structure: [links, license, community, citation, authors, dev, toc]
 
 navbar:
   structure:

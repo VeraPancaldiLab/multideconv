@@ -1,6 +1,8 @@
 multideconv
 ================
 
+# multideconv <img src="man/figures/logo.png" align="right" height="139" alt="multideconv logo" />
+
 [![R-CMD-check](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/multideconv/actions/workflows/pkgdown.yaml)
 
