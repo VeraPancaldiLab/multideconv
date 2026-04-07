@@ -121,7 +121,7 @@ standardize_celltype_colnames <- function(mat) {
 
   ## CD4 and subtypes
   lower <- stringr::str_to_lower(colnames(mat))
-  is_cd4 <- grepl("\\bcd4\\b|reg|regulatory", lower)
+  is_cd4 <- grepl("\\bcd4\\b|(^|_)cd4($|_)|\\breg\\b|regulatory", lower)
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
