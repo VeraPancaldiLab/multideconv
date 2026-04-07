@@ -232,76 +232,9 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1
-#> 
-#> Total sum across samples of combination Epidish_CCLE.TIL10 is not 1! Remember these are proportions and the total should be 1
-#> Samples which sum with combination Epidish_CCLE.TIL10 is not 1:
-#> 
-#>  SAM7f0d9cc7f001
-#> SAMcf018fee2acd
-#> SAM49f9b2e57aa5
-#> SAM2e7aa8fa0ab3
-#> SAMe7bf6c015192
-#> SAM6dd7ad1d797d
-#> SAM18039827e1b9
-#> SAMc692536a795a
-#> SAM9a2cf3c06fb3
-#> SAM557dde1b9f3e
-#> SAM23aa15d4a0b0
-#> SAM468a9e1dc821
-#> SAMb963dda93cfd
-#> SAMbcbc7957c264
-#> SAM7fb6987514a4
-#> SAM63405b04ab2d
-#> SAM18bc1078bc15
-#> SAMd1bd63734394
-#> SAMe9ae8beb82fa
-#> SAMbe83eae4026e
-#> SAMe5bc41772bc9
-#> SAM23095936e611
-#> SAM7114d99032ec
-#> SAMdb3f50c9129c 
-#> 
-#> 
-#> Total sum across samples of combination Epidish_TIL10 is not 1! Remember these are proportions and the total should be 1
-#> Samples which sum with combination Epidish_TIL10 is not 1:
-#> 
-#>  SAM7f0d9cc7f001
-#> SAMcf018fee2acd
-#> SAMcc4675f394a1
-#> SAM49f9b2e57aa5
-#> SAM2e7aa8fa0ab3
-#> SAMdf3e42c8672a
-#> SAMe7bf6c015192
-#> SAM6dd7ad1d797d
-#> SAM18039827e1b9
-#> SAMc692536a795a
-#> SAM9a2cf3c06fb3
-#> SAM557dde1b9f3e
-#> SAM23aa15d4a0b0
-#> SAM468a9e1dc821
-#> SAMb963dda93cfd
-#> SAMbcbc7957c264
-#> SAM7fb6987514a4
-#> SAM63405b04ab2d
-#> SAM18bc1078bc15
-#> SAMd1bd63734394
-#> SAMbe83eae4026e
-#> SAMe5bc41772bc9
-#> SAM23095936e611
-#> SAM7114d99032ec
-#> SAMdb3f50c9129c 
-#> 
-#> 
-#> Total sum across samples of combination Epidish_LM22 is not 1! Remember these are proportions and the total should be 1
-#> Samples which sum with combination Epidish_LM22 is not 1:
-#> 
-#>  SAM4305ab968b90
-#> SAMd027124354ce
-#> SAM18bc1078bc15
-#> SAMd1bd63734394 
-#> 
+#> Total sum across samples of combination Epidish_CCLE.TIL10 is 1
+#> Total sum across samples of combination Epidish_TIL10 is 1
+#> Total sum across samples of combination Epidish_LM22 is 1
 #> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
-#> Warning: 
-#> Please verify your matrix
 
 ```
