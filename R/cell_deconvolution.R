@@ -13,8 +13,8 @@ utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession"
 #' mat <- matrix(rnorm(30), nrow = 10, ncol = 3)
 #' colnames(mat) <- c("Macrophage_M0", "Macrophage_M1", "Macrophage_M2")
 #' standardized_mat <- multideconv:::standardize_celltype_colnames(mat)
-#' 
-#' 
+#'
+#'
 standardize_celltype_colnames <- function(mat) {
   if (is.null(rownames(mat))) rownames(mat) <- seq_len(nrow(mat))
   empty <- mat[, FALSE, drop = FALSE]
@@ -24,7 +24,7 @@ standardize_celltype_colnames <- function(mat) {
                    "CD4.naive","CD4.non.regulatory","CD4.regulatory","CD8","Thelper","Tgamma","Dendritic",
                    "Dendritic.activated","Dendritic.resting","Cancer","Endothelial","Eosinophils","Plasma",
                    "Myocytes","Fibroblasts","Mast","Mast.activated","Mast.resting","CAF","extra")
-  
+
   blocks <- setNames(rep(list(empty), length(names_order)), names_order)
 
   # helper function to safe-grep columns
@@ -125,7 +125,7 @@ standardize_celltype_colnames <- function(mat) {
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
   blocks$CD4 <- mat[, cd4_idx, drop = FALSE]
-  
+
   blocks$CD4.memory.activated <- if (ncol(blocks$CD4)) blocks$CD4[, cols("activated", blocks$CD4), drop = FALSE] else empty
   blocks$CD4.memory.resting <- if (ncol(blocks$CD4)) blocks$CD4[, cols("resting", blocks$CD4), drop = FALSE] else empty
   blocks$CD4.naive <- if (ncol(blocks$CD4)) blocks$CD4[, cols("naive", blocks$CD4), drop = FALSE] else empty
@@ -134,7 +134,7 @@ standardize_celltype_colnames <- function(mat) {
     canon <- stringr::str_to_lower(stringr::str_replace_all(cn, "[ _\\-]+", "."))
     non_reg_idx <- grep("(^|\\.)non[._-]?regulatory(\\.|$)", canon, perl = TRUE)
     reg_idx <- grep("(^|\\.)((tregs?)|tregulatory|t\\.cells\\.regulatory)(\\.|$)", canon, perl = TRUE)
-    
+
     blocks$CD4.non.regulatory <- if(length(non_reg_idx) > 0) blocks$CD4[, non_reg_idx, drop = FALSE] else empty
     blocks$CD4.regulatory <- if(length(reg_idx) > 0) blocks$CD4[, reg_idx, drop = FALSE] else empty
   }
@@ -1298,7 +1298,6 @@ computeDWLS_parallel = function(TPM_matrix, signatures, workers){
   doParallel::registerDoParallel(cl)
 
   dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
-    source("~/Documents/multideconv/R/cell_deconvolution.R")
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeDWLS(TPM_matrix, signature, signature_name)
@@ -1505,7 +1504,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
     }
 
     for (i in 1:length(db)) {
-      
+
       signature <- utils::read.delim(db[[i]], row.names=1)
       signature_name = stringr::str_split(basename(db[[i]]), "\\.")[[1]][1]
 
@@ -2892,7 +2891,7 @@ aggregate_genes <- function(subgroup, default_quantiseq = "TIL10") {
       default_quantiseq # If Quantiseq, use default signature name TIL10
     }else if (length(p) >= 2){
       p[2] # If signature name is present, use it
-    } 
+    }
   })))
 
   sigs <- gsub("\\.", "-", sigs)  # all signature coming from "." separated files should be converted to "-" to match the file names in the directory
@@ -2942,14 +2941,14 @@ compute_data_driven_rank <- function(res,
                                      deconv,      # samples x methods
                                      subgroup,    # column names in deconv
                                      method = "spearman") {
-  
+
   # -----------------------------
   # 1. Match samples
   # -----------------------------
   if(!all.equal(colnames(expr), rownames(deconv))){
     stop("Sample names in expr and deconv do not match")
   }
-    
+
   # -----------------------------
   # 2. Subset deconv to subgroup
   # -----------------------------
@@ -2960,14 +2959,14 @@ compute_data_driven_rank <- function(res,
   # -----------------------------
   genes_use <- intersect(res$gene, rownames(expr))
   expr_sub <- expr[genes_use, , drop = FALSE]
-  
+
   # -----------------------------
   # 4. Correlation
   # -----------------------------
   cors <- apply(expr_sub, 1, function(g) {
     stats::cor(g, sub_est, method = method, use = "pairwise.complete.obs")
   })
-  
+
   # -----------------------------
   # 5. Output ranked list
   # -----------------------------
@@ -2979,7 +2978,7 @@ compute_data_driven_rank <- function(res,
   rownames(ranked) <- ranked$gene
   ranked <- ranked[order(ranked$correlation, decreasing = TRUE), , drop = FALSE]
   ranked$gene <- NULL
-    
+
   return(ranked)
 }
 
@@ -3012,13 +3011,13 @@ create_gsea_signature <- function(gene_scores,
     pathways <- split(msig$gene_symbol, msig$gs_name)
   }
 
-  # run fgsea 
+  # run fgsea
   fg <- fgsea::fgseaMultilevel(pathways = pathways, stats = ranks, scoreType = "pos", nproc = 4) %>%
     dplyr::tibble() %>%
     dplyr::arrange(padj)
 
   # keep positive NES
-  pos <- fg %>% 
+  pos <- fg %>%
     dplyr::filter(!is.na(NES) & NES > 0) %>%  # Keep positive NES
     dplyr::arrange(dplyr::desc(NES)) # Arrange by descending NES
 
@@ -3039,14 +3038,14 @@ create_gsea_signature <- function(gene_scores,
       ggplot2::theme_minimal(base_size = 12))
     grDevices::dev.off()
   }
-  
+
   if (nrow(pos) == 0) {
     message("No pathways with NES > 0 found for ", cell_type, "; keeping original subgroup label.")
     return(NULL)
   }
-  first_pathway <- as.character(pos$pathway[1]) 
+  first_pathway <- as.character(pos$pathway[1])
   suffix <- stringr::str_replace_all(first_pathway, "[^A-Za-z0-9]+", "_") # Replace non-alphanumeric characters with underscores
-  signature_name <- paste0(cell_type, "_", suffix) 
+  signature_name <- paste0(cell_type, "_", suffix)
   signature_list <- setNames(list(as.character(pos$pathway)), cell_type)
 
   return(list(signature_name, signature_list))
@@ -3106,7 +3105,7 @@ compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL, p
       idx <- which(colnames(deconv_mat) == sub_name) # replace column name in deconv_mat if present
       if (length(idx)) colnames(deconv_mat)[idx] <- new_label
 
-      # rename subgroup entry in composition 
+      # rename subgroup entry in composition
       subgroup_map[[cell_type]][[new_label]] <- subgroup_map[[cell_type]][[sub_name]]
       subgroup_map[[cell_type]][[sub_name]] <- NULL # Remove old subgroup entry
       colnames(comp[[cell_type]])[colnames(comp[[cell_type]]) == sub_name] <- new_label # rename subgroup entry in composition
@@ -3166,7 +3165,7 @@ compute_subgroups_pathways <- function(subgroups,
 
   for(celltype in names(subgroups_cells)) {
     cells = subgroups_cells[[celltype]]
-    if(ncol(cells) < 2) next 
+    if(ncol(cells) < 2) next
     CellTFusion::compute.modules.relationship(cells,
                                              data.frame(t(mat_consensus)),
                                              file_name = paste0(file_name, "_", celltype),
@@ -3175,7 +3174,7 @@ compute_subgroups_pathways <- function(subgroups,
                                              par_mar = par_mar,
                                              pval = pval)
   }
-  
+
 }
 
 #' Estimate Cell-Type-Specific Expression Profiles from Bulk Data
@@ -3201,33 +3200,33 @@ estimate_expression_profiles <- function(bulk_expr, cell_fracs) {
   genes <- rownames(bulk_expr)
   samples <- colnames(bulk_expr)
   cell_types <- colnames(cell_fracs)
-  
+
   # Initialize a list of matrices, one per cell type
   expr_by_celltype <- lapply(cell_types, function(ct) {
     matrix(0, nrow = length(samples), ncol = length(genes),
            dimnames = list(samples, genes))
   })
   names(expr_by_celltype) <- cell_types
-  
+
   # Iterate over each sample
   for (s in seq_along(samples)) {
     sample_name <- samples[s] # sample
     p <- cell_fracs[s, ]  # deconvolution in sample
-    
+
     # Iterate over each gene
     for (g in seq_along(genes)) {
       gene_name <- genes[g] # gene
       y <- bulk_expr[g, s] # extract expression per gene and sample
       X <- diag(p) # create a diagonal matrix with the proportions (to give the shape)
       fit <- nnls::nnls(X, rep(y, length(p))) # compute non negative linear least squares (avoid negatives) to fit the model. Solve for X*beta = y
-      est_expr <- stats::coef(fit) # extract the beta coefficient 
-      
+      est_expr <- stats::coef(fit) # extract the beta coefficient
+
       # Store result per cell type
       for (c in seq_along(cell_types)) {
         expr_by_celltype[[c]][s, g] <- t(est_expr[c])
       }
     }
   }
-  
+
   return(expr_by_celltype)  # one matrix per cell type
 }
