@@ -1251,7 +1251,7 @@ computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers)
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
+  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeCBSX(TPM_matrix, signature, name, password, signature_name)
@@ -1297,7 +1297,8 @@ computeDWLS_parallel = function(TPM_matrix, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
+  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
+    source("~/Documents/multideconv/R/cell_deconvolution.R")
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeDWLS(TPM_matrix, signature, signature_name)
@@ -1381,7 +1382,7 @@ computeMOMF_parallel = function(TPM_matrix, sc_object, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  momf = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = "multideconv") %dopar% {
+  momf = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
     signature <- utils::read.delim(signatures[[i]], row.names=1)
     signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
     computeMOMF(TPM_matrix, sc_object, signature, signature_name)
@@ -1504,6 +1505,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
     }
 
     for (i in 1:length(db)) {
+      
       signature <- utils::read.delim(db[[i]], row.names=1)
       signature_name = stringr::str_split(basename(db[[i]]), "\\.")[[1]][1]
 
