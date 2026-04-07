@@ -1273,6 +1273,7 @@ computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers)
 #'
 #' @return A matrix with cell abundance deconvolve with CBSX
 #'
+#' @export
 computeCBSX = function(TPM_matrix, signature_file, name, password, name_signature){
   omnideconv::set_cibersortx_credentials(name, password)
   cbsx = omnideconv::deconvolute_cibersortx(TPM_matrix, signature_file)
@@ -1345,6 +1346,7 @@ computeDWLS = function(TPM_matrix, signature_file, name_signature){
 #'
 #' @return A matrix with cell abundance deconvolve with MOMF
 #'
+#' @export
 computeMOMF = function(TPM_matrix, sc_object, signature_file, name_signature){
 
   genes = rownames(signature_file)
