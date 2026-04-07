@@ -65,6 +65,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "_M1", "_Macrophages.M1")
     colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "^M1$", "Macrophages.M1")
   }
+  
   if (ncol(blocks$M2)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$M2), drop = FALSE]
     colnames(blocks$M2) <- stringr::str_replace(colnames(blocks$M2), "Macrophage_M2", "Macrophages.M2")
@@ -169,7 +170,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$CD4.non.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.non.regulatory),
       "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",
-      "CD4.non.regulatory"
+      "\\1_CD4.non.regulatory"
     )
   }
   if (ncol(blocks$CD4.regulatory)){
@@ -177,7 +178,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$CD4.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.regulatory),
       "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|tregulatory.*|regulatory.*)$",
-      "CD4.regulatory"
+      "\\1_CD4.regulatory"
     )
   }
 
