@@ -1316,6 +1316,7 @@ computeDWLS_parallel = function(TPM_matrix, signatures, workers){
 #'
 #' @return A matrix with cell abundance deconvolve with DWLS
 #'
+#' @export
 computeDWLS = function(TPM_matrix, signature_file, name_signature){
   genes = rownames(signature_file)
 
