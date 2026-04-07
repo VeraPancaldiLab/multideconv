@@ -2137,8 +2137,6 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   pattern <- paste0("(_", gsub("\\.", "\\\\.", cell_types), ")$", collapse = "|")
   deconvolution_combinations <- unique(gsub(pattern, "", colnames(deconvolution)))
 
-  deconvolution_combinations = gsub("(BPRNACan3DProMetNew|BPRNACanProMetNew|BPRNACan3DMetNew|BPRNACan3DProMet|BPRNACanProMet|BPRNACan)", "\\1_", deconvolution_combinations)
-
   ###Correlation function
   corr_bench <- function(data, corr, pval = 0.05) {
     M <- Hmisc::rcorr(as.matrix(data), type = corr)
@@ -2233,7 +2231,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     x = x[which(x$measure1==colnames(ground)),] #only taking corr against ground truth
 
     for (j in 1:ncol(corr_matrix)) {
-      idx = grep(colnames(corr_matrix)[j], x$measure2)
+      idx <- grep(paste0("^", colnames(corr_matrix)[j], "_"), x$measure2)
       if(length(idx) == 0){
         corr_matrix[i,j] = NA
       }else{
@@ -2242,7 +2240,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     }
 
     for (j in 1:ncol(pval_matrix)) {
-      idx = grep(colnames(pval_matrix)[j], x$measure2)
+      idx <- grep(paste0("^", colnames(pval_matrix)[j], "_"), x$measure2)
       if(length(idx) == 0){
         pval_matrix[i,j] = NaN
       }else{
