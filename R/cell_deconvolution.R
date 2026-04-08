@@ -15,6 +15,8 @@ utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession"
 #' standardized_mat <- multideconv:::standardize_celltype_colnames(mat)
 #'
 #'
+#' @export
+#' 
 standardize_celltype_colnames <- function(mat) {
   if (is.null(rownames(mat))) rownames(mat) <- seq_len(nrow(mat))
   empty <- mat[, FALSE, drop = FALSE]
@@ -78,9 +80,18 @@ standardize_celltype_colnames <- function(mat) {
   blocks$Monocytes <- mat[, cols("Mono|mono"), drop = FALSE]
   if (ncol(blocks$Monocytes)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Monocytes), drop = FALSE]
-    colnames(blocks$Monocytes) <- stringr::str_replace(colnames(blocks$Monocytes), "Monocytic_lineage", "Monocytes")
-    colnames(blocks$Monocytes) <- stringr::str_replace(colnames(blocks$Monocytes), "Monocyte(?!s)", "Monocytes")
-    colnames(blocks$Monocytes) <- stringr::str_replace(colnames(blocks$Monocytes), "Mono(?!cytes)", "Monocytes")
+    colnames(blocks$Monocytes) <- stringr::str_replace_all(
+      colnames(blocks$Monocytes),
+      "^(.+_)?(Mono|mono|Monocytic_lineage|Monocyte)\\b",
+      function(m) {
+        prefix <- sub("(Mono|mono|Monocytic_lineage|Monocyte)$", "", m)
+        if(prefix == "") {
+          "Monocytes"       # no prefix → just Monocytes
+        } else {
+          paste0(prefix, "Monocytes")  # keep prefix
+        }
+      }
+    )
   }
 
   ## Neutrophils
@@ -121,7 +132,7 @@ standardize_celltype_colnames <- function(mat) {
 
   ## CD4 and subtypes
   lower <- stringr::str_to_lower(colnames(mat))
-  is_cd4 <- grepl("\\bcd4\\b|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|tregs", lower)
+  is_cd4 <- grepl("\\bcd4\\b|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
@@ -167,18 +178,34 @@ standardize_celltype_colnames <- function(mat) {
   }
   if (ncol(blocks$CD4.non.regulatory)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.non.regulatory), drop = FALSE]
+
     colnames(blocks$CD4.non.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.non.regulatory),
-      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",
-      "\\1_CD4.non.regulatory"
+      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",      
+      function(x) {
+        prefix <- sub("(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$", "", x, perl=TRUE)
+        if (prefix == "") {
+          "CD4.non.regulatory"
+        } else {
+          "\\1_CD4.non.regulatory"
+        }
+      }
     )
   }
+
   if (ncol(blocks$CD4.regulatory)){
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.regulatory), drop = FALSE]
     colnames(blocks$CD4.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.regulatory),
-      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|tregulatory.*|regulatory.*)$",
-      "\\1_CD4.regulatory"
+      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$",
+      function(x) {
+        prefix <- sub("(?i)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$", "", x, perl=TRUE)
+        if (prefix == "") {
+          "CD4.regulatory"
+        } else {
+          "\\1_CD4.regulatory"
+        }
+      }
     )
   }
 

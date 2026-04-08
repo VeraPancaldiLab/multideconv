@@ -24,7 +24,8 @@ compute.deconvolution(
   cell_markers = NULL,
   methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc"),
   name_sc_signature = NULL,
-  file_name = NULL
+  file_name = NULL,
+  cells_extra = NULL
 )
 }
 \arguments{
