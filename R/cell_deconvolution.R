@@ -1202,11 +1202,13 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   TPM_matrix = TPM_matrix[rownames(TPM_matrix)%in%rownames(immunedeconv::dataset_racle$expr_mat),] #To avoid problems regarding gene names (quantiseq error)
 
-  quantiseq = quantiseqr::run_quantiseq(TPM_matrix, is_tumordata = T) %>%
-    dplyr::select(-Sample) %>%
-    dplyr::mutate(uncharacterized_cell = .data[["Other"]]) %>%
-    dplyr::select(-Other) %>%
-    as.data.frame()
+  quantiseq = immunedeconv::deconvolute(TPM_matrix, "quantiseq", tumor = T) %>%
+    tibble::column_to_rownames("cell_type") %>%
+    t() %>%
+    data.frame() %>%
+    dplyr::mutate(Tregs = .data[["T.cell.regulatory..Tregs."]], 
+                  T_cells_non_regulatory = .data[["T.cell.CD4...non.regulatory."]]) %>%
+    dplyr::select(-"T.cell.regulatory..Tregs.", -"T.cell.CD4...non.regulatory.") 
 
   colnames(quantiseq) = paste0("Quantiseq_", name_signature, "_", colnames(quantiseq))
   colnames(quantiseq) <- colnames(quantiseq) %>%
