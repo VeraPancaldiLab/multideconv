@@ -235,10 +235,59 @@ Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Fin
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Preprocessing deconvolution features...............................................................</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in stringr::str_replace_all(colnames(blocks$Monocytes), "^(.+_)?(Mono|mono|Monocytic_lineage|Monocyte)\\b",     function(m) {        prefix &lt;- sub("(Mono|mono|Monocytic_lineage|Monocyte)$",             "", m)        if (prefix == "") {            "Monocytes"        }        else {            paste0(prefix, "Monocytes")        }    }):</span> Failed to apply `replacement` function.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> It must accept a character vector of any length.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `if (prefix == "") ...`:</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> the condition has length &gt; 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Checking consistency in deconvolution cell fractions across patients...............................................................</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> No extra cell types provided. Only the following cell types will be considered:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  B.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B.naive.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B.memory.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Monocytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Neutrophils</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.activated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.resting</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NKT.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.memory.activated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.memory.resting</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.naive</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD8.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.regulatory</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.non.regulatory</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> T.cells.helper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> T.cells.gamma.delta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.activated.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.resting.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cancer</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Endothelial</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Eosinophils</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Plasma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Myocytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fibroblast</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.activated.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.resting.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CAF</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> uncharacterized_cell </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan3DProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.NSCLC.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CCLE.TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_LM22 is 1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
