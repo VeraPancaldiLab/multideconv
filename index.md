@@ -168,7 +168,9 @@ exactly the name of your cells in your deconvolution matrix!
 ## How to add other signatures?
 
 You can include other signatures into the analysis by adding them as
-.txt into the folder `Results/custom_signatures`.
+.txt into the folder `Results/custom_signatures`. Please make sure that
+your signature name is not splitted by “\_” or any other character, use
+single-word names.
 
 ## How does my single cell data is used for deconvolution?
 

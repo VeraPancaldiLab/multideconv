@@ -73,44 +73,248 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Checking consistency in deconvolution cell fractions across patients...............................................................</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> No extra cell types provided. Only the following cell types will be considered:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  B.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B.naive.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B.memory.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Macrophages.M2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Monocytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Neutrophils</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.activated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NK.resting</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NKT.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.memory.activated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.memory.resting</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.naive</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD8.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.regulatory</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CD4.non.regulatory</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> T.cells.helper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> T.cells.gamma.delta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.activated.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dendritic.resting.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cancer</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Endothelial</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Eosinophils</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Plasma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Myocytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fibroblast</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.activated.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mast.resting.cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CAF</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> uncharacterized_cell </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Quantiseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan_ is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACanProMet is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan3DProMet is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CCLE.TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_LM22 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BPRNACan_ is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BPRNACan is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BPRNACan is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BPRNACan is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BPRNACan3DProMet is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.HNSCC.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.Melanoma.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CCLE.TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_LM22 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BPRNACan_ is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACan3DProMet is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BPRNACan3DProMet is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.HNSCC.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.Melanoma.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CCLE.TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_TIL10 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_LM22 is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BPRNACan_ is 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BPRNACanProMet is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BPRNACan3DProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BPRNACanProMet is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_8356 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_BSeqSC.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination Epidish_BSeqSC.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_BSeqSC.Vanderbilt.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_BSeqSC.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DWLS_BSeqSC.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_12929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.HNSCC.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.HNSCC.scRNAseq is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_CBSX.HNSCC.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.Melanoma.scRNAseq is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.Melanoma.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_CBSX.Melanoma.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_CBSX.NSCLC.PBMCs.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CBSX.Vanderbilt.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CBSX.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination Epidish_CBSX.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CBSX.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination CBSX_CBSX.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_CBSX.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DWLS_CBSX.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_CCLE.TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_CCLE.TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_CCLE.TIL10 is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_CCLE.TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_DWLS.Vanderbilt.scRNAseq is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_DWLS.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination Epidish_DWLS.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_DWLS.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination CBSX_DWLS.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_DWLS.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DWLS_DWLS.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_MOMF.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DeconRNASeq_MOMF.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_12929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13634</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_8356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15002 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_MOMF.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination Epidish_MOMF.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_12929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13634</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_8356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15002 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_MOMF.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination CBSX_MOMF.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_12929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13634</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_8356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15002 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_MOMF.Vanderbilt.scRNAseq is not 1! Remember these are proportions and the total should be 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples which sum with combination DWLS_MOMF.Vanderbilt.scRNAseq is not 1:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Sample_12929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_15467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11817</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_13774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_14965</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_12889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sample_11918 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_TIL10 is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_TIL10 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination AutogeneS_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination BayesPrism_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Bisque_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CPM_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination MuSic_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination SCDC_Vanderbilt is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DeconRNASeq_LM22 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination Epidish_LM22 is 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination CBSX_LM22 is 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total sum across samples of combination DWLS_LM22 is 1</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Please verify your matrix</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

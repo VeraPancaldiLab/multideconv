@@ -225,16 +225,56 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> 
 #> Checking consistency in deconvolution cell fractions across patients...............................................................
 #> 
+#> No extra cell types provided. Only the following cell types will be considered:
 #> 
-#> Total sum across samples of combination Epidish_BPRNACan_ is 1
-#> Total sum across samples of combination Epidish_BPRNACanProMet is 1
+#>  B.cells
+#> B.naive.cells
+#> B.memory.cells
+#> Macrophages.cells
+#> Macrophages.M0
+#> Macrophages.M1
+#> Macrophages.M2
+#> Monocytes
+#> Neutrophils
+#> NK.cells
+#> NK.activated
+#> NK.resting
+#> NKT.cells
+#> CD4.cells
+#> CD4.memory.activated
+#> CD4.memory.resting
+#> CD4.naive
+#> CD8.cells
+#> CD4.regulatory
+#> CD4.non.regulatory
+#> T.cells.helper
+#> T.cells.gamma.delta
+#> Dendritic.cells
+#> Dendritic.activated.cells
+#> Dendritic.resting.cells
+#> Cancer
+#> Endothelial
+#> Eosinophils
+#> Plasma
+#> Myocytes
+#> Fibroblast
+#> Mast.cells
+#> Mast.activated.cells
+#> Mast.resting.cells
+#> CAF
+#> uncharacterized_cell 
+#> 
+#> If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.
+#> 
+#> Total sum across samples of combination Epidish_BPRNACan is 1
 #> Total sum across samples of combination Epidish_BPRNACan3DProMet is 1
+#> Total sum across samples of combination Epidish_BPRNACanProMet is 1
 #> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1
+#> Total sum across samples of combination Epidish_CBSX.NSCLC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CCLE.TIL10 is 1
 #> Total sum across samples of combination Epidish_TIL10 is 1
 #> Total sum across samples of combination Epidish_LM22 is 1
-#> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
 
 ```
