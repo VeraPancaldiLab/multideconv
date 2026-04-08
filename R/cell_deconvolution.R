@@ -82,15 +82,8 @@ standardize_celltype_colnames <- function(mat) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Monocytes), drop = FALSE]
     colnames(blocks$Monocytes) <- stringr::str_replace_all(
       colnames(blocks$Monocytes),
-      "^(.+_)?(Mono|mono|Monocytic_lineage|Monocyte)\\b",
-      function(m) {
-        prefix <- sub("(Mono|mono|Monocytic_lineage|Monocyte)$", "", m)
-        if(prefix == "") {
-          "Monocytes"       # no prefix → just Monocytes
-        } else {
-          paste0(prefix, "Monocytes")  # keep prefix
-        }
-      }
+      "(?i)^(.+_)?(mono|monocyte|monocytic_lineage)\\b.*",
+      "\\1Monocytes"
     )
   }
 
@@ -181,15 +174,8 @@ standardize_celltype_colnames <- function(mat) {
 
     colnames(blocks$CD4.non.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.non.regulatory),
-      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",      
-      function(x) {
-        prefix <- sub("(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$", "", x, perl=TRUE)
-        if (prefix == "") {
-          "CD4.non.regulatory"
-        } else {
-          "\\1_CD4.non.regulatory"
-        }
-      }
+      "(?i)^(.+_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",
+      "\\1CD4.non.regulatory"
     )
   }
 
@@ -197,15 +183,8 @@ standardize_celltype_colnames <- function(mat) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.regulatory), drop = FALSE]
     colnames(blocks$CD4.regulatory) <- stringr::str_replace(
       colnames(blocks$CD4.regulatory),
-      "(?i)^(.*?)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$",
-      function(x) {
-        prefix <- sub("(?i)(?:_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$", "", x, perl=TRUE)
-        if (prefix == "") {
-          "CD4.regulatory"
-        } else {
-          "\\1_CD4.regulatory"
-        }
-      }
+      "(?i)^(.+_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$",
+      "\\1CD4.regulatory"
     )
   }
 
@@ -424,7 +403,7 @@ compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
 
   pattern <- paste0("(_", gsub("\\.", "\\\\.", cell_types), ")$", collapse = "|")
   combinations <- unique(gsub(pattern, "", colnames(deconv_standarized)))
-  
+
   error = F
   for(i in combinations){
     idx <- grep(paste0(i, "_"), colnames(deconv_standarized))
@@ -1223,9 +1202,11 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   TPM_matrix = TPM_matrix[rownames(TPM_matrix)%in%rownames(immunedeconv::dataset_racle$expr_mat),] #To avoid problems regarding gene names (quantiseq error)
 
-  quantiseq = immunedeconv::deconvolute(TPM_matrix, "quantiseq", tumor = T) %>%
-    tibble::column_to_rownames("cell_type") %>%
-    t()
+  quantiseq = quantiseqr::run_quantiseq(TPM_matrix, is_tumordata = T) %>%
+    dplyr::select(-Sample) %>%
+    dplyr::mutate(uncharacterized_cell = .data[["Other"]]) %>%
+    dplyr::select(-Other) %>%
+    as.data.frame()
 
   colnames(quantiseq) = paste0("Quantiseq_", name_signature, "_", colnames(quantiseq))
   colnames(quantiseq) <- colnames(quantiseq) %>%
