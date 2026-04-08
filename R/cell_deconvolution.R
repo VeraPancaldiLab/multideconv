@@ -370,31 +370,39 @@ standardize_celltype_colnames <- function(mat) {
 #'
 #' deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 #'
-compute.deconvolution.preprocessing = function(deconv){
+compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
   cat("Preprocessing deconvolution features...............................................................\n\n")
 
   #Remove NA (this need to be check -- not possible to have NAs values in deconv)
   deconv <- deconv %>%
+    data.frame() %>%
     dplyr::mutate(dplyr::across(dplyr::everything(), ~ tidyr::replace_na(.x, 0)))
 
   ##### Edit cell names for consistency across features
 
-  cell_types = standardize_celltype_colnames(deconv)
+  deconv_standarized = standardize_celltype_colnames(deconv)
 
   cat("Checking consistency in deconvolution cell fractions across patients...............................................................\n\n")
 
-  combinations = c("Quantiseq", "Epidish_BPRNACan_",  "Epidish_BPRNACanProMet", "Epidish_BPRNACan3DProMet", "Epidish_CBSX.HNSCC.scRNAseq", "Epidish_CBSX.Melanoma.scRNAseq",
-                   "Epidish_CBSX.NSCLC.PBMCs.scRNAseq", "Epidish_CCLE.TIL10", "Epidish_TIL10", "Epidish_LM22", "DeconRNASeq_BPRNACan_", "DeconRNASeq_BPRNACanProMet",
-                   "DeconRNASeq_BPRNACan3DProMet", "DeconRNASeq_CBSX.HNSCC.scRNAseq", "DeconRNASeq_CBSX.Melanoma.scRNAseq", "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq", "DeconRNASeq_CCLE.TIL10",
-                   "DeconRNASeq_TIL10", "DeconRNASeq_LM22", "CBSX_BPRNACan_", "CBSX_BPRNACanProMet", "CBSX_BPRNACan3DProMet", "CBSX_CBSX.HNSCC.scRNAseq",
-                   "CBSX_CBSX.Melanoma.scRNAseq", "CBSX_CBSX.NSCLC.PBMCs.scRNAseq", "CBSX_CCLE.TIL10", "CBSX_TIL10", "CBSX_LM22", "DWLS_BPRNACan_",  "DWLS_BPRNACanProMet", "DWLS_BPRNACan3DProMet", "DWLS_CBSX.HNSCC.scRNAseq", "Epidish_CBSX.Melanoma.scRNAseq",
-                   "DWLS_CBSX.NSCLC.PBMCs.scRNAseq", "DWLS_CCLE.TIL10", "DWLS_TIL10", "DWLS_LM22")
+  cell_types = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
+                 "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
+                 "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
 
+  if(is.null(cells_extra)){
+    cat("No extra cell types provided. Only the following cell types will be considered:\n\n", paste0(cell_types, collapse = "\n"), "\n\n")
+    cat("If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.\n")
+  }
+
+  cell_types = c(cell_types, cells_extra)
+
+  pattern <- paste0("(_", gsub("\\.", "\\\\.", cell_types), ")$", collapse = "|")
+  combinations <- unique(gsub(pattern, "", colnames(deconv_standarized)))
+  
   error = F
   for(i in combinations){
-    idx = grep(i, colnames(cell_types))
+    idx <- grep(paste0(i, "_"), colnames(deconv_standarized))
     if(length(idx)>0){
-      mat = cell_types[,idx] #A matrix of samples as rows and features only with combination[i] as columns
+      mat = deconv_standarized[,idx] #A matrix of samples as rows and features only with combination[i] as columns
       sums = round(rowSums(mat), 2)
       if(all(sums == 1) == F){
         cat(paste("\n\nTotal sum across samples of combination", i, "is not 1! Remember these are proportions and the total should be 1\n"))
@@ -410,7 +418,7 @@ compute.deconvolution.preprocessing = function(deconv){
     warning("\nPlease verify your matrix")
   }
 
-  return(cell_types)
+  return(deconv_standarized)
 }
 
 
@@ -1657,7 +1665,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 #'
 compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"), signatures_exclude = NULL, normalized = TRUE, doParallel = FALSE, workers = NULL, return = TRUE, create_signature = FALSE,
                                   credentials.mail = NULL, credentials.token = NULL, sc_deconv = FALSE, sc_matrix = NULL, sc_metadata = NULL, methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"), cell_label = NULL,
-                                  sample_label = NULL, cell_markers = NULL, methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc"), name_sc_signature = NULL, file_name = NULL){
+                                  sample_label = NULL, cell_markers = NULL, methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc"), name_sc_signature = NULL, file_name = NULL, cells_extra = NULL){
 
   path_signatures = system.file("signatures", package = "multideconv")
 
@@ -1737,7 +1745,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
     }
   }
 
-  deconvolution = compute.deconvolution.preprocessing(data.frame(all_deconvolution_table))
+  deconvolution = compute.deconvolution.preprocessing(all_deconvolution_table, cells_extra = cells_extra)
 
   if(return == TRUE){
     utils::write.csv(deconvolution, paste0("Results/Deconvolution_", file_name, ".csv"))
@@ -2130,7 +2138,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 
   cell_types = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
                  "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
-                 "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF")
+                 "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
 
   cell_types = c(cell_types, cells_extra)
 

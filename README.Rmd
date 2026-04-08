@@ -148,6 +148,7 @@ And that's it, just make sure the name you are putting in cells_extra is exactly
 ## How to add other signatures?
 
 You can include other signatures into the analysis by adding them as .txt into the folder `Results/custom_signatures`.
+Please make sure that your signature name is not splitted by "_" or any other character, use single-word names.
 
 ## How does my single cell data is used for deconvolution?
 
