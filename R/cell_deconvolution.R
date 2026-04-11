@@ -1522,6 +1522,9 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
       }
     }
 
+    # Exclude signatures if specified by the user
+    db = db[!tools::file_path_sans_ext(basename(db)) %in% exclude] 
+
     for (i in 1:length(db)) {
 
       signature <- utils::read.delim(db[[i]], row.names=1)
@@ -1536,62 +1539,59 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
       #   warning("Common genes between count matrix and signature ", signature_name, " are all zero values")
       # }
 
-      if(!is.null(exclude) && signature_name %in% exclude) {
-        next
-      }else{
-        if("DeconRNASeq"%in%algos){
-          cat("\nRunning DeconRNASeq...............................................................\n\n")
-          deconrnaseq <- computeDeconRNASeq(TPM_matrix, signature, signature_name)}
-        if("Epidish"%in%algos){
-          cat("\nRunning Epidish...............................................................\n\n")
-          epidish_res <- computeEpiDISH(TPM_matrix, signature, signature_name)}
-        if("DWLS"%in%algos){
-          if(doParallel == F){
-            cat("\nRunning DWLS...............................................................\n\n")
-            dwls <- computeDWLS(TPM_matrix, signature, signature_name)}}
-        if("CBSX"%in%algos){
-          if(doParallel == F){
-            cat("\nRunning CBSX...............................................................\n\n")
-            cbsx <- computeCBSX(TPM_matrix, signature, cbsx.name, cbsx.token, signature_name)}}
-        if("MOMF"%in%algos & is.null(sc_obj) == F){
-          if(doParallel == F){
-            cat("\nRunning MOMF...............................................................\n\n")
-            momf <- computeMOMF(TPM_matrix, sc_obj, signature, signature_name)}}
-        combined_data <- NULL
-        if (exists("deconrnaseq")) {
-          combined_data <- deconrnaseq
-        }
-        if (exists("epidish_res")) {
-          if (is.null(combined_data)) {
-            combined_data <- epidish_res
-          } else {
-            combined_data <- cbind(combined_data, epidish_res)
-          }
-        }
-        if (exists("cbsx")) {
-          if (is.null(combined_data)) {
-            combined_data <- cbsx
-          } else {
-            combined_data <- cbind(combined_data, cbsx)
-          }
-        }
-        if (exists("dwls")) {
-          if (is.null(combined_data)) {
-            combined_data <- dwls
-          } else {
-            combined_data <- cbind(combined_data, dwls)
-          }
-        }
-        if (exists("momf")) {
-          if (is.null(combined_data)) {
-            combined_data <- momf
-          } else {
-            combined_data <- cbind(combined_data, momf)
-          }
-        }
-        deconvolution[[i]] <- combined_data
+      if("DeconRNASeq"%in%algos){
+        cat("\nRunning DeconRNASeq...............................................................\n\n")
+        deconrnaseq <- computeDeconRNASeq(TPM_matrix, signature, signature_name)}
+      if("Epidish"%in%algos){
+        cat("\nRunning Epidish...............................................................\n\n")
+        epidish_res <- computeEpiDISH(TPM_matrix, signature, signature_name)}
+      if("DWLS"%in%algos){
+        if(doParallel == F){
+          cat("\nRunning DWLS...............................................................\n\n")
+          dwls <- computeDWLS(TPM_matrix, signature, signature_name)}}
+      if("CBSX"%in%algos){
+        if(doParallel == F){
+          cat("\nRunning CBSX...............................................................\n\n")
+          cbsx <- computeCBSX(TPM_matrix, signature, cbsx.name, cbsx.token, signature_name)}}
+      if("MOMF"%in%algos & is.null(sc_obj) == F){
+        if(doParallel == F){
+          cat("\nRunning MOMF...............................................................\n\n")
+          momf <- computeMOMF(TPM_matrix, sc_obj, signature, signature_name)}}
+      combined_data <- NULL
+      if (exists("deconrnaseq")) {
+        combined_data <- deconrnaseq
       }
+      if (exists("epidish_res")) {
+        if (is.null(combined_data)) {
+          combined_data <- epidish_res
+        } else {
+          combined_data <- cbind(combined_data, epidish_res)
+        }
+      }
+      if (exists("cbsx")) {
+        if (is.null(combined_data)) {
+          combined_data <- cbsx
+        } else {
+          combined_data <- cbind(combined_data, cbsx)
+        }
+      }
+      if (exists("dwls")) {
+        if (is.null(combined_data)) {
+          combined_data <- dwls
+        } else {
+          combined_data <- cbind(combined_data, dwls)
+        }
+      }
+      if (exists("momf")) {
+        if (is.null(combined_data)) {
+          combined_data <- momf
+        } else {
+          combined_data <- cbind(combined_data, momf)
+        }
+      }
+      deconvolution[[i]] <- combined_data
     }
+
 
     deconv = do.call(cbind, deconvolution)
 
