@@ -125,7 +125,9 @@ standardize_celltype_colnames <- function(mat) {
 
   ## CD4 and subtypes
   lower <- stringr::str_to_lower(colnames(mat))
-  is_cd4 <- grepl("\\bcd4\\b|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
+  #is_cd4 <- grepl("\\bcd4\\b|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
+  is_cd4 <- grepl("\\bcd4\\b|cd4t|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
+
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
@@ -148,6 +150,7 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$CD4 <- blocks$CD4[, -idx, drop = FALSE]
   if (ncol(blocks$CD4)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4), drop = FALSE]
+    colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "CD4T", "CD4.cells")
     colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "T.cells.CD4(?!\\.cells)", "CD4.cells")
     colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "_CD4$", "_CD4.cells")
     colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "^CD4(?!\\.cells)", "CD4.cells")
@@ -192,6 +195,7 @@ standardize_celltype_colnames <- function(mat) {
   blocks$CD8 <- mat[, cols("CD8"), drop = FALSE]
   if (ncol(blocks$CD8)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD8), drop = FALSE]
+    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8T", "CD8.cells")
     colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "T_cells_CD8", "CD8.cells")
     colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "T_cell_CD8", "CD8.cells")
     colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8_T_cells", "CD8.cells")
@@ -228,6 +232,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cells", "Dendritic.cells")
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cell", "Dendritic.cells")
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Dendritic_cells", "Dendritic.cells")
+    colnames(blocks$Dendritic) <- stringr::str_replace("^Dendritic$", "Dendritic.cells")  
   }
   if (ncol(blocks$Dendritic.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.activated), drop = FALSE]
@@ -339,6 +344,7 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) mat <- mat[, -idx, drop = FALSE]
 
   if (ncol(mat)) {
+    colnames(mat) <- stringr::str_replace(colnames(mat), "Bcell", "B.cells")
     colnames(mat) <- stringr::str_replace(colnames(mat), "B_cells", "B.cells")
     colnames(mat) <- stringr::str_replace(colnames(mat), "B_cell", "B.cells")
     colnames(mat) <- stringr::str_replace(colnames(mat), "B_lineage", "B.cells")
