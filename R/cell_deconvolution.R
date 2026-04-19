@@ -232,7 +232,7 @@ standardize_celltype_colnames <- function(mat) {
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cells", "Dendritic.cells")
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cell", "Dendritic.cells")
     colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Dendritic_cells", "Dendritic.cells")
-    colnames(blocks$Dendritic) <- stringr::str_replace("^Dendritic$", "Dendritic.cells")  
+    colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "^Dendritic$", "Dendritic.cells")
   }
   if (ncol(blocks$Dendritic.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.activated), drop = FALSE]
