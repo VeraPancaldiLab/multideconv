@@ -29,9 +29,28 @@ standardize_celltype_colnames <- function(mat) {
 
   blocks <- setNames(rep(list(empty), length(names_order)), names_order)
 
-  # helper function to safe-grep columns
+  # Helper: grep columns
   cols <- function(pat, x = mat, ignore.case = TRUE, value = FALSE) {
     grep(pat, colnames(x), ignore.case = ignore.case, value = value)
+  }
+
+  # Helper: rename only the cell type suffix (after the last underscore).
+  # This makes patterns universal regardless of separator used in original names.
+  # pattern/replacement are applied case-insensitively via gsub(perl=TRUE).
+  rn <- function(cn, pattern, replacement) {
+    has_us <- grepl("_", cn)
+    result  <- cn
+    if (any(has_us)) {
+      pre  <- sub("_[^_]*$", "_", cn[has_us])
+      suf  <- sub("^.*_",   "",  cn[has_us])
+      result[has_us] <- paste0(pre, gsub(pattern, replacement, suf,
+                                         perl = TRUE, ignore.case = TRUE))
+    }
+    if (any(!has_us)) {
+      result[!has_us] <- gsub(pattern, replacement, cn[!has_us],
+                              perl = TRUE, ignore.case = TRUE)
+    }
+    result
   }
 
   ## Macrophages and subtypes
@@ -48,51 +67,42 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$Macrophages <- blocks$Macrophages[, -idx, drop = FALSE]
   if (ncol(blocks$Macrophages)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages), drop = FALSE]
-    colnames(blocks$Macrophages) <- stringr::str_replace(colnames(blocks$Macrophages), "Macrophages", "Macrophages.cells")
-    colnames(blocks$Macrophages) <- stringr::str_replace(colnames(blocks$Macrophages), "Macrophage(?!.)", "Macrophages.cells")
+    colnames(blocks$Macrophages) <- rn(colnames(blocks$Macrophages),
+      "^macrophages?([._-]cells?)?$", "Macrophages.cells")
   }
 
   if (ncol(blocks$M0)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$M0), drop = FALSE]
-    colnames(blocks$M0) <- stringr::str_replace(colnames(blocks$M0), "Macrophages_M0", "Macrophages.M0")
-    colnames(blocks$M0) <- stringr::str_replace(colnames(blocks$M0), "Macrophage_M0", "Macrophages.M0")
-    colnames(blocks$M0) <- stringr::str_replace(colnames(blocks$M0), "_M0", "_Macrophages.M0")
-    colnames(blocks$M0) <- stringr::str_replace(colnames(blocks$M0), "^M0$", "Macrophages.M0")
+    colnames(blocks$M0) <- rn(colnames(blocks$M0),
+      "^macrophages?[._-]?m0$|^m0$", "Macrophages.M0")
   }
 
   if (ncol(blocks$M1)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$M1), drop = FALSE]
-    colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "Macrophages_M1", "Macrophages.M1")
-    colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "Macrophage_M1", "Macrophages.M1")
-    colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "_M1", "_Macrophages.M1")
-    colnames(blocks$M1) <- stringr::str_replace(colnames(blocks$M1), "^M1$", "Macrophages.M1")
+    colnames(blocks$M1) <- rn(colnames(blocks$M1),
+      "^macrophages?[._-]?m1$|^m1$", "Macrophages.M1")
   }
-  
+
   if (ncol(blocks$M2)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$M2), drop = FALSE]
-    colnames(blocks$M2) <- stringr::str_replace(colnames(blocks$M2), "Macrophage_M2", "Macrophages.M2")
-    colnames(blocks$M2) <- stringr::str_replace(colnames(blocks$M2), "Macrophages_M2", "Macrophages.M2")
-    colnames(blocks$M2) <- stringr::str_replace(colnames(blocks$M2), "_M2", "_Macrophages.M2")
-    colnames(blocks$M2) <- stringr::str_replace(colnames(blocks$M2), "^M2$", "Macrophages.M2")
+    colnames(blocks$M2) <- rn(colnames(blocks$M2),
+      "^macrophages?[._-]?m2$|^m2$", "Macrophages.M2")
   }
 
   ## Monocytes
   blocks$Monocytes <- mat[, cols("Mono|mono"), drop = FALSE]
   if (ncol(blocks$Monocytes)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Monocytes), drop = FALSE]
-    colnames(blocks$Monocytes) <- stringr::str_replace_all(
-      colnames(blocks$Monocytes),
-      "(?i)^(.+_)?(mono|monocyte|monocytic_lineage)\\b.*",
-      "\\1Monocytes"
-    )
+    colnames(blocks$Monocytes) <- rn(colnames(blocks$Monocytes),
+      "^mono(cytes?|cytic[._-]lineage)?([._-]cells?)?$", "Monocytes")
   }
 
   ## Neutrophils
   blocks$Neutrophils <- mat[, cols("Neu"), drop = FALSE]
   if (ncol(blocks$Neutrophils)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Neutrophils), drop = FALSE]
-    colnames(blocks$Neutrophils) <- stringr::str_replace(colnames(blocks$Neutrophils), "Neutrophil(?!s)", "Neutrophils")
-    colnames(blocks$Neutrophils) <- stringr::str_replace(colnames(blocks$Neutrophils), "Neu(?!trophils)", "Neutrophils")
+    colnames(blocks$Neutrophils) <- rn(colnames(blocks$Neutrophils),
+      "^neutrophils?([._-]cells?)?$|^neu$", "Neutrophils")
   }
 
   ## NK and subtypes
@@ -104,30 +114,28 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$NK <- blocks$NK[, -idx, drop = FALSE]
   if (ncol(blocks$NK)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$NK), drop = FALSE]
-    colnames(blocks$NK) <- stringr::str_replace(colnames(blocks$NK), "NK(?!.)", "NK.cells")
-    colnames(blocks$NK) <- stringr::str_replace(colnames(blocks$NK), "NK_cells", "NK.cells")
-    colnames(blocks$NK) <- stringr::str_replace(colnames(blocks$NK), "NK_cell", "NK.cells")
+    colnames(blocks$NK) <- rn(colnames(blocks$NK),
+      "^nk[._-]?cells?$|^nk$", "NK.cells")
   }
   if (ncol(blocks$NKT)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$NKT), drop = FALSE]
-    colnames(blocks$NKT) <- stringr::str_replace(colnames(blocks$NKT), "NKT_", "NKT.")
+    colnames(blocks$NKT) <- rn(colnames(blocks$NKT),
+      "^nkt[._-]?cells?$|^nkt$", "NKT.cells")
   }
   if (ncol(blocks$NK.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$NK.activated), drop = FALSE]
-    colnames(blocks$NK.activated) <- stringr::str_replace(colnames(blocks$NK.activated), "NK.cells.activated", "NK.activated")
-    colnames(blocks$NK.activated) <- stringr::str_replace(colnames(blocks$NK.activated), "NK.cells_activated", "NK.activated")
+    colnames(blocks$NK.activated) <- rn(colnames(blocks$NK.activated),
+      "^nk[._-]?cells?[._-]activated$|^nk[._-]activated([._-]cells?)?$", "NK.activated")
   }
   if (ncol(blocks$NK.resting)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$NK.resting), drop = FALSE]
-    colnames(blocks$NK.resting) <- stringr::str_replace(colnames(blocks$NK.resting), "NK.cells.resting", "NK.resting")
-    colnames(blocks$NK.resting) <- stringr::str_replace(colnames(blocks$NK.resting), "NK.cells_resting", "NK.resting")
+    colnames(blocks$NK.resting) <- rn(colnames(blocks$NK.resting),
+      "^nk[._-]?cells?[._-]resting$|^nk[._-]resting([._-]cells?)?$", "NK.resting")
   }
 
   ## CD4 and subtypes
   lower <- stringr::str_to_lower(colnames(mat))
-  #is_cd4 <- grepl("\\bcd4\\b|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
   is_cd4 <- grepl("\\bcd4\\b|cd4t|(^|[_.])cd4($|[_.])|\\breg\\b|regulatory|treg", lower)
-
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
@@ -150,75 +158,62 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$CD4 <- blocks$CD4[, -idx, drop = FALSE]
   if (ncol(blocks$CD4)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4), drop = FALSE]
-    colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "CD4T", "CD4.cells")
-    colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "T.cells.CD4(?!\\.cells)", "CD4.cells")
-    colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "_CD4$", "_CD4.cells")
-    colnames(blocks$CD4) <- stringr::str_replace(colnames(blocks$CD4), "^CD4(?!\\.cells)", "CD4.cells")
+    colnames(blocks$CD4) <- rn(colnames(blocks$CD4),
+      "^(t[._-]?cells?[._-]?)?cd4([._-]?t[._-]?cells?|[._-]?cells?|[._-]?)?$|^cd4t$", "CD4.cells")
   }
   if (ncol(blocks$CD4.memory.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.memory.activated), drop = FALSE]
-    colnames(blocks$CD4.memory.activated) <- stringr::str_replace(colnames(blocks$CD4.memory.activated), "CD4_memory_activated", "CD4.memory.activated")
-    colnames(blocks$CD4.memory.activated) <- stringr::str_replace(colnames(blocks$CD4.memory.activated), "T.cells.CD4.memory.activated", "CD4.memory.activated")
+    colnames(blocks$CD4.memory.activated) <- rn(colnames(blocks$CD4.memory.activated),
+      "^(t[._-]?cells?[._-]?)?cd4[._-]?memory[._-]?activated$", "CD4.memory.activated")
   }
   if (ncol(blocks$CD4.memory.resting)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.memory.resting), drop = FALSE]
-    colnames(blocks$CD4.memory.resting) <- stringr::str_replace(colnames(blocks$CD4.memory.resting), "CD4_memory_resting", "CD4.memory.resting")
-    colnames(blocks$CD4.memory.resting) <- stringr::str_replace(colnames(blocks$CD4.memory.resting), "T.cells.CD4.memory.resting", "CD4.memory.resting")
+    colnames(blocks$CD4.memory.resting) <- rn(colnames(blocks$CD4.memory.resting),
+      "^(t[._-]?cells?[._-]?)?cd4[._-]?memory[._-]?resting$", "CD4.memory.resting")
   }
   if (ncol(blocks$CD4.naive)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.naive), drop = FALSE]
-    colnames(blocks$CD4.naive) <- stringr::str_replace(colnames(blocks$CD4.naive), "CD4_naive", "CD4.naive")
-    colnames(blocks$CD4.naive) <- stringr::str_replace(colnames(blocks$CD4.naive), "CD4._naive", "CD4.naive")
-    colnames(blocks$CD4.naive) <- stringr::str_replace(colnames(blocks$CD4.naive), "T.cells.CD4.naive", "CD4.naive")
-    colnames(blocks$CD4.naive) <- stringr::str_replace(colnames(blocks$CD4.naive), "T_cells_CD4.naive", "CD4.naive")
+    colnames(blocks$CD4.naive) <- rn(colnames(blocks$CD4.naive),
+      "^(t[._-]?cells?[._-]?)?cd4[._-]?naive$", "CD4.naive")
   }
   if (ncol(blocks$CD4.non.regulatory)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.non.regulatory), drop = FALSE]
-
-    colnames(blocks$CD4.non.regulatory) <- stringr::str_replace(
+    # Use gsub on full colname (not rn) because cell type suffix may span multiple underscores
+    # e.g. "Quantiseq_TIL10_T_cells_non_regulatory" where rn() would only see suffix "regulatory"
+    colnames(blocks$CD4.non.regulatory) <- gsub(
+      "(t[._-]?cells?[._-]?(cd4[._-]?)?)?non[._-]?regulatory.*$|cd4[._-]?non[._-]?regulatory.*$",
+      "CD4.non.regulatory",
       colnames(blocks$CD4.non.regulatory),
-      "(?i)^(.+_)?(T[_\\.-]?cell[_\\.-]?CD4[_\\.-]?.*non[._-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?.*non[._-]?regulatory.*|CD4[_\\.-]?non[._-]?regulatory.*|T\\.cells\\.non\\.regulatory|T_cells_non_regulatory|nonregulatory|non[\\W_]?reg)$",
-      "\\1CD4.non.regulatory"
-    )
+      perl = TRUE, ignore.case = TRUE)
   }
-
-  if (ncol(blocks$CD4.regulatory)){
+  if (ncol(blocks$CD4.regulatory)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.regulatory), drop = FALSE]
-    colnames(blocks$CD4.regulatory) <- stringr::str_replace(
-      colnames(blocks$CD4.regulatory),
-      "(?i)^(.+_)?(T[_\\.-]?cell[_\\.-]?regulatory.*|T[_\\.-]?cells?[_\\.-]?regulatory.*|T\\.cells\\.regulatory.*|tregs?\\.?$|treg\\b.*|tregulatory.*|regulatory.*)$",
-      "\\1CD4.regulatory"
-    )
+    colnames(blocks$CD4.regulatory) <- rn(colnames(blocks$CD4.regulatory),
+      "^(t[._-]?cells?[._-]?)?regulatory.*$|^tregs?[._-]?.*$|^t[._-]cells[._-]regulatory.*$|^tregulatory.*$", "CD4.regulatory")
   }
 
   ## CD8
   blocks$CD8 <- mat[, cols("CD8"), drop = FALSE]
   if (ncol(blocks$CD8)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CD8), drop = FALSE]
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8T", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "T_cells_CD8", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "T_cell_CD8", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8_T_cells", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "T.cells.CD8", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8(?!.)", "CD8.cells")
-    colnames(blocks$CD8) <- stringr::str_replace(colnames(blocks$CD8), "CD8.cells.", "CD8.cells")
+    colnames(blocks$CD8) <- rn(colnames(blocks$CD8),
+      "^(t[._-]?cells?[._-]?)?cd8([._-]?t[._-]?cells?|[._-]?cells?|[._-]?)?$|^cd8t$", "CD8.cells")
   }
-
 
   ## Thelper
   blocks$Thelper <- mat[, cols("helper"), drop = FALSE]
   if (ncol(blocks$Thelper)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Thelper), drop = FALSE]
-    colnames(blocks$Thelper) <- stringr::str_replace(colnames(blocks$Thelper), "T.cells.follicular.helper", "T.cells.helper")
-    colnames(blocks$Thelper) <- stringr::str_replace(colnames(blocks$Thelper), "T_cells_follicular_helper", "T.cells.helper")
+    colnames(blocks$Thelper) <- rn(colnames(blocks$Thelper),
+      "^t[._-]?cells?[._-]?(follicular[._-])?helper$", "T.cells.helper")
   }
 
   ## Tgamma
   blocks$Tgamma <- mat[, cols("gamma"), drop = FALSE]
   if (ncol(blocks$Tgamma)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Tgamma), drop = FALSE]
-    colnames(blocks$Tgamma) <- stringr::str_replace(colnames(blocks$Tgamma), "T_cells_gamma_delta", "T.cells.gamma.delta")
-    colnames(blocks$Tgamma) <- stringr::str_replace(colnames(blocks$Tgamma), "T_cell_gamma_delta", "T.cells.gamma.delta")
+    colnames(blocks$Tgamma) <- rn(colnames(blocks$Tgamma),
+      "^t[._-]?cells?[._-]?gamma[._-]?delta$", "T.cells.gamma.delta")
   }
 
   ## Dendritic and subtypes
@@ -229,44 +224,40 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$Dendritic <- blocks$Dendritic[, -idx, drop = FALSE]
   if (ncol(blocks$Dendritic)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic), drop = FALSE]
-    colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cells", "Dendritic.cells")
-    colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Myeloid_dendritic_cell", "Dendritic.cells")
-    colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "Dendritic_cells", "Dendritic.cells")
-    colnames(blocks$Dendritic) <- stringr::str_replace(colnames(blocks$Dendritic), "^Dendritic$", "Dendritic.cells")
+    colnames(blocks$Dendritic) <- rn(colnames(blocks$Dendritic),
+      "^(myeloid[._-])?dendritic[._-]?cells?$|^dendritic$", "Dendritic.cells")
   }
   if (ncol(blocks$Dendritic.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.activated), drop = FALSE]
-    colnames(blocks$Dendritic.activated) <- stringr::str_replace(colnames(blocks$Dendritic.activated), "dendritic_cell_activated", "Dendritic.activated.cells")
-    colnames(blocks$Dendritic.activated) <- stringr::str_replace(colnames(blocks$Dendritic.activated), "Dendritic.cells.activated", "Dendritic.activated.cells")
-    colnames(blocks$Dendritic.activated) <- stringr::str_replace(colnames(blocks$Dendritic.activated), "Dendritic_cells_activated", "Dendritic.activated.cells")
+    colnames(blocks$Dendritic.activated) <- rn(colnames(blocks$Dendritic.activated),
+      "^(myeloid[._-])?dendritic[._-]?cells?[._-]activated$|^dendritic[._-]activated[._-]?cells?$", "Dendritic.activated.cells")
   }
   if (ncol(blocks$Dendritic.resting)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.resting), drop = FALSE]
-    colnames(blocks$Dendritic.resting) <- stringr::str_replace(colnames(blocks$Dendritic.resting), "Dendritic.cells.resting", "Dendritic.resting.cells")
-    colnames(blocks$Dendritic.resting) <- stringr::str_replace(colnames(blocks$Dendritic.resting), "Dendritic_cells_resting", "Dendritic.resting.cells")
+    colnames(blocks$Dendritic.resting) <- rn(colnames(blocks$Dendritic.resting),
+      "^(myeloid[._-])?dendritic[._-]?cells?[._-]resting$|^dendritic[._-]resting[._-]?cells?$", "Dendritic.resting.cells")
   }
 
   ## CAF
   blocks$CAF <- mat[, cols("CAF|Cancer_associated_fibroblast"), drop = FALSE]
   if (ncol(blocks$CAF)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$CAF), drop = FALSE]
-    colnames(blocks$CAF) <- stringr::str_replace(colnames(blocks$CAF), "Cancer_associated_fibroblast", "CAF")
-    colnames(blocks$CAF) <- stringr::str_replace(colnames(blocks$CAF), "CAFs", "CAF")
+    colnames(blocks$CAF) <- rn(colnames(blocks$CAF),
+      "^cancer[._-]associated[._-]fibroblasts?$|^cafs?$", "CAF")
   }
 
   ## Cancer / malignant
   blocks$Cancer <- mat[, cols("ancer"), drop = FALSE]
   if (ncol(blocks$Cancer)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Cancer), drop = FALSE]
-    colnames(blocks$Cancer) <- stringr::str_replace(colnames(blocks$Cancer), "cancer", "Cancer")
-    colnames(blocks$Cancer) <- stringr::str_replace(colnames(blocks$Cancer), "Cancer.cells", "Cancer")
+    colnames(blocks$Cancer) <- rn(colnames(blocks$Cancer),
+      "^cancer([._-]cells?)?$", "Cancer")
   }
   blocks$malignant <- mat[, cols("alignant"), drop = FALSE]
   if (ncol(blocks$malignant)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$malignant), drop = FALSE]
-    colnames(blocks$malignant) <- stringr::str_replace(colnames(blocks$malignant), "Malignant", "Cancer")
-    colnames(blocks$malignant) <- stringr::str_replace(colnames(blocks$malignant), "Cancer_cells", "Cancer")
-    colnames(blocks$malignant) <- stringr::str_replace(colnames(blocks$malignant), "Cancer.cells", "Cancer")
+    colnames(blocks$malignant) <- rn(colnames(blocks$malignant),
+      "^malignant([._-]cells?)?$", "Cancer")
     if (ncol(blocks$Cancer)) blocks$Cancer <- cbind(blocks$Cancer, blocks$malignant) else blocks$Cancer <- blocks$malignant
   }
 
@@ -274,25 +265,24 @@ standardize_celltype_colnames <- function(mat) {
   blocks$Endothelial <- mat[, cols("dothelial"), drop = FALSE]
   if (ncol(blocks$Endothelial)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Endothelial), drop = FALSE]
-    colnames(blocks$Endothelial) <- stringr::str_replace(colnames(blocks$Endothelial), "Endothelial_cells", "Endothelial")
-    colnames(blocks$Endothelial) <- stringr::str_replace(colnames(blocks$Endothelial), "Endothelial.cells", "Endothelial")
-    colnames(blocks$Endothelial) <- stringr::str_replace(colnames(blocks$Endothelial), "Endothelial_cell", "Endothelial")
+    colnames(blocks$Endothelial) <- rn(colnames(blocks$Endothelial),
+      "^endothelial([._-]cells?)?$", "Endothelial")
   }
 
   ## Eosinophils
   blocks$Eosinophils <- mat[, cols("osinophil"), drop = FALSE]
   if (ncol(blocks$Eosinophils)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Eosinophils), drop = FALSE]
-    colnames(blocks$Eosinophils) <- stringr::str_replace(colnames(blocks$Eosinophils), "Eosinophil(?!.)", "Eosinophils")
+    colnames(blocks$Eosinophils) <- rn(colnames(blocks$Eosinophils),
+      "^eosinophils?$", "Eosinophils")
   }
 
   ## Plasma
   blocks$Plasma <- mat[, cols("lasma"), drop = FALSE]
   if (ncol(blocks$Plasma)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Plasma), drop = FALSE]
-    colnames(blocks$Plasma) <- stringr::str_replace(colnames(blocks$Plasma), "plasma(?!.)", "Plasma")
-    colnames(blocks$Plasma) <- stringr::str_replace(colnames(blocks$Plasma), "Plasma_cells", "Plasma")
-    colnames(blocks$Plasma) <- stringr::str_replace(colnames(blocks$Plasma), "Plasma.cells", "Plasma")
+    colnames(blocks$Plasma) <- rn(colnames(blocks$Plasma),
+      "^plasma([._-]cells?)?$", "Plasma")
   }
 
   ## Myocytes / Fibroblasts
@@ -309,47 +299,41 @@ standardize_celltype_colnames <- function(mat) {
   if (length(idx)) blocks$Mast <- blocks$Mast[, -idx, drop = FALSE]
   if (ncol(blocks$Mast)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast), drop = FALSE]
-    colnames(blocks$Mast) <- stringr::str_replace(colnames(blocks$Mast), "Mast_cell(?!.)", "Mast.cells")
-    colnames(blocks$Mast) <- stringr::str_replace(colnames(blocks$Mast), "Mast_cells", "Mast.cells")
+    colnames(blocks$Mast) <- rn(colnames(blocks$Mast),
+      "^mast[._-]?cells?$|^mast$", "Mast.cells")
   }
   if (ncol(blocks$Mast.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.activated), drop = FALSE]
-    colnames(blocks$Mast.activated) <- stringr::str_replace(colnames(blocks$Mast.activated), "Mast.cells.activated", "Mast.activated.cells")
-    colnames(blocks$Mast.activated) <- stringr::str_replace(colnames(blocks$Mast.activated), "Mast_cells_activated", "Mast.activated.cells")
+    colnames(blocks$Mast.activated) <- rn(colnames(blocks$Mast.activated),
+      "^mast[._-]?cells?[._-]activated$|^mast[._-]activated[._-]?cells?$", "Mast.activated.cells")
   }
   if (ncol(blocks$Mast.resting)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.resting), drop = FALSE]
-    colnames(blocks$Mast.resting) <- stringr::str_replace(colnames(blocks$Mast.resting), "Mast.cells.resting", "Mast.resting.cells")
-    colnames(blocks$Mast.resting) <- stringr::str_replace(colnames(blocks$Mast.resting), "Mast_cells_resting", "Mast.resting.cells")
+    colnames(blocks$Mast.resting) <- rn(colnames(blocks$Mast.resting),
+      "^mast[._-]?cells?[._-]resting$|^mast[._-]resting[._-]?cells?$", "Mast.resting.cells")
   }
 
   ## B cells (naive / memory) and final B
   blocks$B.naive <- mat[, cols("naive"), drop = FALSE]
   if (ncol(blocks$B.naive)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$B.naive), drop = FALSE]
-    colnames(blocks$B.naive) <- stringr::str_replace(colnames(blocks$B.naive), "B.cells.naive", "B.naive.cells")
-    colnames(blocks$B.naive) <- stringr::str_replace(colnames(blocks$B.naive), "B_cells_naive", "B.naive.cells")
-    colnames(blocks$B.naive) <- stringr::str_replace(colnames(blocks$B.naive), "B_cell_naive", "B.naive.cells")
+    colnames(blocks$B.naive) <- rn(colnames(blocks$B.naive),
+      "^b[._-]?cells?[._-]naive$|^b[._-]naive[._-]?cells?$", "B.naive.cells")
   }
 
   blocks$B.memory <- mat[, cols("memory"), drop = FALSE]
   if (ncol(blocks$B.memory)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$B.memory), drop = FALSE]
-    colnames(blocks$B.memory) <- stringr::str_replace(colnames(blocks$B.memory), "B.cells.memory", "B.memory.cells")
-    colnames(blocks$B.memory) <- stringr::str_replace(colnames(blocks$B.memory), "B_cells_memory", "B.memory.cells")
-    colnames(blocks$B.memory) <- stringr::str_replace(colnames(blocks$B.memory), "B_cell_memory", "B.memory.cells")
+    colnames(blocks$B.memory) <- rn(colnames(blocks$B.memory),
+      "^b[._-]?cells?[._-]memory$|^b[._-]memory[._-]?cells?$", "B.memory.cells")
   }
 
   idx <- which(colnames(mat) %in% c(colnames(blocks$B.naive), colnames(blocks$B.memory)))
   if (length(idx)) mat <- mat[, -idx, drop = FALSE]
 
   if (ncol(mat)) {
-    colnames(mat) <- stringr::str_replace(colnames(mat), "Bcell", "B.cells")
-    colnames(mat) <- stringr::str_replace(colnames(mat), "B_cells", "B.cells")
-    colnames(mat) <- stringr::str_replace(colnames(mat), "B_cell", "B.cells")
-    colnames(mat) <- stringr::str_replace(colnames(mat), "B_lineage", "B.cells")
-    colnames(mat) <- stringr::str_replace(colnames(mat), "_B(?!.)", "_B.cells")
-    colnames(mat) <- stringr::str_replace(colnames(mat), "^B$", "B.cells")
+    colnames(mat) <- rn(colnames(mat),
+      "^b[._-]?cells?$|^b[._-]?cell$|^bcell$|^b[._-]lineage$|^b$", "B.cells")
     blocks$B <- mat[, cols("B.cells"), drop = FALSE]
     if (ncol(blocks$B)) mat <- mat[, !colnames(mat) %in% colnames(blocks$B), drop = FALSE]
   }
@@ -401,7 +385,7 @@ compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
                  "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
 
   if(is.null(cells_extra)){
-    cat("No extra cell types provided. Only the following cell types will be considered:\n\n", paste0(cell_types, collapse = "\n"), "\n\n")
+    cat("No extra cell types provided. Only the following cell types will be considered:\n", paste0(cell_types, collapse = "\n"), "\n\n")
     cat("If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.\n")
   }
 
@@ -1122,7 +1106,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
   #####Preparing output
   dt = c()
   for (i in 1:length(res)) {
-    dt = c(dt, res[[i]])
+    dt = c(dt, as.data.frame(res[[i]]))
   }
   dt = data.frame(dt)
   rownames(dt) = rownames(deconvolution.mat)
@@ -2768,6 +2752,7 @@ prepare_multideconv_folds <- function(
 #' @importFrom stats dist hclust cutree
 #' @importFrom factoextra fviz_nbclust hcut
 #'
+#' @export
 deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id = NULL){
   if (!requireNamespace("CellTFusion", quietly = TRUE)) {
     stop("Package 'CellTFusion' is required for deconvolution_dictionary(). ",
