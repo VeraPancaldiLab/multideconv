@@ -227,7 +227,6 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Checking consistency in deconvolution cell fractions across patients...............................................................
 #> 
 #> No extra cell types provided. Only the following cell types will be considered:
-#> 
 #>  B.cells
 #> B.naive.cells
 #> B.memory.cells
