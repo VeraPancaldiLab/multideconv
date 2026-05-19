@@ -708,82 +708,6 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
   if (ncol(data) < 2) {
     return(list(data, cell_subgroups, cell_groups_discard))
   }else{
-    # #################### Proportionality-based correlation (DEPRECATED)
-    # is_similar <- function(value1, value2, threshold) {return(abs(value1 - value2) <= threshold)}
-    # similarity_matrix <- matrix(FALSE, nrow = ncol(data), ncol = ncol(data), dimnames = list(names(data), names(data)))
-    # for (col1 in names(data)) {
-    #   for (col2 in names(data)) {
-    #     similarity <- all(mapply(is_similar, data[[col1]], data[[col2]], MoreArgs = list(0.05))) #similarity threshold = 0.05
-    #     similarity_matrix[col1, col2] <- similarity
-    #   }
-    # }
-    # get_upper_tri <- function(cormat){
-    #   cormat[lower.tri(cormat, diag = T)]<- NA
-    #   return(cormat)
-    # }
-    # upper_tri <- get_upper_tri(similarity_matrix)
-    # x <- melt(upper_tri) %>%
-    #   na.omit() %>%
-    #   mutate_all(as.character)
-    # indice = 1
-    # subgroup = list()
-    # vec = unique(x$Var1)
-    # while(length(vec)>0){
-    #   sub = x[which(x$Var1%in%vec[1]),]
-    #   sub = sub[which(sub$value==T),]
-    #   if(nrow(sub)!=0){
-    #     subgroup[[indice]] = c(vec[1], sub$Var2)
-    #     x = x[-which(x$Var1%in%subgroup[[indice]]),] #Variable 1
-    #     x = x[-which(x$Var2%in%subgroup[[indice]]),] #Variable 2
-    #     vec = vec[-which(vec%in%subgroup[[indice]])]
-    #     indice = indice + 1
-    #   }else{
-    #     indice = indice
-    #     vec = vec[-1]
-    #   }
-    # }
-    #
-    # if(length(subgroup)!=0){
-    #   for (i in 1:length(subgroup)){
-    #     names(subgroup)[i] = paste0(file_name, "_Subgroup.Similarity.", i) #Name subgroups
-    #   }
-    #   lis = remove_subgroups(subgroup) #Map subgroups with same method
-    #   if(length(lis)>0){
-    #     cell_groups_discard = subgroup[lis]
-    #     subgroup = subgroup[-lis] #Remove subgroups if all subgroupped features belong to the same method
-    #   }
-    #
-    #   if(length(subgroup)!=0){  #check if after removal of subgroups with equal method, you still have subgroups
-    #     cell_groups_similarity = subgroup
-    #     data_sub = c()
-    #     for(i in 1:length(cell_groups_similarity)){ #Create data frame with features subgroupped
-    #       sub = data.frame(data[,colnames(data)%in%cell_groups_similarity[[i]]]) #Map features that are inside each subgroup from input (deconvolution)
-    #       sub$median = matrixStats::rowMedians(as.matrix(sub), useNames = FALSE) #Compute median of subgroups across patients
-    #       data_sub = data.frame(cbind(data_sub, sub$median)) #Save median in a new data frame
-    #       colnames(data_sub)[i] = names(cell_groups_similarity)[i]
-    #       name = colnames(data)[which(!(colnames(data)%in%cell_groups_similarity[[i]]))]
-    #       data = data[,-which(colnames(data)%in%cell_groups_similarity[[i]])] #Remove from deconvolution features that are subgrouped
-    #       if(ncol(data.frame(data))==1){
-    #         data = as.data.frame(data)
-    #         colnames(data)[1] = name
-    #       }
-    #     }
-    #
-    #     rownames(data_sub) = rownames(data) #List of patients
-    #     data_sub = data.frame(data_sub[,colnames(data_sub)%in%names(cell_groups_similarity)])
-    #     colnames(data_sub) = names(cell_groups_similarity)
-    #
-    #     data = cbind(data, data_sub) #Join subgroups in deconvolution file
-    #   }else{
-    #     cell_groups_similarity = list()
-    #   }
-    #   k = 2
-    # }else{
-    #   k = 3
-    # }
-    # if(ncol(data) == 1){ #everything is already subgroupped
-    #   return(list(data, cell_subgroups, cell_groups_similarity, cell_groups_discard))
-    # }
 
     #################### Linear-based correlation
     #if(k==2 | k==3){
@@ -846,7 +770,7 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
           for(i in 1:length(subgroup)){ #Create data frame with features subgroupped
             sub = data.frame(data[,colnames(data)%in%subgroup[[i]]]) #Map features that are inside each subgroup from input (deconvolution)
             sub$median = matrixStats::rowMedians(as.matrix(sub), useNames = FALSE) #Compute median of subgroup across patients
-            data_sub = cbind(data_sub, sub$median) #Save median in a new data frame
+            data_sub = data.frame(cbind(data_sub, sub$median)) #Save median in a new data frame
             colnames(data_sub)[i] = names(subgroup)[i]
             name = colnames(data)[which(!(colnames(data)%in%subgroup[[i]]))]
             data = data.frame(data[,-which(colnames(data)%in%subgroup[[i]]), drop = FALSE]) #Remove from deconvolution features that are subgrouped
@@ -2766,7 +2690,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
   i = 1
 
   # Compute global module correlation using the full deconvolution matrix
-  global_x = CellTFusion::compute.modules.relationship(
+  global_x = compute.modules.relationship(
     deconv_subgroups[["Deconvolution matrix"]],
     pathway_matrix,
     return = TRUE,
@@ -2842,7 +2766,7 @@ deconvolution_dictionary = function(deconv_subgroups, pathway_matrix, batch_id =
       rownames(cell_subgroups[[cell]]) <- rownames(deconv_subgroups[["Deconvolution matrix"]])
 
       #Compute module correlation between cell deconvolution features and PROGENy pathways
-      x <- CellTFusion::compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, batch = batch_id, plot = FALSE)
+      x <- compute.modules.relationship(cell_subgroups[[cell]], pathway_matrix, return = TRUE, batch = batch_id, plot = FALSE)
       corr_matrix <- data.frame(x[[1]])
 
       for (k in seq_along(clusters_global)) {
@@ -3174,7 +3098,7 @@ compute_subgroups_pathways <- function(subgroups,
   for(celltype in names(subgroups_cells)) {
     cells = subgroups_cells[[celltype]]
     if(ncol(cells) < 2) next
-    CellTFusion::compute.modules.relationship(cells,
+    compute.modules.relationship(cells,
                                              data.frame(t(mat_consensus)),
                                              file_name = paste0(file_name, "_", celltype),
                                              height = height,

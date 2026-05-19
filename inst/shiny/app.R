@@ -71,6 +71,7 @@ discover_dictionary_plot_files <- function(results_dir, file_name = "", previous
   }
 
   new_files <- setdiff(all_files, previous_files)
+  new_files <- new_files[grepl("\\.(pdf|png|jpg|jpeg)$", new_files, ignore.case = TRUE)]
   fgsea_files <- all_files[grepl("_FGSEA_top20\\.(pdf|png|jpg|jpeg)$", all_files, ignore.case = TRUE)]
 
   pathway_files <- character(0)
@@ -385,7 +386,10 @@ ui <- navbarPage(
     HTML('<span class="glyphicon glyphicon-home"></span>&nbsp; Welcome'),
     value = "welcome",
 
-    tags$head(tags$style(HTML(app_css))),
+    tags$head(
+      tags$style(HTML(app_css)),
+      tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js")
+    ),
 
     # Hero banner
     div(class = "hero",
@@ -806,22 +810,22 @@ ui <- navbarPage(
 
 # ── Server ────────────────────────────────────────────────────────────────────
 server <- function(input, output, session) {
+  results_dir <- normalizePath(file.path(getwd(), "Results"), winslash = "/", mustWork = FALSE)
+  if (!dir.exists(results_dir)) {
+    dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+  shiny::addResourcePath("results", results_dir)
+
   state <- reactiveValues(
     counts    = NULL,
     deconv    = NULL,
     analysis  = NULL,
     benchmark = NULL,
-    results_dir = normalizePath(file.path(getwd(), "Results"), winslash = "/", mustWork = FALSE),
     dictionary_plot_files = character(0),
     deconv_msg    = "No run yet.",
     analysis_msg  = "No run yet.",
     benchmark_msg = "No run yet."
   )
-
-  if (!dir.exists(state$results_dir)) {
-    dir.create(state$results_dir, recursive = TRUE, showWarnings = FALSE)
-  }
-  shiny::addResourcePath("results", state$results_dir)
 
   current_counts <- reactive({
     if (identical(input$counts_source, "Example raw_counts")) {
@@ -1066,8 +1070,8 @@ server <- function(input, output, session) {
   observeEvent(input$run_dict, {
     subgroups <- current_dict_deconv()
     expr      <- current_dict_counts()
-    prev_files <- if (dir.exists(state$results_dir)) {
-      list.files(state$results_dir, full.names = TRUE)
+    prev_files <- if (dir.exists(results_dir)) {
+      list.files(results_dir, full.names = TRUE)
     } else {
       character(0)
     }
@@ -1125,7 +1129,7 @@ server <- function(input, output, session) {
     }
 
     state$dictionary_plot_files <- discover_dictionary_plot_files(
-      results_dir = state$results_dir,
+      results_dir = results_dir,
       file_name = input$dict_file_name,
       previous_files = prev_files
     )
@@ -1175,9 +1179,47 @@ server <- function(input, output, session) {
       src <- paste0("results/", utils::URLencode(fname, reserved = TRUE))
 
       viewer <- if (ext %in% c("pdf")) {
-        tags$iframe(
-          src = src,
-          style = "width:100%; height:560px; border:1px solid #cee0e8; border-radius:8px; background:#fff;"
+        pdf_url <- src
+        tags$div(
+          tags$canvas(
+            id = paste0("pdf-canvas-", gsub("[^a-zA-Z0-9]", "_", fname)),
+            style = "width:100%; border:1px solid #cee0e8; border-radius:8px; background:#fff; display:block;"
+          ),
+          tags$script(HTML(sprintf('
+            (function() {
+              var url = "%s";
+              var canvasId = "pdf-canvas-%s";
+              function renderPDF() {
+                if (typeof pdfjsLib === "undefined") {
+                  setTimeout(renderPDF, 200);
+                  return;
+                }
+                pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                  var container = document.getElementById(canvasId).parentNode;
+                  container.removeChild(document.getElementById(canvasId));
+                  for (var pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    (function(num) {
+                      pdf.getPage(num).then(function(page) {
+                        var scale = 2;
+                        var viewport = page.getViewport({ scale: scale });
+                        var canvas = document.createElement("canvas");
+                        canvas.style.width = "100%%";
+                        canvas.style.display = "block";
+                        canvas.style.marginBottom = "4px";
+                        canvas.style.borderRadius = "8px";
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        container.appendChild(canvas);
+                        page.render({ canvasContext: canvas.getContext("2d"), viewport: viewport });
+                      });
+                    })(pageNum);
+                  }
+                });
+              }
+              renderPDF();
+            })();
+          ', src, gsub("[^a-zA-Z0-9]", "_", fname))))
         )
       } else if (ext %in% c("png", "jpg", "jpeg")) {
         tags$img(
