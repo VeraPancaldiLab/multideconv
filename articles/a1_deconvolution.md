@@ -1,6 +1,7 @@
 # Deconvolution with default methods
 
 ``` r
+
 library(multideconv)
 ```
 
@@ -21,6 +22,7 @@ The output includes all combinations of deconvolution features,
 method-signature-cell type.
 
 ``` r
+
 bulk = multideconv::raw_counts
 deconv = compute.deconvolution(raw.counts = bulk, 
                                methods = c("Quantiseq", "Epidish", 
@@ -34,6 +36,7 @@ To exclude specific methods or signatures, use the methods or
 signatures_exclude arguments:
 
 ``` r
+
 deconv = compute.deconvolution(raw.counts = bulk, 
                                methods = c("Quantiseq", "DeconRNASeq"), 
                                normalized = TRUE,
@@ -47,6 +50,7 @@ To speed up computation, `multideconv` supports parallelization. Set
 system’s resources:
 
 ``` r
+
 deconv = compute.deconvolution(raw.counts = bulk, 
                                methods = "DWLS", 
                                normalized = TRUE, 
@@ -64,6 +68,7 @@ can do the following:
 To list all signatures
 
 ``` r
+
 path <- system.file("signatures/", package = "multideconv")
 list.files(path)
 #>  [1] "BPRNACan.txt"                  "BPRNACan3DProMet.txt"         
@@ -77,6 +82,7 @@ list.files(path)
 To access a specific signature
 
 ``` r
+
 signature = read.delim(paste0(path, "CBSX-Melanoma-scRNAseq.txt"))
 head(signature)
 #>     NAME Malignant Endothelial.cells      CAF T.cells.CD8 NK.cells Macrophages

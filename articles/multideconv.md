@@ -11,6 +11,7 @@ To avoid GitHub API rate limit issues, set up a Personal Access Token
 (PAT) before installing:
 
 ``` r
+
 # install.packages(c("usethis", "gitcreds"))
 usethis::create_github_token()
 gitcreds::gitcreds_set()
@@ -19,6 +20,7 @@ gitcreds::gitcreds_set()
 Install `multideconv` from GitHub:
 
 ``` r
+
 # install.packages("pak")
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```

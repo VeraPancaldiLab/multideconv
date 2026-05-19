@@ -32,6 +32,7 @@ A list containing:
 ## Examples
 
 ``` r
+
 data("deconvolution")
 
 cells_types = multideconv:::compute.cell.types(deconvolution)

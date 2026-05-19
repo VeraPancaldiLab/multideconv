@@ -1,6 +1,7 @@
 # Single-cell deconvolution
 
 ``` r
+
 library(multideconv)
 ```
 
@@ -48,6 +49,7 @@ provide their own single-cell data and supply it to the `sc_object`
 parameter in the function call.
 
 ``` r
+
 metacells = create_metacells(sc_object, 
                              labels_column = cell_labels, 
                              samples_column = sample_labels, 
@@ -83,6 +85,7 @@ deconvolve bulk RNA-seq profiles.
 - **name_sc_signature**: Name to assign to the resulting signature
 
 ``` r
+
 metacell_obj = multideconv::metacells_data
 metacell_metadata = multideconv::metacells_metadata
 head(metacell_obj[1:5,1:5])
@@ -135,6 +138,7 @@ deconvolution approaches. The output includes all combinations of
 methods and signatures.
 
 ``` r
+
 deconv = compute.deconvolution(raw.counts = bulk, 
                                normalized = TRUE, 
                                return = TRUE, 
@@ -157,6 +161,7 @@ public
 workflow with an empty first-generation `methods` vector:
 
 ``` r
+
 deconv_sc = compute.deconvolution(raw_counts = bulk,
                                   normalized = TRUE,
                                   methods = character(0),
@@ -173,10 +178,9 @@ deconv_sc = compute.deconvolution(raw_counts = bulk,
                                   file_name = "Tutorial")
 ```
 
-Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, Bernhard Eder,
-Constantin Zackl, Katharina Reinisch, Frank Edenhofer, et al. 2024.
+Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, et al. 2024.
 “Benchmarking Second-Generation Methods for Cell-Type Deconvolution of
-Transcriptomic Data.” *bioRxiv*.
+Transcriptomic Data.” *bioRxiv*, ahead of print.
 <https://doi.org/10.1101/2024.06.10.598226>.
 
 Langfelder, Peter, and Steve Horvath. 2008. “WGCNA: An r Package for

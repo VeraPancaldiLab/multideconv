@@ -24,6 +24,7 @@ the nomenclature specified in multideconv (see Readme)
 ## Examples
 
 ``` r
+
 data("deconvolution")
 
 deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)

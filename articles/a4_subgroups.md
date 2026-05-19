@@ -1,6 +1,7 @@
 # Cell type subgroup analysis
 
 ``` r
+
 library(multideconv)
 ```
 
@@ -24,6 +25,7 @@ deconvolution matrix, saved in the `Results/` directory.
   `Results/` directory
 
 ``` r
+
 deconv_bulk = multideconv::deconv_bulk
 deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk, 
                                                   corr = 0.7, 
@@ -35,6 +37,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
 Subgroups composition can be extracted with:
 
 ``` r
+
 deconv_subgroups[[3]]$B.cells
 #> $B.cells_Subgroup.2.Iteration.1
 #> [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"
@@ -101,6 +104,7 @@ deconv_subgroups[[3]]$Dendritic.cells
 Reduced deconvolution matrix:
 
 ``` r
+
 head(subgroups[[1]][,sample(colnames(subgroups[[1]]), 10)])
 #>                 Quantiseq_T.cells.non.regulatory
 #> SAM7f0d9cc7f001                       0.01070804
@@ -179,6 +183,7 @@ README), specify them using `cells_extra` to ensure proper subgrouping.
 If not, they are going to be discarded automatically.
 
 ``` r
+
 deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo, 
                                                   corr = 0.7, 
                                                   seed = 123, 
@@ -206,6 +211,7 @@ function to classify each deconvolution feature according to its
 dominant pathway program.
 
 ``` r
+
 counts = multideconv::raw_counts
 counts.norm = ADImpute::NormalizeTPM(counts, log = FALSE)
 deconv = multideconv::deconv_bulk[rownames(multideconv::deconv_bulk)%in%colnames(counts),]
@@ -330,6 +336,7 @@ deconv_dictionary = compute_deconvolution_dictionary(subgroups = deconv_subgroup
 The dictionary matrix now contains pathway-annotated features:
 
 ``` r
+
 head(deconv_dictionary[["Deconvolution matrix"]][,1:5])
 #>                 Quantiseq_B.cells_HALLMARK_MYOGENESIS
 #> SAM7f0d9cc7f001                           0.050210988
@@ -372,6 +379,7 @@ The dictionary also identifies global pathway states (immunoactive,
 immunosuppressive, mixed):
 
 ``` r
+
 deconv_dictionary[["States"]]
 #> NULL
 ```
@@ -386,6 +394,7 @@ counts and generates module relationship plots showing how well each
 deconvolution subgroup correlates with each pathway activity pattern.
 
 ``` r
+
 # Generate pathway relationship plots for all cell types
 # Plots will be saved to Results/ directory
 compute_subgroups_pathways(subgroups = deconv_dictionary,
@@ -425,6 +434,7 @@ transferring learned patterns across datasets—such as when training and
 evaluating machine learning models.
 
 ``` r
+
 deconv_1 = deconv_bulk[1:100,]
 deconv_2 = deconv_bulk[101:192,]
 

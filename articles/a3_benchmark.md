@@ -1,6 +1,7 @@
 # Pseudo-bulk profiles and benchmarking
 
 ``` r
+
 library(multideconv)
 metacell_obj = multideconv::metacells_data
 metacell_metadata = multideconv::metacells_metadata
@@ -16,6 +17,7 @@ metacell object. Just be sure to select the same object when examining
 the real cell proportions (if needed).
 
 ``` r
+
 metacells_seurat = Seurat::CreateSeuratObject(metacell_obj, meta.data = metacell_metadata)
 #> Warning: Data is of class matrix. Coercing to dgCMatrix.
 pseudobulk = create_sc_pseudobulk(metacells_seurat, cells_labels = "annotated_ct", sample_labels = "sample", normalized = TRUE, file_name = "Tutorial")
@@ -43,6 +45,7 @@ contain the differential markers for each cell type (these can be
 obtained using `FindMarkers()` or `FindAllMarkers()` from Seurat).
 
 ``` r
+
 bulk_pseudo = multideconv::pseudobulk
 signatures = create_sc_signatures(metacell_obj, 
                                   metacell_metadata, 
@@ -65,6 +68,7 @@ B.cells instead of B cells if that is the naming convention used - see
 README for more information).
 
 ``` r
+
 deconv_pseudo = multideconv::deconvolution
 cells_groundtruth = multideconv::cells_groundtruth
 benchmark = compute.benchmark(deconv_pseudo, 

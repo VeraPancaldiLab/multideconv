@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="favicon.ico">
 <link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods">
 <meta name="description" content="R package that reduces dimensionality and eliminates redundancy through unsupervised filtering and iterative correlation analyses. Built on top of existing frameworks like immunedeconv (Sturm et al. 2019) and omnideconv (Dietrich et al. 2024), multideconv harmonizes outputs across methods to identify robust cell subgroups and mitigate signature-driven heterogeneity.">
@@ -124,17 +124,32 @@
 <div class="section level2">
 <h2 id="shiny-app">Shiny app<a class="anchor" aria-label="anchor" href="#shiny-app"></a>
 </h2>
-<p><code>multideconv</code> includes an interactive Shiny app for non-coding users with four tabs: <strong>Welcome</strong>, <strong>Deconvolution</strong>, <strong>Analysis</strong>, and <strong>Benchmark</strong>.</p>
-<p>From the repository root, run:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">"shiny::runApp('inst/shiny', host='127.0.0.1', port=3838, launch.browser=TRUE)"</span></span></code></pre></div>
-<p>Or from an R session:</p>
+<p><code>multideconv</code> includes an interactive Shiny app with four tabs: <strong>Welcome</strong>, <strong>Deconvolution</strong>, <strong>Analysis</strong>, and <strong>Benchmark</strong>.</p>
+<div class="section level3">
+<h3 id="for-non-coding-users-recommended">For non-coding users (recommended)<a class="anchor" aria-label="anchor" href="#for-non-coding-users-recommended"></a>
+</h3>
+<p>A ready-to-use launcher script is included at the root of the repository: <strong><code>launch_app.R</code></strong>.</p>
+<p><strong>Option A — RStudio:</strong></p>
+<ol style="list-style-type: decimal">
+<li>Open the <code>multideconv</code> folder and double-click <code>multideconv.Rproj</code> to open the project in RStudio.</li>
+<li>In the <em>Files</em> panel, click <code>launch_app.R</code> to open it.</li>
+<li>Click the <strong>Source</strong> button (top-right of the editor).</li>
+<li>The app opens automatically in your browser at <code>http://127.0.0.1:3838</code>.</li>
+</ol>
+<p><strong>Option B — Terminal:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">Rscript</span> launch_app.R</span></code></pre></div>
+<p>To stop the app, press <strong>Ctrl+C</strong> in the console (or click the red <strong>Stop</strong> button in RStudio).</p>
+<blockquote>
+<p><strong>Note:</strong> the launcher allows uploads up to 2 GB and opens the browser automatically.</p>
+</blockquote>
+</div>
+<div class="section level3">
+<h3 id="for-r-users">For R users<a class="anchor" aria-label="anchor" href="#for-r-users"></a>
+</h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"~/path/to/multideconv"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">shiny</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/runApp.html" class="external-link">runApp</a></span><span class="op">(</span><span class="st">"inst/shiny"</span>, host <span class="op">=</span> <span class="st">"127.0.0.1"</span>, port <span class="op">=</span> <span class="fl">3838</span>, launch.browser <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>If port <code>3838</code> is already in use, choose another one (for example <code>3840</code>) and open:</p>
-<p><code>http://127.0.0.1:3840</code></p>
-<p>You can stop old Shiny processes with:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> <span class="st">"shiny::runApp</span><span class="dt">\\</span><span class="st">('inst/shiny'"</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="cell-types-nomenclature">Cell types nomenclature<a class="anchor" aria-label="anchor" href="#cell-types-nomenclature"></a>
@@ -151,7 +166,7 @@
 </h2>
 <p>If you want <code>multideconv</code> to consider other cells, it is pretty simple! Just use the argument cells_extra in the function <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p>
 <p>Let’s say you want to add mesenchymal and basophils cells:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, seed <span class="op">=</span> <span class="fl">123</span>, cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mesenchymal"</span>, <span class="st">"basophils"</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
 <p>And that’s it, just make sure the name you are putting in cells_extra is exactly the name of your cells in your deconvolution matrix!</p>
 </div>
@@ -166,7 +181,7 @@
 <p><code>multideconv</code> includes second generation methods that allows users to input single cell data and use it for constructing signatures ‘on-the-fly’ and deconvolve the bulk RNAseq data.</p>
 <p>Because most of the times scRNAseq data can be big and sparse matrices, we applied ‘preprocessing’ steps to avoid crashing the computer. For this, <code>multideconv</code> construct metacells per cell type and patient from the single cell data using the KNN algorithm. This is done essentially by executing different tasks per cluster in parallel for N workers and once finished, it computes deconvolution using the reduced single cell object.</p>
 <p><strong>NOTE</strong>: If you encounter missing packages for certain deconvolution methods (e.g., <code>MuSiC</code>, <code>SCDC</code>) during the pipeline, make sure to install the versions maintained by the <code>omnideconv</code> team. These versions are patched to work seamlessly with <code>omnideconv</code> functions:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/MuSiC"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/SCDC"</span><span class="op">)</span></span></code></pre></div>
 </div>

@@ -88,6 +88,7 @@ A list containing
 ## Examples
 
 ``` r
+
 data("deconvolution")
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)

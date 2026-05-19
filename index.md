@@ -17,6 +17,7 @@ setting up GitHub authentication by creating and storing a Personal
 Access Token (PAT). You can do this with the following steps:
 
 ``` r
+
 # install.packages(c("usethis", "gitcreds"))
 usethis::create_github_token() #Create a Personal Access Token (if you don't have)
 gitcreds::gitcreds_set() #Add the token
@@ -26,6 +27,7 @@ You can install the development version of `multideconv` from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
@@ -41,6 +43,7 @@ The `Results/` folder, where outputs will be saved, will be created in
 this directory.
 
 ``` r
+
 setwd('~/path/to/directory')
 library(multideconv)
 ```
@@ -51,6 +54,7 @@ using different methods and signatures through the function
 expression matrix either as raw or normalized counts.
 
 ``` r
+
 deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", file_name = "Tutorial") 
 deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", methods = c("Quantiseq", "MCP", "XCell", "DWLS"), file_name = "Test") 
 deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", signatures_exclude = "BPRNACan", file_name = "Tutorial")
@@ -96,6 +100,7 @@ For processing the deconvolution features obtained from
 `compute.deconvolution.analysis` function.
 
 ``` r
+
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, return = T)
 ```
 
@@ -106,37 +111,47 @@ already included in `compute.deconvolution` when setting
 `sc_deconv = T`.
 
 ``` r
+
 deconv_sc = compute_sc_deconvolution_methods(raw_counts, sc_object, sc_metadata, cell_annotations, samples_ids, name_object, normalized = T, n_cores = 4, cbsx_name = "XXX", cbsx_token = "XXX")
 ```
 
 ## Shiny app
 
-`multideconv` includes an interactive Shiny app for non-coding users
-with four tabs: **Welcome**, **Deconvolution**, **Analysis**, and
-**Benchmark**.
+`multideconv` includes an interactive Shiny app with four tabs:
+**Welcome**, **Deconvolution**, **Analysis**, and **Benchmark**.
 
-From the repository root, run:
+### For non-coding users (recommended)
+
+A ready-to-use launcher script is included at the root of the
+repository: **`launch_app.R`**.
+
+**Option A — RStudio:**
+
+1.  Open the `multideconv` folder and double-click `multideconv.Rproj`
+    to open the project in RStudio.
+2.  In the *Files* panel, click `launch_app.R` to open it.
+3.  Click the **Source** button (top-right of the editor).
+4.  The app opens automatically in your browser at
+    `http://127.0.0.1:3838`.
+
+**Option B — Terminal:**
 
 ``` bash
-Rscript -e "shiny::runApp('inst/shiny', host='127.0.0.1', port=3838, launch.browser=TRUE)"
+Rscript launch_app.R
 ```
 
-Or from an R session:
+To stop the app, press **Ctrl+C** in the console (or click the red
+**Stop** button in RStudio).
+
+> **Note:** the launcher allows uploads up to 2 GB and opens the browser
+> automatically.
+
+### For R users
 
 ``` r
-setwd("~/path/to/multideconv")
+
+devtools::load_all()
 shiny::runApp("inst/shiny", host = "127.0.0.1", port = 3838, launch.browser = TRUE)
-```
-
-If port `3838` is already in use, choose another one (for example
-`3840`) and open:
-
-`http://127.0.0.1:3840`
-
-You can stop old Shiny processes with:
-
-``` bash
-pkill -f "shiny::runApp\\('inst/shiny'"
 ```
 
 ## Cell types nomenclature
@@ -159,6 +174,7 @@ Just use the argument cells_extra in the function
 Let’s say you want to add mesenchymal and basophils cells:
 
 ``` r
+
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, cells_extra = c("mesenchymal", "basophils")) 
 ```
 
@@ -192,6 +208,7 @@ install the versions maintained by the `omnideconv` team. These versions
 are patched to work seamlessly with `omnideconv` functions:
 
 ``` r
+
 devtools::install_github("omnideconv/MuSiC")
 devtools::install_github("omnideconv/SCDC")
 ```

@@ -160,6 +160,7 @@ https://doi.org/10.1101/2024.06.10.598226
 ## Examples
 
 ``` r
+
 data("raw_counts")
 data("cell_labels")
 data("sample_labels")

@@ -14,6 +14,7 @@ identifies robust cell subgroups.
 ## Development Commands
 
 ``` r
+
 # Load package for interactive development (no need to reinstall)
 devtools::load_all()
 
@@ -36,6 +37,7 @@ shiny::runApp('inst/shiny', host='127.0.0.1', port=3838)
 ## Installation
 
 ``` r
+
 # Install from GitHub (requires authentication for private deps)
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
