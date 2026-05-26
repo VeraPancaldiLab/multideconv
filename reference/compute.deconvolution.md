@@ -183,25 +183,13 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> * Epidish
 #> 
 #> Signatures
-#> * BPRNACan
-#> * BPRNACan3DProMet
-#> * BPRNACanProMet
 #> * CBSX-HNSCC-scRNAseq
 #> * CBSX-Melanoma-scRNAseq
 #> * CBSX-NSCLC-PBMCs-scRNAseq
 #> * CBSX-NSCLC-scRNAseq
-#> * CCLE-TIL10
+#> * CBSX-Vanderbilt-scRNAseq
 #> * LM22
 #> * TIL10
-#> 
-#> Running Epidish...............................................................
-#> 
-#> 
-#> Running Epidish...............................................................
-#> 
-#> 
-#> Running Epidish...............................................................
-#> 
 #> 
 #> Running Epidish...............................................................
 #> 
@@ -267,14 +255,11 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> 
 #> If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.
 #> 
-#> Total sum across samples of combination Epidish_BPRNACan is 1
-#> Total sum across samples of combination Epidish_BPRNACan3DProMet is 1
-#> Total sum across samples of combination Epidish_BPRNACanProMet is 1
 #> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.scRNAseq is 1
-#> Total sum across samples of combination Epidish_CCLE.TIL10 is 1
+#> Total sum across samples of combination Epidish_CBSX.Vanderbilt.scRNAseq is 1
 #> Total sum across samples of combination Epidish_TIL10 is 1
 #> Total sum across samples of combination Epidish_LM22 is 1
 

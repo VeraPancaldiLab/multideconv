@@ -71,12 +71,10 @@ To list all signatures
 
 path <- system.file("signatures/", package = "multideconv")
 list.files(path)
-#>  [1] "BPRNACan.txt"                  "BPRNACan3DProMet.txt"         
-#>  [3] "BPRNACanProMet.txt"            "CBSX-HNSCC-scRNAseq.txt"      
-#>  [5] "CBSX-Melanoma-scRNAseq.txt"    "CBSX-NSCLC-PBMCs-scRNAseq.txt"
-#>  [7] "CBSX-NSCLC-scRNAseq.txt"       "CCLE-TIL10.txt"               
-#>  [9] "LM22.txt"                      "MCPcounter"                   
-#> [11] "TIL10.txt"
+#> [1] "CBSX-HNSCC-scRNAseq.txt"       "CBSX-Melanoma-scRNAseq.txt"   
+#> [3] "CBSX-NSCLC-PBMCs-scRNAseq.txt" "CBSX-NSCLC-scRNAseq.txt"      
+#> [5] "CBSX-Vanderbilt-scRNAseq.txt"  "LM22.txt"                     
+#> [7] "MCPcounter"                    "TIL10.txt"
 ```
 
 To access a specific signature
