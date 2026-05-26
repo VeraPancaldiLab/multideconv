@@ -19,6 +19,8 @@ utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession"
 #' 
 standardize_celltype_colnames <- function(mat) {
   if (is.null(rownames(mat))) rownames(mat) <- seq_len(nrow(mat))
+  # Normalize spaces to dots so patterns using [._-] match space-separated names
+  colnames(mat) <- gsub(" ", ".", colnames(mat))
   empty <- mat[, FALSE, drop = FALSE]
   # initialize blocks as a named list of empty matrices
   names_order <- c("B","B.naive","B.memory","Macrophages","M0","M1","M2","Monocytes","Neutrophils",
@@ -54,7 +56,7 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## Macrophages and subtypes
-  blocks$Macrophages <- mat[, cols("acrophage"), drop = FALSE]
+  blocks$Macrophages <- mat[, cols("acrophage|^Macro$"), drop = FALSE]
   blocks$M0 <- mat[, cols("M0"), drop = FALSE]
   blocks$M1 <- mat[, cols("M1"), drop = FALSE]
   blocks$M2 <- mat[, cols("M2"), drop = FALSE]
@@ -68,7 +70,7 @@ standardize_celltype_colnames <- function(mat) {
   if (ncol(blocks$Macrophages)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages), drop = FALSE]
     colnames(blocks$Macrophages) <- rn(colnames(blocks$Macrophages),
-      "^macrophages?([._-]cells?)?$", "Macrophages.cells")
+      "^macrophages?([._-]cells?)?$|^macro$", "Macrophages.cells")
   }
 
   if (ncol(blocks$M0)) {
@@ -90,11 +92,11 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## Monocytes
-  blocks$Monocytes <- mat[, cols("Mono|mono"), drop = FALSE]
+  blocks$Monocytes <- mat[, cols("Mono|mono|^Mon$"), drop = FALSE]
   if (ncol(blocks$Monocytes)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Monocytes), drop = FALSE]
     colnames(blocks$Monocytes) <- rn(colnames(blocks$Monocytes),
-      "^mono(cytes?|cytic[._-]lineage)?([._-]cells?)?$", "Monocytes")
+      "^mono(cytes?|cytic[._-]lineage)?([._-]cells?)?$|^mon$", "Monocytes")
   }
 
   ## Neutrophils
@@ -102,7 +104,7 @@ standardize_celltype_colnames <- function(mat) {
   if (ncol(blocks$Neutrophils)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Neutrophils), drop = FALSE]
     colnames(blocks$Neutrophils) <- rn(colnames(blocks$Neutrophils),
-      "^neutrophils?([._-]cells?)?$|^neu$", "Neutrophils")
+      "^neutrophils?([._-]cells?)?$|^neu$|^neutro$", "Neutrophils")
   }
 
   ## NK and subtypes
@@ -270,11 +272,11 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## Eosinophils
-  blocks$Eosinophils <- mat[, cols("osinophil"), drop = FALSE]
+  blocks$Eosinophils <- mat[, cols("osino|^Eos$"), drop = FALSE]
   if (ncol(blocks$Eosinophils)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Eosinophils), drop = FALSE]
     colnames(blocks$Eosinophils) <- rn(colnames(blocks$Eosinophils),
-      "^eosinophils?$", "Eosinophils")
+      "^eosinophils?$|^eosino$|^eos$", "Eosinophils")
   }
 
   ## Plasma
