@@ -909,8 +909,8 @@ remove_low_variance <- function(data, plot = FALSE, var_quantile = 0.25) {
     grDevices::dev.off()
   }
 
-  data_filt = data[,-low_variance, drop = F]
-  low_var_features = data[,low_variance, drop = F]
+  data_filt = if (length(low_variance) == 0) data else data[, -low_variance, drop = FALSE]
+  low_var_features = data[, low_variance, drop = FALSE]
 
   res = list(data_filt, low_var_features)
   return(res)
