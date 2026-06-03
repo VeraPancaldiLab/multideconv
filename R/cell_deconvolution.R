@@ -889,9 +889,9 @@ corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
 #' - Deconvolution matrix after removal of low variance.
 #' - Discarded low variance features.
 #'
-remove_low_variance <- function(data, plot = FALSE) {
+remove_low_variance <- function(data, plot = FALSE, var_quantile = 0.25) {
   vars <- apply(data, 2, var)
-  threshold = summary(vars)[[2]]
+  threshold = quantile(vars, var_quantile)
   low_variance <- which(vars < threshold)
 
   if(plot){
@@ -949,7 +949,7 @@ remove_low_variance <- function(data, plot = FALSE) {
 #'
 #' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 #'
-compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", seed = NULL, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
+compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", zero_thr = 0.9, var_quantile = 0.25, prune_thr = 0.9, seed = NULL, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
   deconvolution.mat = deconvolution
 
   # #####Unsupervised filtering
@@ -959,7 +959,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     cat(paste0("Removing features with high zero number 90%...............................................................\n\n"))
   }
 
-  deconvolution.mat = deconvolution.mat[, colSums(deconvolution.mat == 0, na.rm=TRUE) < round(0.9*nrow(deconvolution.mat)) , drop=FALSE]
+  deconvolution.mat = deconvolution.mat[, colSums(deconvolution.mat == 0, na.rm=TRUE) < round(zero_thr*nrow(deconvolution.mat)) , drop=FALSE]
   diff_colnames <- setdiff(colnames(deconvolution), colnames(deconvolution.mat))
   zero_features <- deconvolution[, diff_colnames]
 
@@ -968,7 +968,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     cat(paste0("Removing low variance features...............................................................\n\n"))
   }
 
-  variance = remove_low_variance(deconvolution.mat, plot = return)
+  variance = remove_low_variance(deconvolution.mat, plot = return, var_quantile = var_quantile)
   deconvolution.mat = variance[[1]]
   low_variance_features = variance[[2]]
 
@@ -999,7 +999,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     if(is.null(ncol(data))==T){
       cells[[i]] = data
     }else if(ncol(data)>1){
-      data = removeCorrelatedFeatures(data, 0.9, names(cells)[i], seed, corr_method = corr_type, batch = batch)
+      data = removeCorrelatedFeatures(data, prune_thr, names(cells)[i], seed, corr_method = corr_type, batch = batch)
       cells[[i]] = data[[1]]
       if(length(data[[2]])>0 && is.null(data[[3]])==F){
         features_high_corr[[j]] = data[[2]]
@@ -1117,7 +1117,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 #'
 computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   TPM_matrix = TPM_matrix[rownames(TPM_matrix)%in%rownames(immunedeconv::dataset_racle$expr_mat),] #To avoid problems regarding gene names (quantiseq error)
-
+  
   quantiseq = immunedeconv::deconvolute(TPM_matrix, "quantiseq", tumor = T) %>%
     tibble::column_to_rownames("cell_type") %>%
     t() %>%
@@ -2062,6 +2062,16 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 
   groundtruth = groundtruth[rownames(deconvolution),] #Order samples to match both features
 
+  # Subgroup columns are named CellType_SubgroupID (e.g. B.cells_Subgroup.1.Iteration.1).
+  # Swap to SubgroupID_CellType so the standard _CellType$ matching logic works.
+  subgroup_idx <- grepl("_Subgroup\\.", colnames(deconvolution))
+  if (any(subgroup_idx)) {
+    colnames(deconvolution)[subgroup_idx] <- sub(
+      "^(.+?)_(Subgroup\\..+)$", "\\2_\\1",
+      colnames(deconvolution)[subgroup_idx]
+    )
+  }
+
   cell_types = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
                  "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
                  "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
@@ -2220,7 +2230,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   g <- corr_df %>%
     ggplot2::ggplot(ggplot2::aes(Cells, variable, fill=value, label=round(value,2))) +
     ggplot2::geom_tile() +
-    ggplot2::labs(x = NULL, y = NULL, fill = paste0(corr_type, "'s\nCorrelation"), title=file_name, subtitle = paste0("Only showing significant correlations (<", pval, ")")) +
+    ggplot2::labs(x = NULL, y = NULL, fill = paste0(corr_type, "'s\nCorrelation"), title=file_name, subtitle = paste0("Showing correlations (pval<", pval, ")")) +
     ggplot2::scale_fill_gradient2(mid="#FBFEF9",low="#0C6291",high="#A63446", limits=c(-1,1)) +
     ggplot2::geom_text(data = subset(corr_df, pval_value <= pval)) +
     ggplot2::theme_classic() +
@@ -2502,7 +2512,11 @@ prepare_multideconv_folds <- function(
     time_var = NULL,
     event_var = NULL,
     trait.positive = NULL,
-    cells_extra = NULL
+    cells_extra = NULL,
+    corr = 0.7,
+    zero_thr = 0.9,
+    var_quantile = 0.25,
+    prune_thr = 0.9
 ) {
 
   # -----------------------------
@@ -2526,7 +2540,10 @@ prepare_multideconv_folds <- function(
     # Compute deconvolution on full dataset
     deconv_subgroups_final <- compute.deconvolution.analysis(
       deconvolution = data,
-      corr = 0.7,
+      corr = corr,
+      zero_thr = zero_thr,
+      var_quantile = var_quantile,
+      prune_thr = prune_thr,
       seed = 123,
       cells_extra = cells_extra,
       return = FALSE
@@ -2579,7 +2596,10 @@ prepare_multideconv_folds <- function(
 
     deconv_subgroups <- compute.deconvolution.analysis(
       deconvolution = train_data,
-      corr = 0.7,
+      corr = corr,
+      zero_thr = zero_thr,
+      var_quantile = var_quantile,
+      prune_thr = prune_thr,
       seed = 123,
       cells_extra = cells_extra,
       return = FALSE
