@@ -186,8 +186,8 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> * CBSX-HNSCC-scRNAseq
 #> * CBSX-Melanoma-scRNAseq
 #> * CBSX-NSCLC-PBMCs-scRNAseq
-#> * CBSX-NSCLC-scRNAseq
 #> * CBSX-Vanderbilt-scRNAseq
+#> * CBSX-Zilionis-scRNAseq
 #> * LM22
 #> * TIL10
 #> 
@@ -258,9 +258,9 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Total sum across samples of combination Epidish_CBSX.HNSCC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Melanoma.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1
-#> Total sum across samples of combination Epidish_CBSX.NSCLC.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Vanderbilt.scRNAseq is 1
 #> Total sum across samples of combination Epidish_TIL10 is 1
 #> Total sum across samples of combination Epidish_LM22 is 1
+#> Total sum across samples of combination Epidish_CBSX.Zilionis.scRNAseq is 1
 
 ```

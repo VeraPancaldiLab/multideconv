@@ -72,8 +72,8 @@ To list all signatures
 path <- system.file("signatures/", package = "multideconv")
 list.files(path)
 #> [1] "CBSX-HNSCC-scRNAseq.txt"       "CBSX-Melanoma-scRNAseq.txt"   
-#> [3] "CBSX-NSCLC-PBMCs-scRNAseq.txt" "CBSX-NSCLC-scRNAseq.txt"      
-#> [5] "CBSX-Vanderbilt-scRNAseq.txt"  "LM22.txt"                     
+#> [3] "CBSX-NSCLC-PBMCs-scRNAseq.txt" "CBSX-Vanderbilt-scRNAseq.txt" 
+#> [5] "CBSX-Zilionis-scRNAseq.txt"    "LM22.txt"                     
 #> [7] "MCPcounter"                    "TIL10.txt"
 ```
 
