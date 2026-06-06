@@ -260,7 +260,7 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Total sum across samples of combination Epidish_CBSX.NSCLC.PBMCs.scRNAseq is 1
 #> Total sum across samples of combination Epidish_CBSX.Vanderbilt.scRNAseq is 1
 #> Total sum across samples of combination Epidish_TIL10 is 1
-#> Total sum across samples of combination Epidish_LM22 is 1
 #> Total sum across samples of combination Epidish_CBSX.Zilionis.scRNAseq is 1
+#> Total sum across samples of combination Epidish_LM22 is 1
 
 ```
