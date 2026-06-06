@@ -2608,7 +2608,7 @@ prepare_multideconv_folds <- function(
       var_quantile = var_quantile,
       prune_thr = prune_thr,
       seed = seed,
-      batch = batch,
+      batch = if (!is.null(batch)) batch[train_idx] else NULL,
       cells_extra = cells_extra,
       return = FALSE,
     )
