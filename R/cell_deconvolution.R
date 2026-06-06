@@ -307,12 +307,12 @@ standardize_celltype_colnames <- function(mat) {
   if (ncol(blocks$Mast.activated)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.activated), drop = FALSE]
     colnames(blocks$Mast.activated) <- rn(colnames(blocks$Mast.activated),
-      "^mast[._-]?cells?[._-]activated$|^mast[._-]activated[._-]?cells?$", "Mast.activated.cells")
+      "^mast[._-]?cells?[._-]activated$|^mast[._-]activated([._-]cells?)?$", "Mast.activated.cells")
   }
   if (ncol(blocks$Mast.resting)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.resting), drop = FALSE]
     colnames(blocks$Mast.resting) <- rn(colnames(blocks$Mast.resting),
-      "^mast[._-]?cells?[._-]resting$|^mast[._-]resting[._-]?cells?$", "Mast.resting.cells")
+      "^mast[._-]?cells?[._-]resting$|^mast[._-]resting([._-]cells?)?$", "Mast.resting.cells")
   }
 
   ## B cells (naive / memory) and final B
@@ -320,14 +320,14 @@ standardize_celltype_colnames <- function(mat) {
   if (ncol(blocks$B.naive)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$B.naive), drop = FALSE]
     colnames(blocks$B.naive) <- rn(colnames(blocks$B.naive),
-      "^b[._-]?cells?[._-]naive$|^b[._-]naive[._-]?cells?$", "B.naive.cells")
+      "^b[._-]?cells?[._-]naive$|^b[._-]naive([._-]cells?)?$", "B.naive.cells")
   }
 
   blocks$B.memory <- mat[, cols("memory"), drop = FALSE]
   if (ncol(blocks$B.memory)) {
     mat <- mat[, !colnames(mat) %in% colnames(blocks$B.memory), drop = FALSE]
     colnames(blocks$B.memory) <- rn(colnames(blocks$B.memory),
-      "^b[._-]?cells?[._-]memory$|^b[._-]memory[._-]?cells?$", "B.memory.cells")
+      "^b[._-]?cells?[._-]memory$|^b[._-]memory([._-]cells?)?$", "B.memory.cells")
   }
 
   idx <- which(colnames(mat) %in% c(colnames(blocks$B.naive), colnames(blocks$B.memory)))
