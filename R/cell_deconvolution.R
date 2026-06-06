@@ -2514,9 +2514,12 @@ prepare_multideconv_folds <- function(
     trait.positive = NULL,
     cells_extra = NULL,
     corr = 0.7,
+    corr_type = "spearman",
     zero_thr = 0.9,
     var_quantile = 0.25,
-    prune_thr = 0.9
+    prune_thr = 0.9,
+    seed = NULL,
+    batch = NULL
 ) {
 
   # -----------------------------
@@ -2541,12 +2544,15 @@ prepare_multideconv_folds <- function(
     deconv_subgroups_final <- compute.deconvolution.analysis(
       deconvolution = data,
       corr = corr,
+      corr_type = corr_type,
       zero_thr = zero_thr,
       var_quantile = var_quantile,
       prune_thr = prune_thr,
-      seed = 123,
+      seed = seed,
+      batch = batch,
       cells_extra = cells_extra,
-      return = FALSE
+      return = FALSE,
+      verbose = FALSE
     )
 
     train_cell_data_final <- deconv_subgroups_final[[1]] %>%
@@ -2597,12 +2603,14 @@ prepare_multideconv_folds <- function(
     deconv_subgroups <- compute.deconvolution.analysis(
       deconvolution = train_data,
       corr = corr,
+      corr_type = corr_type,
       zero_thr = zero_thr,
       var_quantile = var_quantile,
       prune_thr = prune_thr,
-      seed = 123,
+      seed = seed,
+      batch = batch,
       cells_extra = cells_extra,
-      return = FALSE
+      return = FALSE,
     )
 
     train_cell_data <- deconv_subgroups[[1]] %>%
