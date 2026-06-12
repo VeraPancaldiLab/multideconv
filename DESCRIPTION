@@ -57,7 +57,6 @@ Remotes:
     cozygene/bisque
 Suggests:
     testthat (>= 3.0.0),
-    hdWGCNA (>= 0.4.0),
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),
