@@ -49,11 +49,9 @@ Remotes:
     omnideconv/DWLS,
     omnideconv/BayesPrism,
     omnideconv/MOMF,
-    cozygene/bisque,
-    smorabit/hdWGCNA
+    cozygene/bisque
 Suggests:
     testthat (>= 3.0.0),
-    hdWGCNA,
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),
