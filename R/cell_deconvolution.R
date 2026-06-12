@@ -360,6 +360,7 @@ standardize_celltype_colnames <- function(mat) {
 #' Give consistent names and patterns following the method_signature_cell structure to the deconvolution features
 #'
 #' @param deconv A dataframe with the unprocessed deconvolution features
+#' @param cells_extra A character vector of non-standard cell type names to retain.
 #'
 #' @return A matrix of the preprocessed deconvolution features with fixed and consistent names across the different methods and signatures following the nomenclature specified in multideconv (see Readme)
 #' @examples
@@ -882,6 +883,7 @@ corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
 #' Remove low variance deconvolution features
 #'
 #' @param data Deconvolution features
+#' @param var_quantile Quantile threshold below which features are discarded.
 #'
 #' @return A list containing
 #'
@@ -905,6 +907,9 @@ remove_low_variance <- function(data, var_quantile = 0.25) {
 #' @param deconvolution Deconvolution output of compute.deconvolution() with features as columns and samples as rows
 #' @param corr Minimum correlation threshold for subgroupping the deconvolution features
 #' @param corr_type Correlation type for computing the cell subgroups, whether "spearman" or "pearson".
+#' @param zero_thr Maximum fraction of zeros allowed per feature before it is discarded.
+#' @param var_quantile Quantile threshold below which low-variance features are removed.
+#' @param prune_thr Pearson correlation threshold above which highly correlated features are pruned.
 #' @param seed A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.
 #' @param batch Optional batch covariate used to compute partial correlations.
 #' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
@@ -1047,31 +1052,6 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     }
   }
 
-
-  #Count number of subgroups - Proportionality-based
-  # idy = c()
-  # for (i in 1:length(groups_similarity)){
-  #   if(length(groups_similarity[[i]])>0){
-  #     for (j in 1:length(groups_similarity[[i]])){
-  #       idy = c(idy, names(groups_similarity[[i]])[[j]])
-  #     }
-  #   }
-  # }
-  # data.groups.similarity = data.frame(matrix(nrow = length(idy), ncol = 2)) #Create table
-  # colnames(data.groups.similarity) = c("Cell_subgroups", "Methods-signatures")
-  # data.groups.similarity$Cell_subgroups = idy #Assign subgroups
-  #
-  # #Save methods corresponding to each subgroup
-  # contador = 1
-  # for (i in 1:length(groups_similarity)){
-  #   if(length(groups_similarity[[i]])>0){
-  #     for (j in 1:length(groups_similarity[[i]])){
-  #       data.groups.similarity[contador,2] = paste(groups_similarity[[i]][[j]], collapse ="\n")
-  #       contador = contador + 1
-  #     }
-  #   }
-  # }
-  #
   #Save data to export
   if(return == TRUE){
     data.output = data.groups
@@ -1391,7 +1371,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
   load_cache <- function(method, sig_name) {
     f <- cache_file(method, sig_name)
     if (file.exists(f)) {
-      message("\nFound cached result for ", method, " (", sig_name, ") — skipping run.\n")
+      message("\nFound cached result for ", method, " (", sig_name, ") - skipping run.\n")
       return(readRDS(f))
     }
     NULL
@@ -1573,6 +1553,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 #' @param methods_sig A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx", "MOMF", and "BSeqsc". Default runs all available methods.
 #' @param name_sc_signature If sc_deconv = T, the name you want to give to the signature generated
 #' @param file_name File name for the csv files and plots saved in the Results/ directory
+#' @param cells_extra A character vector of non-standard cell type names to retain during analysis.
 #'
 #' @return
 #'
@@ -1678,7 +1659,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
       stop("No single cell object has been provided for deconvolution.")
     }else{
       deconv_sc = compute_sc_deconvolution_methods(raw.counts, normalized = normalized, methods_sc = methods_sc, sc_matrix,
-                                                   sc_metadata, cell_label, sample_label, name_sc_signature, n_cores = workers, cache_dir = "Results/")
+                                                   sc_metadata, cell_label, sample_label, name_sc_signature, n_cores = workers)
       all_deconvolution_table = cbind(data.frame(all_deconvolution_table), deconv_sc)
     }
   }
@@ -1706,7 +1687,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
 #' @param n_cores Number of cores to use for paralellization. If no number is set, detectCores() - 1 will be set as the number.
 #' @param return Whether to save or not the csv file with the deconvolution features.
 #' @param file_name File name for the .csv file to save with the deconvolution results.
-#' @param cache_dir Directory path used to cache each method's result as an .rds file immediately after it finishes. On restart after a crash, completed methods are loaded from cache and skipped. Cache files are deleted once all methods finish successfully. Set to NULL to disable.
+
 #'
 #' @return A matrix of deconvolution features across samples from your bulk counts based on the second generation methods.
 #' @references
@@ -1735,7 +1716,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
   load_cache <- function(method){
     f <- cache_file(method)
     if(file.exists(f)){
-      message("\nFound cached result for ", method, " — skipping run.\n")
+      message("\nFound cached result for ", method, " - skipping run.\n")
       return(readRDS(f))
     }
     NULL
@@ -2532,6 +2513,13 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @param event_var Optional survival event vector used when target labels are not provided.
 #' @param trait.positive Label in `event_var` that defines event = 1.
 #' @param cells_extra Optional character vector of additional cell labels to include.
+#' @param corr Minimum correlation threshold passed to [compute.deconvolution.analysis()].
+#' @param corr_type Correlation type passed to [compute.deconvolution.analysis()].
+#' @param zero_thr Maximum zero fraction passed to [compute.deconvolution.analysis()].
+#' @param var_quantile Variance quantile threshold passed to [compute.deconvolution.analysis()].
+#' @param prune_thr Pruning correlation threshold passed to [compute.deconvolution.analysis()].
+#' @param seed Random seed passed to [compute.deconvolution.analysis()].
+#' @param batch Optional batch covariate passed to [compute.deconvolution.analysis()].
 #'
 #' @return A list of two elements:
 #' \itemize{
@@ -2572,7 +2560,7 @@ prepare_multideconv_folds <- function(
 ) {
 
   # -----------------------------
-  # CASE 1: bestune provided → compute full training once
+  # CASE 1: bestune provided - compute full training once
   # -----------------------------
   if (!is.null(bestune)) {
 
@@ -2619,7 +2607,7 @@ prepare_multideconv_folds <- function(
   }
 
   # -----------------------------
-  # CASE 2: bestune NOT provided → compute folds
+  # CASE 2: bestune NOT provided - compute folds
   # -----------------------------
   if (is.null(ncores)) ncores <- parallel::detectCores() - 2
   cl <- parallel::makeCluster(ncores)
@@ -2698,12 +2686,12 @@ prepare_multideconv_folds <- function(
   }
 }
 
-# ── Deprecated subgroup characterisation helpers ──────────────────────────────
+# -- Deprecated subgroup characterisation helpers --
 # The functions below (aggregate_genes, compute_data_driven_rank,
 # create_gsea_signature, expand_subgroup_members, compute_deconvolution_dictionary,
 # estimate_expression_profiles) are kept for reference but are no longer exported.
 # Use compute.subgroup.pathways() for pathway-based subgroup characterisation.
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------------
 
 # aggregate_genes <- function(subgroup, default_quantiseq = "TIL10") {
 #
@@ -2892,15 +2880,15 @@ prepare_multideconv_folds <- function(
 #'
 #' Correlates deconvolution subgroup profiles with a pathway activity matrix
 #' and saves one heatmap per cell type to `Results/`. Supply a pre-computed
-#' `pathways` matrix (samples × pathways) directly, or provide `counts_norm`
-#' (genes × samples) and the function will compute PROGENy pathway activity
+#' `pathways` matrix (samples x pathways) directly, or provide `counts_norm`
+#' (genes x samples) and the function will compute PROGENy pathway activity
 #' scores internally (requires the `progeny` Bioconductor package).
 #'
 #' @param subgroups Output list from [compute.deconvolution.analysis()].
 #' @param pathways A numeric matrix or data frame with samples as rows and
 #'   pathway activities as columns. Row names must match sample identifiers in
 #'   `subgroups`. Mutually exclusive with `counts_norm`.
-#' @param counts_norm Normalized expression matrix (genes × samples) used to
+#' @param counts_norm Normalized expression matrix (genes x samples) used to
 #'   compute PROGENy pathway activity scores when `pathways = NULL`. Requires
 #'   the `progeny` package (`BiocManager::install("progeny")`).
 #' @param file_name Character prefix used when naming output PDF files.

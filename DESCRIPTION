@@ -13,23 +13,20 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends:
     R (>= 4.3)
-Imports: 
+Imports:
     ADImpute,
     doParallel,
     dplyr,
     EpiDISH,
-    fgsea,
     foreach,
     ggplot2,
     graphics,
     reshape2,
-    factoextra,
     grDevices,
     ggpubr,
     Hmisc (>= 5.2-3),
     immunedeconv (>= 2.1.0),
     matrixStats,
-    msigdbr,
     omnideconv (>= 0.1.0),
     parallel,
     ppcor,
@@ -45,8 +42,7 @@ Imports:
     pcaMethods (>= 1.94),
     SeuratObject,
     utils,
-    grid,
-    nnls
+    grid
 Remotes: 
     omnideconv/immunedeconv,
     omnideconv/omnideconv,
@@ -57,6 +53,13 @@ Remotes:
     cozygene/bisque
 Suggests:
     testthat (>= 3.0.0),
+    hdWGCNA,
+    progeny,
+    DeconRNASeq,
+    fgsea,
+    msigdbr,
+    nnls,
+    factoextra,
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),

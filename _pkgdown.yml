@@ -66,9 +66,6 @@ reference:
   - compute.deconvolution.preprocessing
   - compute_methods_variable_signature
   - compute_sc_deconvolution_methods
-  - deconvolution_dictionary
-  - compute_data_driven_rank
-  - create_gsea_signature
   - computeCBSX
   - computeCBSX_parallel
   - computeDWLS

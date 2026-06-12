@@ -68,6 +68,8 @@ compute.deconvolution(
 \item{name_sc_signature}{If sc_deconv = T, the name you want to give to the signature generated}
 
 \item{file_name}{File name for the csv files and plots saved in the Results/ directory}
+
+\item{cells_extra}{A character vector of non-standard cell type names to retain during analysis.}
 }
 \value{
 A matrix of cell type deconvolution features across samples

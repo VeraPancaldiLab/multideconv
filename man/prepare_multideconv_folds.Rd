@@ -38,6 +38,20 @@ prepare_multideconv_folds(
 \item{trait.positive}{Label in \code{event_var} that defines event = 1.}
 
 \item{cells_extra}{Optional character vector of additional cell labels to include.}
+
+\item{corr}{Minimum correlation threshold passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{corr_type}{Correlation type passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{zero_thr}{Maximum zero fraction passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{var_quantile}{Variance quantile threshold passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{prune_thr}{Pruning correlation threshold passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{seed}{Random seed passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{batch}{Optional batch covariate passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 }
 \value{
 A list of two elements:

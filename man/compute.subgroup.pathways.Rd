@@ -22,7 +22,7 @@ compute.subgroup.pathways(
 pathway activities as columns. Row names must match sample identifiers in
 \code{subgroups}. Mutually exclusive with \code{counts_norm}.}
 
-\item{counts_norm}{Normalized expression matrix (genes × samples) used to
+\item{counts_norm}{Normalized expression matrix (genes x samples) used to
 compute PROGENy pathway activity scores when \code{pathways = NULL}. Requires
 the \code{progeny} package (\code{BiocManager::install("progeny")}).}
 
@@ -42,7 +42,7 @@ Invisibly returns \code{NULL}; side effects are PDF files in \verb{Results/}.
 \description{
 Correlates deconvolution subgroup profiles with a pathway activity matrix
 and saves one heatmap per cell type to \verb{Results/}. Supply a pre-computed
-\code{pathways} matrix (samples × pathways) directly, or provide \code{counts_norm}
-(genes × samples) and the function will compute PROGENy pathway activity
+\code{pathways} matrix (samples x pathways) directly, or provide \code{counts_norm}
+(genes x samples) and the function will compute PROGENy pathway activity
 scores internally (requires the \code{progeny} Bioconductor package).
 }

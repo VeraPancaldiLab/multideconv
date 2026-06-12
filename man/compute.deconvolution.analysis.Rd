@@ -26,6 +26,12 @@ compute.deconvolution.analysis(
 
 \item{corr_type}{Correlation type for computing the cell subgroups, whether "spearman" or "pearson".}
 
+\item{zero_thr}{Maximum fraction of zeros allowed per feature before it is discarded.}
+
+\item{var_quantile}{Quantile threshold below which low-variance features are removed.}
+
+\item{prune_thr}{Pearson correlation threshold above which highly correlated features are pruned.}
+
 \item{seed}{A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.}
 
 \item{batch}{Optional batch covariate used to compute partial correlations.}

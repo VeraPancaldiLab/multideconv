@@ -8,6 +8,8 @@ remove_low_variance(data, var_quantile = 0.25)
 }
 \arguments{
 \item{data}{Deconvolution features}
+
+\item{var_quantile}{Quantile threshold below which features are discarded.}
 }
 \value{
 A list containing

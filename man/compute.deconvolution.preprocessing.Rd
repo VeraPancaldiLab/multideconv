@@ -8,6 +8,8 @@ compute.deconvolution.preprocessing(deconv, cells_extra = NULL)
 }
 \arguments{
 \item{deconv}{A dataframe with the unprocessed deconvolution features}
+
+\item{cells_extra}{A character vector of non-standard cell type names to retain.}
 }
 \value{
 A matrix of the preprocessed deconvolution features with fixed and consistent names across the different methods and signatures following the nomenclature specified in multideconv (see Readme)
