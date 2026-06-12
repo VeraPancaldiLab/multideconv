@@ -40,8 +40,15 @@ We adapted functions from the R package hdWGCNA (@morabito2023hdwgcna; @langfeld
 
 Because of space limitations, we have not included a complete single-cell object in this tutorial. However, users are expected to provide their own single-cell data and supply it to the `sc_object` parameter in the function call.
 
+**NOTE:** `create_metacells()` requires the `hdWGCNA` package, which is not installed automatically. Install it once before first use:
+
 ```{r, eval=FALSE}
-metacells = create_metacells(sc_object, 
+# install.packages("pak")
+pak::pkg_install("smorabit/hdWGCNA")
+```
+
+```{r, eval=FALSE}
+metacells = create_metacells(sc_object,
                              labels_column = cell_labels, 
                              samples_column = sample_labels, 
                              exclude_cells = NULL,

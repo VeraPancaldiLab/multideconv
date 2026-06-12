@@ -38,7 +38,6 @@ Imports:
     ggtext,
     future,
     purrr (>= 1.0.2),
-    hdWGCNA (>= 0.4.0),
     stats,
     stringr,
     tibble,
@@ -54,11 +53,11 @@ Remotes:
     omnideconv/DWLS,
     omnideconv/BayesPrism,
     omnideconv/MOMF,
-    smorabit/hdWGCNA,
     grst/MCPcounter,
     cozygene/bisque
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
+    hdWGCNA (>= 0.4.0),
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),

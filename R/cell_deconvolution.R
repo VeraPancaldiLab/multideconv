@@ -1926,6 +1926,10 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
 #'
 create_metacells = function(sc_object, labels_column, samples_column, exclude_cells = NULL, min_cells = 50, k = 15, max_shared = 15, n_workers = 4, min_meta = 10){
 
+  if (!requireNamespace("hdWGCNA", quietly = TRUE))
+    stop("Package 'hdWGCNA' is required for create_metacells(). ",
+         "Install with: pak::pkg_install('smorabit/hdWGCNA')")
+
   message("\nCreating metacells...............................................................\n")
   ## Setup sc object
   data <- hdWGCNA::SetupForWGCNA(
@@ -2452,6 +2456,9 @@ unregister_dopar <- function() {
 
 # Function to process each group in metacells
 process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_column, samples_column) {
+
+  if (!requireNamespace("hdWGCNA", quietly = TRUE))
+    stop("Package 'hdWGCNA' is required. Install with: pak::pkg_install('smorabit/hdWGCNA')")
 
   if (ncol(data) < min_cells) {
     cat("Skipping group: Less than", min_cells, "cells in this subset\n")
