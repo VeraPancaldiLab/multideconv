@@ -90,31 +90,45 @@ handle the full single-cell dataset, you may skip this step.</p>
 <p>We adapted functions from the R package hdWGCNA (<span class="citation">Morabito et al. (<a href="#ref-morabito2023hdwgcna">2023</a>)</span>; <span class="citation">Langfelder and Horvath (<a href="#ref-langfelder2008wgcna">2008</a>)</span>) for the construction
 of metacells using the KNN algorithm.</p>
 <ul>
-<li><p><strong>sc_object</strong>: Normalized gene expression matrix
-with genes as rows and cells as columns</p></li>
-<li><p><strong>labels_column</strong>: Vector of cell
-annotations</p></li>
-<li><p><strong>samples_column</strong>: Vector of sample IDs for each
-cell</p></li>
-<li><p><strong>exclude_cells</strong>: Vector specifying which cell
-types to ignore during metacell construction (default is NULL)</p></li>
-<li><p><strong>min_cells</strong>: Minimum number of cells required to
-construct metacells in a group</p></li>
-<li><p><strong>k</strong>: Number of nearest neighbors used for the KNN
-algorithm</p></li>
-<li><p><strong>max_shared</strong>: Maximum number of cells shared
-between two metacells</p></li>
-<li><p><strong>n_workers</strong>: Number of cores to use for
-parallelizing metacell construction</p></li>
-<li><p><strong>min_meta</strong>: Minimum number of metacells required
-for a cell type to be retained</p></li>
+<li>
+<strong>sc_object</strong>: Normalized gene expression matrix with
+genes as rows and cells as columns</li>
+<li>
+<strong>labels_column</strong>: Vector of cell annotations</li>
+<li>
+<strong>samples_column</strong>: Vector of sample IDs for each
+cell</li>
+<li>
+<strong>exclude_cells</strong>: Vector specifying which cell types
+to ignore during metacell construction (default is NULL)</li>
+<li>
+<strong>min_cells</strong>: Minimum number of cells required to
+construct metacells in a group</li>
+<li>
+<strong>k</strong>: Number of nearest neighbors used for the KNN
+algorithm</li>
+<li>
+<strong>max_shared</strong>: Maximum number of cells shared between
+two metacells</li>
+<li>
+<strong>n_workers</strong>: Number of cores to use for parallelizing
+metacell construction</li>
+<li>
+<strong>min_meta</strong>: Minimum number of metacells required for
+a cell type to be retained</li>
 </ul>
 <p>Because of space limitations, we have not included a complete
 single-cell object in this tutorial. However, users are expected to
 provide their own single-cell data and supply it to the
 <code>sc_object</code> parameter in the function call.</p>
+<p><strong>NOTE:</strong> <code><a href="../reference/create_metacells.html">create_metacells()</a></code> requires the
+<code>hdWGCNA</code> package, which is not installed automatically.
+Install it once before first use:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metacells</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_metacells.html">create_metacells</a></span><span class="op">(</span><span class="va">sc_object</span>, </span>
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"smorabit/hdWGCNA"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">metacells</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_metacells.html">create_metacells</a></span><span class="op">(</span><span class="va">sc_object</span>,</span>
 <span>                             labels_column <span class="op">=</span> <span class="va">cell_labels</span>, </span>
 <span>                             samples_column <span class="op">=</span> <span class="va">sample_labels</span>, </span>
 <span>                             exclude_cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -136,19 +150,26 @@ methods learn cell-type signatures directly from annotated single-cell
 RNA-seq data, rather than relying on predefined static signatures (<span class="citation">Dietrich et al. (<a href="#ref-Dietrich2024.06.10.598226">2024</a>)</span>), to deconvolve
 bulk RNA-seq profiles.</p>
 <ul>
-<li><p><strong>sc_deconv</strong>: Boolean indicating whether to run
-second-generation methods</p></li>
-<li><p><strong>sc_matrix</strong>: Normalized single-cell gene
-expression matrix</p></li>
-<li><p><strong>sc_metadata</strong>: Dataframe containing single-cell
-metadata</p></li>
-<li><p><strong>cell_annotations</strong>: Vector of cell type
-labels</p></li>
-<li><p><strong>cell_samples</strong>: Vector of sample IDs</p></li>
-<li><p><strong>name_sc_signature</strong>: Name to assign to the
-resulting signature</p></li>
+<li>
+<strong>sc_deconv</strong>: Boolean indicating whether to run
+second-generation methods</li>
+<li>
+<strong>sc_matrix</strong>: Normalized single-cell gene expression
+matrix</li>
+<li>
+<strong>sc_metadata</strong>: Dataframe containing single-cell
+metadata</li>
+<li>
+<strong>cell_label</strong>: Column name in <code>sc_metadata</code>
+with cell type annotations</li>
+<li>
+<strong>sample_label</strong>: Column name in
+<code>sc_metadata</code> with sample IDs</li>
+<li>
+<strong>name_sc_signature</strong>: Name to assign to the resulting
+signature</li>
 </ul>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metacell_obj</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_data.html">metacells_data</a></span></span>
 <span><span class="va">metacell_metadata</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/metacells_metadata.html">metacells_metadata</a></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metacell_obj</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
@@ -198,7 +219,7 @@ methods (<code>quanTIseq</code>, <code>DeconRNASeq</code>,
 <code>CIBERSORTx</code> (if credentials are provided), along with
 second-generation deconvolution approaches. The output includes all
 combinations of methods and signatures.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
 <span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
@@ -216,8 +237,8 @@ combinations of methods and signatures.</p>
 single-cell data, without using any static cell-type signatures, use the
 public <code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code> workflow with an empty
 first-generation <code>methods</code> vector:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw_counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
 <span>                                  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                                  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>                                  sc_deconv <span class="op">=</span> <span class="cn">TRUE</span>,</span>

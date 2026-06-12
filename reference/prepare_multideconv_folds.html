@@ -61,7 +61,14 @@ It also processes the entire dataset once to provide a final processed training 
 <span>  time_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  event_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  trait.positive <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cells_extra <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cells_extra <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
+<span>  zero_thr <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  var_quantile <span class="op">=</span> <span class="fl">0.25</span>,</span>
+<span>  prune_thr <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  batch <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -99,6 +106,34 @@ It also processes the entire dataset once to provide a final processed training 
 
 <dt id="arg-cells-extra">cells_extra<a class="anchor" aria-label="anchor" href="#arg-cells-extra"></a></dt>
 <dd><p>Optional character vector of additional cell labels to include.</p></dd>
+
+
+<dt id="arg-corr">corr<a class="anchor" aria-label="anchor" href="#arg-corr"></a></dt>
+<dd><p>Minimum correlation threshold passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-corr-type">corr_type<a class="anchor" aria-label="anchor" href="#arg-corr-type"></a></dt>
+<dd><p>Correlation type passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-zero-thr">zero_thr<a class="anchor" aria-label="anchor" href="#arg-zero-thr"></a></dt>
+<dd><p>Maximum zero fraction passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-var-quantile">var_quantile<a class="anchor" aria-label="anchor" href="#arg-var-quantile"></a></dt>
+<dd><p>Variance quantile threshold passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-prune-thr">prune_thr<a class="anchor" aria-label="anchor" href="#arg-prune-thr"></a></dt>
+<dd><p>Pruning correlation threshold passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Random seed passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
+
+
+<dt id="arg-batch">batch<a class="anchor" aria-label="anchor" href="#arg-batch"></a></dt>
+<dd><p>Optional batch covariate passed to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

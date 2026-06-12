@@ -10,12 +10,8 @@ Public user-facing functions
   : Compute cell type processing
 - [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
   : Replicate deconvolution subgroups in a new dataset
-- [`compute_deconvolution_dictionary()`](https://verapancaldilab.github.io/multideconv/reference/compute_deconvolution_dictionary.md)
-  : Compute a Deconvolution Dictionary From Subgroup Gene Programs
-- [`compute_subgroups_pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute_subgroups_pathways.md)
-  : Relate Deconvolution Subgroups to PROGENy Pathways
-- [`estimate_expression_profiles()`](https://verapancaldilab.github.io/multideconv/reference/estimate_expression_profiles.md)
-  : Estimate Cell-Type-Specific Expression Profiles from Bulk Data
+- [`compute.subgroup.pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute.subgroup.pathways.md)
+  : Relate Deconvolution Subgroups to Pathway Activities
 - [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
   : Prepare folds for multideconv cross-validation with processed
   training and test data
@@ -52,12 +48,6 @@ Internal use (not exported functions)
   : Compute deconvolution methods with variable signatures
 - [`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md)
   : Compute second-generation deconvolution methods
-- [`deconvolution_dictionary()`](https://verapancaldilab.github.io/multideconv/reference/deconvolution_dictionary.md)
-  : Build a Deconvolution–Pathway Relationship Dictionary
-- [`compute_data_driven_rank()`](https://verapancaldilab.github.io/multideconv/reference/compute_data_driven_rank.md)
-  : Rank Genes by Correlation With a Deconvolution Subgroup
-- [`create_gsea_signature()`](https://verapancaldilab.github.io/multideconv/reference/create_gsea_signature.md)
-  : Build a GSEA-Derived Signature Label for a Cell Subgroup
 - [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
   : Computes CIBERSORTx (CBSX) using one signature
 - [`computeCBSX_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX_parallel.md)
@@ -70,16 +60,12 @@ Internal use (not exported functions)
   : Computes DeconRNASeq
 - [`computeEpiDISH()`](https://verapancaldilab.github.io/multideconv/reference/computeEpiDISH.md)
   : Computes EpiDISH
-- [`computeMCP()`](https://verapancaldilab.github.io/multideconv/reference/computeMCP.md)
-  : Computes MCPcounter
 - [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
   : Computes MOMF
 - [`computeMOMF_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF_parallel.md)
   : Compute MOMF in parallel across multiple signatures
 - [`computeQuantiseq()`](https://verapancaldilab.github.io/multideconv/reference/computeQuantiseq.md)
   : Computes QuanTIseq
-- [`computeXCell()`](https://verapancaldilab.github.io/multideconv/reference/computeXCell.md)
-  : Computes XCell
 - [`compute_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/compute_subgroups.md)
   : Compute deconvolution subgroups
 - [`compute.cell.types()`](https://verapancaldilab.github.io/multideconv/reference/compute.cell.types.md)

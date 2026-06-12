@@ -5,7 +5,7 @@ Remove low variance deconvolution features
 ## Usage
 
 ``` r
-remove_low_variance(data, plot = FALSE)
+remove_low_variance(data, var_quantile = 0.25)
 ```
 
 ## Arguments
@@ -14,10 +14,9 @@ remove_low_variance(data, plot = FALSE)
 
   Deconvolution features
 
-- plot:
+- var_quantile:
 
-  Whether to save or not the plot of variance distribution in the
-  Results/ directory.
+  Quantile threshold below which features are discarded.
 
 ## Value
 

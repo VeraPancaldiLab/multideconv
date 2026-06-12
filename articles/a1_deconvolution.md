@@ -60,6 +60,16 @@ deconv = compute.deconvolution(raw.counts = bulk,
                                workers = 3)
 ```
 
+Once deconvolution is complete, pass the result to
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+to reduce redundancy, group correlated features into subgroups, and
+(optionally) correct for batch/cohort effects — see the [Cell type
+subgroup
+analysis](https://verapancaldilab.github.io/multideconv/articles/a4_subgroups.md)
+article for a full walkthrough including the `batch` parameter and
+pathway characterisation with
+[`compute.subgroup.pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute.subgroup.pathways.md).
+
 ## **Cell type signatures**
 
 In order to access the default signatures `multideconv` provides, you

@@ -22,24 +22,16 @@ using the KNN algorithm.
 
 - **sc_object**: Normalized gene expression matrix with genes as rows
   and cells as columns
-
 - **labels_column**: Vector of cell annotations
-
 - **samples_column**: Vector of sample IDs for each cell
-
 - **exclude_cells**: Vector specifying which cell types to ignore during
   metacell construction (default is NULL)
-
 - **min_cells**: Minimum number of cells required to construct metacells
   in a group
-
 - **k**: Number of nearest neighbors used for the KNN algorithm
-
 - **max_shared**: Maximum number of cells shared between two metacells
-
 - **n_workers**: Number of cores to use for parallelizing metacell
   construction
-
 - **min_meta**: Minimum number of metacells required for a cell type to
   be retained
 
@@ -48,9 +40,20 @@ single-cell object in this tutorial. However, users are expected to
 provide their own single-cell data and supply it to the `sc_object`
 parameter in the function call.
 
+**NOTE:**
+[`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md)
+requires the `hdWGCNA` package, which is not installed automatically.
+Install it once before first use:
+
 ``` r
 
-metacells = create_metacells(sc_object, 
+# install.packages("pak")
+pak::pkg_install("smorabit/hdWGCNA")
+```
+
+``` r
+
+metacells = create_metacells(sc_object,
                              labels_column = cell_labels, 
                              samples_column = sample_labels, 
                              exclude_cells = NULL,
@@ -73,15 +76,11 @@ deconvolve bulk RNA-seq profiles.
 
 - **sc_deconv**: Boolean indicating whether to run second-generation
   methods
-
 - **sc_matrix**: Normalized single-cell gene expression matrix
-
 - **sc_metadata**: Dataframe containing single-cell metadata
-
-- **cell_annotations**: Vector of cell type labels
-
-- **cell_samples**: Vector of sample IDs
-
+- **cell_label**: Column name in `sc_metadata` with cell type
+  annotations
+- **sample_label**: Column name in `sc_metadata` with sample IDs
 - **name_sc_signature**: Name to assign to the resulting signature
 
 ``` r
@@ -162,7 +161,7 @@ workflow with an empty first-generation `methods` vector:
 
 ``` r
 
-deconv_sc = compute.deconvolution(raw_counts = bulk,
+deconv_sc = compute.deconvolution(raw.counts = bulk,
                                   normalized = TRUE,
                                   methods = character(0),
                                   sc_deconv = TRUE,

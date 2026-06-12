@@ -14,31 +14,90 @@ described in the paper [Hurtado et al.,
 It returns the cell type subgroups composition and the reduced
 deconvolution matrix, saved in the `Results/` directory.
 
+Key parameters:
+
 - **deconvolution**: Matrix of raw deconvolution results (output of
   [`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md))
-
 - **corr**: Minimum correlation threshold to group features
-
 - **seed**: Random seed for reproducibility
-
 - **return**: Whether to return results and save output files to the
   `Results/` directory
+- **batch**: Optional factor vector of cohort/batch labels (see section
+  below on batch correction)
 
 ``` r
 
 deconv_bulk = multideconv::deconv_bulk
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = TRUE) 
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
+                                                  corr = 0.7,
+                                                  seed = 123,
+                                                  file_name = "Tutorial",
+                                                  return = TRUE)
 ```
 
-Subgroups composition can be extracted with:
+The result is a named list with eight elements:
 
 ``` r
 
-deconv_subgroups[[3]]$B.cells
+names(deconv_subgroups)
+#> [1] "Deconvolution matrix"                                     
+#> [2] "Deconvolution subgroups per cell types"                   
+#> [3] "Deconvolution subgroups composition"                      
+#> [4] "Discarded groups with equal method"                       
+#> [5] "Discarded features with high number of zeros"             
+#> [6] "Discarded features with low variance"                     
+#> [7] "Discarded cell types"                                     
+#> [8] "High correlated deconvolution groups (>0.9) per cell type"
+```
+
+Access the reduced deconvolution matrix (samples × subgroups):
+
+``` r
+
+head(deconv_subgroups[["Deconvolution matrix"]][, sample(ncol(deconv_subgroups[["Deconvolution matrix"]]), 5)])
+#>                 DeconRNASeq_CBSX.Melanoma.scRNAseq_Macrophages.cells
+#> SAM7f0d9cc7f001                                           0.09054257
+#> SAM4305ab968b90                                           0.13016251
+#> SAMcf018fee2acd                                           0.13702906
+#> SAMcc4675f394a1                                           0.09526639
+#> SAM49f9b2e57aa5                                           0.07679836
+#> SAM2e7aa8fa0ab3                                           0.04918923
+#>                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_CD4.cells
+#> SAM7f0d9cc7f001                                      0.05621776
+#> SAM4305ab968b90                                      0.02891655
+#> SAMcf018fee2acd                                      0.02692121
+#> SAMcc4675f394a1                                      0.04720163
+#> SAM49f9b2e57aa5                                      0.03983019
+#> SAM2e7aa8fa0ab3                                      0.01179213
+#>                 Monocytes_Subgroup.2.Iteration.2
+#> SAM7f0d9cc7f001                       0.05028174
+#> SAM4305ab968b90                       0.07298462
+#> SAMcf018fee2acd                       0.04603382
+#> SAMcc4675f394a1                       0.16868135
+#> SAM49f9b2e57aa5                       0.05774385
+#> SAM2e7aa8fa0ab3                       0.08055252
+#>                 Neutrophils_Subgroup.1.Iteration.2
+#> SAM7f0d9cc7f001                          0.1467583
+#> SAM4305ab968b90                          0.1535664
+#> SAMcf018fee2acd                          0.1548537
+#> SAMcc4675f394a1                          0.1272576
+#> SAM49f9b2e57aa5                          0.1506810
+#> SAM2e7aa8fa0ab3                          0.2872494
+#>                 DeconRNASeq_LM22_Plasma.cells
+#> SAM7f0d9cc7f001                    0.00000000
+#> SAM4305ab968b90                    0.14134690
+#> SAMcf018fee2acd                    0.08097855
+#> SAMcc4675f394a1                    0.08027983
+#> SAM49f9b2e57aa5                    0.06970544
+#> SAM2e7aa8fa0ab3                    0.09440011
+```
+
+Inspect subgroup composition (which methods/signatures were merged into
+each subgroup):
+
+``` r
+
+deconv_subgroups[["Deconvolution subgroups composition"]]$B.cells
 #> $B.cells_Subgroup.2.Iteration.1
 #> [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"
 #> [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       
@@ -78,7 +137,7 @@ deconv_subgroups[[3]]$B.cells
 #> 
 #> $B.cells_Subgroup.1.Iteration.4
 #> [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"
-deconv_subgroups[[3]]$Macrophages.M2
+deconv_subgroups[["Deconvolution subgroups composition"]]$Macrophages.M2
 #> $Macrophages.M2_Subgroup.1.Iteration.1
 #> [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   
 #> [3] "CBSX_CCLE.TIL10_Macrophages.M2"   
@@ -94,303 +153,110 @@ deconv_subgroups[[3]]$Macrophages.M2
 #> [1] "DWLS_BPRNACan_Macrophages.M2"        
 #> [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"
 #> [3] "DWLS_BPRNACanProMet_Macrophages.M2"
-deconv_subgroups[[3]]$Dendritic.cells
+deconv_subgroups[["Deconvolution subgroups composition"]]$Dendritic.cells
 #> $Dendritic.cells_Subgroup.1.Iteration.1
 #> [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"
 #> [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   
 #> [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"
 ```
 
-Reduced deconvolution matrix:
-
-``` r
-
-head(subgroups[[1]][,sample(colnames(subgroups[[1]]), 10)])
-#>                 Quantiseq_T.cells.non.regulatory
-#> SAM7f0d9cc7f001                       0.01070804
-#> SAM4305ab968b90                       0.00000000
-#> SAMcf018fee2acd                       0.00000000
-#> SAMcc4675f394a1                       0.00000000
-#> SAM49f9b2e57aa5                       0.00000000
-#> SAM2e7aa8fa0ab3                       0.00000000
-#>                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells
-#> SAM7f0d9cc7f001                                  0.06177058
-#> SAM4305ab968b90                                  0.20596451
-#> SAMcf018fee2acd                                  0.10081728
-#> SAMcc4675f394a1                                  0.16370762
-#> SAM49f9b2e57aa5                                  0.18693083
-#> SAM2e7aa8fa0ab3                                  0.05430822
-#>                 DWLS_BPRNACanProMet_Macrophages.M1
-#> SAM7f0d9cc7f001                        0.000000000
-#> SAM4305ab968b90                        0.000000000
-#> SAMcf018fee2acd                        0.000000000
-#> SAMcc4675f394a1                        0.003182723
-#> SAM49f9b2e57aa5                        0.000000000
-#> SAM2e7aa8fa0ab3                        0.000000000
-#>                 Epidish_CBSX.NSCLC.PBMCs.scRNAseq_CD8.cells
-#> SAM7f0d9cc7f001                                           0
-#> SAM4305ab968b90                                           0
-#> SAMcf018fee2acd                                           0
-#> SAMcc4675f394a1                                           0
-#> SAM49f9b2e57aa5                                           0
-#> SAM2e7aa8fa0ab3                                           0
-#>                 DWLS_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells
-#> SAM7f0d9cc7f001                                0.000000
-#> SAM4305ab968b90                                0.000000
-#> SAMcf018fee2acd                                0.000000
-#> SAMcc4675f394a1                                0.000000
-#> SAM49f9b2e57aa5                                0.000000
-#> SAM2e7aa8fa0ab3                                0.118806
-#>                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_NKT.cells
-#> SAM7f0d9cc7f001                                       0.1332183
-#> SAM4305ab968b90                                       0.1410772
-#> SAMcf018fee2acd                                       0.1134181
-#> SAMcc4675f394a1                                       0.1362632
-#> SAM49f9b2e57aa5                                       0.1496804
-#> SAM2e7aa8fa0ab3                                       0.1424695
-#>                 CBSX_CBSX.NSCLC.PBMCs.scRNAseq_NK.cells
-#> SAM7f0d9cc7f001                              0.00000000
-#> SAM4305ab968b90                              0.00000000
-#> SAMcf018fee2acd                              0.00000000
-#> SAMcc4675f394a1                              0.00000000
-#> SAM49f9b2e57aa5                              0.00000000
-#> SAM2e7aa8fa0ab3                              0.02834543
-#>                 Endothelial_Subgroup.1.Iteration.1
-#> SAM7f0d9cc7f001                         0.05480971
-#> SAM4305ab968b90                         0.02591334
-#> SAMcf018fee2acd                         0.05501908
-#> SAMcc4675f394a1                         0.01745065
-#> SAM49f9b2e57aa5                         0.00000000
-#> SAM2e7aa8fa0ab3                         0.00000000
-#>                 DeconRNASeq_CBSX.Melanoma.scRNAseq_CAF
-#> SAM7f0d9cc7f001                              0.4362575
-#> SAM4305ab968b90                              0.2159553
-#> SAMcf018fee2acd                              0.2789918
-#> SAMcc4675f394a1                              0.3163672
-#> SAM49f9b2e57aa5                              0.2855141
-#> SAM2e7aa8fa0ab3                              0.4346621
-#>                 DeconRNASeq_LM22_Macrophages.M2
-#> SAM7f0d9cc7f001                     0.025825608
-#> SAM4305ab968b90                     0.000000000
-#> SAMcf018fee2acd                     0.027464529
-#> SAMcc4675f394a1                     0.081372076
-#> SAM49f9b2e57aa5                     0.000000000
-#> SAM2e7aa8fa0ab3                     0.004871071
-```
-
 If your deconvolution matrix contains non-standard cell types (see
 README), specify them using `cells_extra` to ensure proper subgrouping.
-If not, they are going to be discarded automatically.
+If not specified, they will be discarded automatically.
 
 ``` r
 
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
+                                                  corr = 0.7,
+                                                  seed = 123,
                                                   return = TRUE,
-                                                  cells_extra = c("Mural.cells", "Myeloid.cells"), 
-                                                  file_name = "Tutorial") 
+                                                  cells_extra = c("Mural.cells", "Myeloid.cells"),
+                                                  file_name = "Tutorial")
 ```
 
-## **Deconvolution dictionary**
+## **Handling batch effects (multiple cohorts)**
 
-The deconvolution dictionary step integrates deconvolution features with
-pathway activity information to provide a functional interpretation of
-each cell-type–specific component. This process identifies groups of
-pathways that show coordinated behavior across samples (e.g.,
-immunoactive vs. immunosuppressive signaling) and assigns each
-deconvolution feature to one of these pathway clusters based on
-correlation patterns. The resulting dictionary can then be used to
-understand whether a cell-type feature is more associated with
-activation or suppression programs.
+When your samples come from multiple cohorts or batches, simple
+Pearson/Spearman correlations can be confounded by cohort structure.
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+accepts a `batch` argument that switches the internal correlation to
+**partial correlation**, controlling for cohort membership at every
+grouping step (pairwise pruning and WGCNA subgrouping).
 
-For this, we start from normalized gene expression data and link it to
-deconvolution results obtained in previous steps. Finally, we use the
-[`compute_deconvolution_dictionary()`](https://verapancaldilab.github.io/multideconv/reference/compute_deconvolution_dictionary.md)
-function to classify each deconvolution feature according to its
-dominant pathway program.
+The `batch` vector must be a named factor or character vector whose
+names match the row names of the deconvolution matrix.
 
 ``` r
 
-counts = multideconv::raw_counts
-counts.norm = ADImpute::NormalizeTPM(counts, log = FALSE)
-deconv = multideconv::deconv_bulk[rownames(multideconv::deconv_bulk)%in%colnames(counts),]
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = TRUE) 
-deconv_dictionary = compute_deconvolution_dictionary(subgroups = deconv_subgroups,
-                                                     expr = counts.norm)
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==========                                                            |  14%  |                                                                              |====================                                                  |  29%  |                                                                              |==============================                                        |  43%  |                                                                              |========================================                              |  57%  |                                                                              |==================================================                    |  71%  |                                                                              |============================================================          |  86%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======                                                                |   8%  |                                                                              |============                                                          |  17%  |                                                                              |==================                                                    |  25%  |                                                                              |=======================                                               |  33%  |                                                                              |=============================                                         |  42%  |                                                                              |===================================                                   |  50%  |                                                                              |=========================================                             |  58%  |                                                                              |===============================================                       |  67%  |                                                                              |====================================================                  |  75%  |                                                                              |==========================================================            |  83%  |                                                                              |================================================================      |  92%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#> 
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=========                                                             |  12%  |                                                                              |==================                                                    |  25%  |                                                                              |==========================                                            |  38%  |                                                                              |===================================                                   |  50%  |                                                                              |============================================                          |  62%  |                                                                              |====================================================                  |  75%  |                                                                              |=============================================================         |  88%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=========                                                             |  12%  |                                                                              |==================                                                    |  25%  |                                                                              |==========================                                            |  38%  |                                                                              |===================================                                   |  50%  |                                                                              |============================================                          |  62%  |                                                                              |====================================================                  |  75%  |                                                                              |=============================================================         |  88%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==============                                                        |  20%  |                                                                              |=====================                                                 |  30%  |                                                                              |============================                                          |  40%  |                                                                              |===================================                                   |  50%  |                                                                              |==========================================                            |  60%  |                                                                              |=================================================                     |  70%  |                                                                              |========================================================              |  80%  |                                                                              |===============================================================       |  90%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==============                                                        |  20%  |                                                                              |============================                                          |  40%  |                                                                              |==========================================                            |  60%  |                                                                              |========================================================              |  80%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==========                                                            |  14%  |                                                                              |====================                                                  |  29%  |                                                                              |==============================                                        |  43%  |                                                                              |========================================                              |  57%  |                                                                              |==================================================                    |  71%  |                                                                              |============================================================          |  86%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==============                                                        |  20%  |                                                                              |============================                                          |  40%  |                                                                              |==========================================                            |  60%  |                                                                              |========================================================              |  80%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==============                                                        |  20%  |                                                                              |============================                                          |  40%  |                                                                              |==========================================                            |  60%  |                                                                              |========================================================              |  80%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=========                                                             |  12%  |                                                                              |==================                                                    |  25%  |                                                                              |==========================                                            |  38%  |                                                                              |===================================                                   |  50%  |                                                                              |============================================                          |  62%  |                                                                              |====================================================                  |  75%  |                                                                              |=============================================================         |  88%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=========                                                             |  12%  |                                                                              |==================                                                    |  25%  |                                                                              |==========================                                            |  38%  |                                                                              |===================================                                   |  50%  |                                                                              |============================================                          |  62%  |                                                                              |====================================================                  |  75%  |                                                                              |=============================================================         |  88%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=====                                                                 |   8%  |                                                                              |===========                                                           |  15%  |                                                                              |================                                                      |  23%  |                                                                              |======================                                                |  31%  |                                                                              |===========================                                           |  38%  |                                                                              |================================                                      |  46%  |                                                                              |======================================                                |  54%  |                                                                              |===========================================                           |  62%  |                                                                              |================================================                      |  69%  |                                                                              |======================================================                |  77%  |                                                                              |===========================================================           |  85%  |                                                                              |=================================================================     |  92%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%
-#>   |                                                                              |                                                                      |   0%  |                                                                              |=====                                                                 |   7%  |                                                                              |==========                                                            |  14%  |                                                                              |===============                                                       |  21%  |                                                                              |====================                                                  |  29%  |                                                                              |=========================                                             |  36%  |                                                                              |==============================                                        |  43%  |                                                                              |===================================                                   |  50%  |                                                                              |========================================                              |  57%  |                                                                              |=============================================                         |  64%  |                                                                              |==================================================                    |  71%  |                                                                              |=======================================================               |  79%  |                                                                              |============================================================          |  86%  |                                                                              |=================================================================     |  93%  |                                                                              |======================================================================| 100%
+# Example: 'cohort' is a named character vector with values "CohortA" / "CohortB"
+cohort <- c(rep("CohortA", 96), rep("CohortB", 96))
+names(cohort) <- rownames(deconv_bulk)
+
+deconv_subgroups_batch = compute.deconvolution.analysis(
+  deconvolution = deconv_bulk,
+  corr          = 0.7,
+  seed          = 123,
+  batch         = cohort,
+  file_name     = "Tutorial_batch",
+  return        = TRUE
+)
 ```
 
-The dictionary matrix now contains pathway-annotated features:
+When `batch` is supplied:
+
+- Pairwise correlation pruning uses **partial correlation** (residuals
+  after regressing out batch) via
+  [`ppcor::pcor()`](https://rdrr.io/pkg/ppcor/man/pcor.html).
+- WGCNA subgrouping uses the same partial-correlation matrix so that
+  inter-cohort differences do not inflate feature similarity.
+
+This approach is recommended whenever samples originate from distinct
+studies, sequencing runs, or processing pipelines, as it prevents
+cohort-specific signals from being mistaken for biologically meaningful
+co-variation.
+
+## **Characterizing subgroups with pathway activities**
+
+Once subgroups are identified, you can interpret their biological
+meaning by correlating each subgroup’s abundance profile across samples
+with pathway activity scores. The function
+[`compute.subgroup.pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute.subgroup.pathways.md)
+generates one heatmap per cell type showing how each subgroup correlates
+with each pathway.
+
+[`compute.subgroup.pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute.subgroup.pathways.md)
+expects a **pre-computed** sample × pathway numeric matrix. A popular
+choice is **PROGENy** (14 cancer-relevant signalling pathways), which
+can be computed using
+[CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion):
 
 ``` r
 
-head(deconv_dictionary[["Deconvolution matrix"]][,1:5])
-#>                 Quantiseq_B.cells_HALLMARK_MYOGENESIS
-#> SAM7f0d9cc7f001                           0.050210988
-#> SAM4305ab968b90                           0.008603929
-#> SAMcf018fee2acd                           0.042857608
-#> SAMcc4675f394a1                           0.025216439
-#> SAM49f9b2e57aa5                           0.022668958
-#> SAM2e7aa8fa0ab3                           0.012022510
-#>                 DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells_HALLMARK_ALLOGRAFT_REJECTION
-#> SAM7f0d9cc7f001                                                              0.09589523
-#> SAM4305ab968b90                                                              0.11643874
-#> SAMcf018fee2acd                                                              0.10175787
-#> SAMcc4675f394a1                                                              0.09048480
-#> SAM49f9b2e57aa5                                                              0.14838878
-#> SAM2e7aa8fa0ab3                                                              0.15776522
-#>                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells_HALLMARK_ALLOGRAFT_REJECTION
-#> SAM7f0d9cc7f001                                                                  0.3574003
-#> SAM4305ab968b90                                                                  0.3949259
-#> SAMcf018fee2acd                                                                  0.3881010
-#> SAMcc4675f394a1                                                                  0.3250339
-#> SAM49f9b2e57aa5                                                                  0.3592329
-#> SAM2e7aa8fa0ab3                                                                  0.3842798
-#>                 B.cells_Subgroup.2.Iteration.1
-#> SAM7f0d9cc7f001                    0.049153690
-#> SAM4305ab968b90                    0.006727730
-#> SAMcf018fee2acd                    0.022089302
-#> SAMcc4675f394a1                    0.002303371
-#> SAM49f9b2e57aa5                    0.023846065
-#> SAM2e7aa8fa0ab3                    0.008046867
-#>                 B.cells_Subgroup.3.Iteration.1_HALLMARK_ALLOGRAFT_REJECTION
-#> SAM7f0d9cc7f001                                                  0.07468356
-#> SAM4305ab968b90                                                  0.06186113
-#> SAMcf018fee2acd                                                  0.11317494
-#> SAMcc4675f394a1                                                  0.06820300
-#> SAM49f9b2e57aa5                                                  0.16358983
-#> SAM2e7aa8fa0ab3                                                  0.24958169
+# Install CellTFusion if needed (once):
+# pak::pkg_install("VeraPancaldiLab/CellTFusion")
+library(CellTFusion)
+
+counts     <- multideconv::raw_counts
+counts_tpm <- ADImpute::NormalizeTPM(counts, log = FALSE)
+
+# CellTFusion returns a sample x pathway activity matrix
+pathway_scores <- compute_progeny(counts_tpm, organism = "Human", top = 100)
+
+compute.subgroup.pathways(
+  subgroups = deconv_subgroups,
+  pathways  = pathway_scores,
+  file_name = "Tutorial",
+  pval      = 0.05
+)
 ```
 
-The dictionary also identifies global pathway states (immunoactive,
-immunosuppressive, mixed):
+Any other sample × pathway matrix (e.g. from GSVA, ssGSEA, or decoupleR)
+can be passed as `pathways` in the same way.
 
-``` r
-
-deconv_dictionary[["States"]]
-#> NULL
-```
-
-## **Pathway relationship visualization**
-
-To visualize pathway relationships for the learned subgroup structure,
-use
-[`compute_subgroups_pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute_subgroups_pathways.md).
-This function computes PROGENy pathway activity from the normalized
-counts and generates module relationship plots showing how well each
-deconvolution subgroup correlates with each pathway activity pattern.
-
-``` r
-
-# Generate pathway relationship plots for all cell types
-# Plots will be saved to Results/ directory
-compute_subgroups_pathways(subgroups = deconv_dictionary,
-                           counts_norm = counts.norm,
-                           file_name = "Tutorial",
-                           height = 6,
-                           width = 12,
-                           pval = 0.05)
-```
-
-The function generates one PDF plot per cell type. Each plot shows the
-module relationship matrix between deconvolution subgroups and PROGENy
-pathway activity patterns, with correlation strength and statistical
-significance displayed.
-
-**Example plots generated for selected cell types:**
-
-The plots for B cells and Macrophages are saved as: -
-`Results/Tutorial_B.cells.pdf` - `Results/Tutorial_Macrophages.M0.pdf`
-
-These visualizations help interpret which pathway programs are co-active
-with each cell type’s deconvolution subgroups, revealing the functional
-annotation of the identified subgroups.
+One PDF heatmap per cell type is saved to `Results/`. Each heatmap shows
+Pearson correlation between deconvolution subgroups (rows) and pathway
+activity scores (columns). Stars indicate significance (\* p\<0.05, \*\*
+p\<0.01, \*\*\* p\<0.001).
 
 ## **Replicate deconvolution subgroups in an independent set**
 
@@ -403,19 +269,19 @@ function.
 
 The function below reconstructs and applies the subgroup signatures
 derived from a previous deconvolution, making it especially useful when
-transferring learned patterns across datasets—such as when training and
-evaluating machine learning models.
+transferring learned patterns across datasets — such as when training
+and evaluating machine learning models.
 
 ``` r
 
 deconv_1 = deconv_bulk[1:100,]
 deconv_2 = deconv_bulk[101:192,]
 
-deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1, 
-                                                  corr = 0.7, 
-                                                  seed = 123, 
-                                                  file_name = "Tutorial", 
-                                                  return = FALSE) 
-deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups, 
+deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1,
+                                                  corr = 0.7,
+                                                  seed = 123,
+                                                  file_name = "Tutorial",
+                                                  return = FALSE)
+deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups,
                                                                deconv_2)
 ```

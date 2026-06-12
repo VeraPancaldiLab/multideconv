@@ -15,6 +15,10 @@ compute.deconvolution.preprocessing(deconv, cells_extra = NULL)
 
   A dataframe with the unprocessed deconvolution features
 
+- cells_extra:
+
+  A character vector of non-standard cell type names to retain.
+
 ## Value
 
 A matrix of the preprocessed deconvolution features with fixed and

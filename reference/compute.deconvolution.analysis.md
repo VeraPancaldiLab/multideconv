@@ -9,6 +9,9 @@ compute.deconvolution.analysis(
   deconvolution,
   corr = 0.7,
   corr_type = "spearman",
+  zero_thr = 0.9,
+  var_quantile = 0.25,
+  prune_thr = 0.9,
   seed = NULL,
   batch = NULL,
   cells_extra = NULL,
@@ -34,6 +37,19 @@ compute.deconvolution.analysis(
 
   Correlation type for computing the cell subgroups, whether "spearman"
   or "pearson".
+
+- zero_thr:
+
+  Maximum fraction of zeros allowed per feature before it is discarded.
+
+- var_quantile:
+
+  Quantile threshold below which low-variance features are removed.
+
+- prune_thr:
+
+  Pearson correlation threshold above which highly correlated features
+  are pruned.
 
 - seed:
 

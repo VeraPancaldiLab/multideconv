@@ -47,7 +47,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">remove_low_variance</span><span class="op">(</span><span class="va">data</span>, plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">remove_low_variance</span><span class="op">(</span><span class="va">data</span>, var_quantile <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -58,8 +58,8 @@
 <dd><p>Deconvolution features</p></dd>
 
 
-<dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
-<dd><p>Whether to save or not the plot of variance distribution in the Results/ directory.</p></dd>
+<dt id="arg-var-quantile">var_quantile<a class="anchor" aria-label="anchor" href="#arg-var-quantile"></a></dt>
+<dd><p>Quantile threshold below which features are discarded.</p></dd>
 
 </dl></div>
     <div class="section level2">

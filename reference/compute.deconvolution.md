@@ -138,6 +138,11 @@ compute.deconvolution(
 
   File name for the csv files and plots saved in the Results/ directory
 
+- cells_extra:
+
+  A character vector of non-standard cell type names to retain during
+  analysis.
+
 ## Value
 
 A matrix of cell type deconvolution features across samples

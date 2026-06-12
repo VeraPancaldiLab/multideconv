@@ -120,6 +120,13 @@ number of workers based on your system’s resources:</p>
 <span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span>, </span>
 <span>                               doParallel <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                               workers <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<p>Once deconvolution is complete, pass the result to
+<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> to reduce redundancy,
+group correlated features into subgroups, and (optionally) correct for
+batch/cohort effects — see the <a href="a4_subgroups.html">Cell type
+subgroup analysis</a> article for a full walkthrough including the
+<code>batch</code> parameter and pathway characterisation with
+<code><a href="../reference/compute.subgroup.pathways.html">compute.subgroup.pathways()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="cell-type-signatures">
