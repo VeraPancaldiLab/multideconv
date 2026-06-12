@@ -59,6 +59,8 @@ deconv = compute.deconvolution(raw.counts = bulk,
                                workers = 3)
 ```
 
+Once deconvolution is complete, pass the result to `compute.deconvolution.analysis()` to reduce redundancy, group correlated features into subgroups, and (optionally) correct for batch/cohort effects — see the [Cell type subgroup analysis](a4_subgroups.html) article for a full walkthrough including the `batch` parameter and pathway characterisation with `compute.subgroup.pathways()`.
+
 ## **Cell type signatures**
 
 In order to access the default signatures `multideconv` provides, you can do the following:

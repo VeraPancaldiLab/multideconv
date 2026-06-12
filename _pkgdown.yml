@@ -44,9 +44,7 @@ reference:
   - compute.deconvolution
   - compute.deconvolution.analysis
   - replicate_deconvolution_subgroups
-  - compute_deconvolution_dictionary
-  - compute_subgroups_pathways
-  - estimate_expression_profiles
+  - compute.subgroup.pathways
   - prepare_multideconv_folds
 - title: Benchmarking
   desc: >

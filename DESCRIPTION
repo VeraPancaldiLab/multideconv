@@ -16,7 +16,6 @@ Depends:
 Imports: 
     ADImpute,
     doParallel,
-    decoupleR,
     dplyr,
     EpiDISH,
     fgsea,

@@ -12,7 +12,14 @@ prepare_multideconv_folds(
   time_var = NULL,
   event_var = NULL,
   trait.positive = NULL,
-  cells_extra = NULL
+  cells_extra = NULL,
+  corr = 0.7,
+  corr_type = "spearman",
+  zero_thr = 0.9,
+  var_quantile = 0.25,
+  prune_thr = 0.9,
+  seed = NULL,
+  batch = NULL
 )
 }
 \arguments{

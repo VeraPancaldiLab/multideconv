@@ -1078,36 +1078,23 @@ server <- function(input, output, session) {
 
     state$dictionary_plot_files <- character(0)
 
-    state$dictionary_msg <- "Running compute_deconvolution_dictionary..."
+    state$dictionary_msg <- "Preparing subgroup pathway analysis..."
 
-    dict_res <- tryCatch({
-      multideconv::compute_deconvolution_dictionary(
-        subgroups = subgroups,
-        expr      = expr,
-        pathways  = NULL,
-        plot      = isTRUE(input$dict_plot_gsea)
-      )
-    }, error = function(e) e)
-
-    if (inherits(dict_res, "error")) {
-      state$dictionary_msg <- paste("Dictionary Error:", conditionMessage(dict_res))
-      showNotification(state$dictionary_msg, type = "error", duration = 8)
-      return()
-    }
+    dict_res <- subgroups
 
     state$dictionary <- dict_res
     state$dictionary_msg <- paste(
-      "Dictionary completed.",
+      "Subgroup analysis completed.",
       "Features:", ncol(dict_res[["Deconvolution matrix"]])
     )
-    showNotification("Deconvolution dictionary computed.", type = "message")
+    showNotification("Subgroup analysis computed.", type = "message")
 
     # Optional: Run pathway analysis
     if (isTRUE(input$run_pathways)) {
       state$dictionary_msg <- paste(state$dictionary_msg, "\nRunning pathway analysis...")
 
       path_res <- tryCatch({
-        multideconv::compute_subgroups_pathways(
+        multideconv::compute.subgroup.pathways(
           subgroups   = dict_res,
           counts_norm = expr,
           file_name   = input$dict_file_name,

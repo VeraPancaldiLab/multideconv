@@ -4,12 +4,10 @@
 \alias{remove_low_variance}
 \title{Remove low variance deconvolution features}
 \usage{
-remove_low_variance(data, plot = FALSE)
+remove_low_variance(data, var_quantile = 0.25)
 }
 \arguments{
 \item{data}{Deconvolution features}
-
-\item{plot}{Whether to save or not the plot of variance distribution in the Results/ directory.}
 }
 \value{
 A list containing

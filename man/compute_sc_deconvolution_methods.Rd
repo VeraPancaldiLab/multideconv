@@ -40,6 +40,8 @@ compute_sc_deconvolution_methods(
 \item{return}{Whether to save or not the csv file with the deconvolution features.}
 
 \item{file_name}{File name for the .csv file to save with the deconvolution results.}
+
+\item{cache_dir}{Directory path used to cache each method's result as an .rds file immediately after it finishes. On restart after a crash, completed methods are loaded from cache and skipped. Cache files are deleted once all methods finish successfully. Set to NULL to disable.}
 }
 \value{
 A matrix of deconvolution features across samples from your bulk counts based on the second generation methods.
