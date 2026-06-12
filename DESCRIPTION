@@ -54,7 +54,6 @@ Remotes:
 Suggests:
     testthat (>= 3.0.0),
     hdWGCNA,
-    DeconRNASeq,
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),
