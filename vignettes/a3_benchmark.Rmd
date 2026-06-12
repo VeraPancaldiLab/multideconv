@@ -68,7 +68,7 @@ benchmark = compute.benchmark(deconv_pseudo,
                               height = 15)
 ```
 
-```{r hdwgcna-figure, echo=FALSE, fig.align='center', out.width='70%'}
+```{r hdwgcna-figure, echo=FALSE, fig.align='center', out.width='70%', eval=file.exists("Results/Benchmark.png")}
 knitr::include_graphics("Results/Benchmark.png")
 ```
 

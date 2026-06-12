@@ -1307,7 +1307,8 @@ computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
 #'
 #' @import pcaMethods
 computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
-  if (!requireNamespace("DeconRNASeq", quietly = TRUE)) {
+  .pkg <- "DeconRNASeq"
+  if (!requireNamespace(.pkg, quietly = TRUE)) {
     stop("Package 'DeconRNASeq' is required for computeDeconRNASeq(). ",
          "Install it with: BiocManager::install('DeconRNASeq')",
          call. = FALSE)
@@ -1317,7 +1318,8 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
     stop("Package 'pcaMethods' is required for computeDeconRNASeq()")
   }
 
-  decon <- DeconRNASeq::DeconRNASeq(TPM_matrix, data.frame(signature_file))
+  ns   <- asNamespace(.pkg)
+  decon <- ns$DeconRNASeq(TPM_matrix, data.frame(signature_file))
   deconRNAseq = decon$out.all
   rownames(deconRNAseq) = colnames(TPM_matrix)
 
@@ -1879,17 +1881,19 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
 #'
 create_metacells = function(sc_object, labels_column, samples_column, exclude_cells = NULL, min_cells = 50, k = 15, max_shared = 15, n_workers = 4, min_meta = 10){
 
-  if (!requireNamespace("hdWGCNA", quietly = TRUE))
+  .pkg <- "hdWGCNA"
+  if (!requireNamespace(.pkg, quietly = TRUE))
     stop("Package 'hdWGCNA' is required for create_metacells(). ",
          "Install with: pak::pkg_install('smorabit/hdWGCNA')")
+  .hd <- asNamespace(.pkg)
 
   message("\nCreating metacells...............................................................\n")
   ## Setup sc object
-  data <- hdWGCNA::SetupForWGCNA(
+  data <- .hd$SetupForWGCNA(
     sc_object,
-    gene_select = "fraction", # the gene selection approach
-    fraction = 0.05, # fraction of cells that a gene needs to be expressed in order to be included
-    wgcna_name = "MetaCells" # the name of the hdWGCNA experiment
+    gene_select = "fraction",
+    fraction = 0.05,
+    wgcna_name = "MetaCells"
   )
 
   rm(sc_object)
@@ -2410,24 +2414,25 @@ unregister_dopar <- function() {
 # Function to process each group in metacells
 process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_column, samples_column) {
 
-  if (!requireNamespace("hdWGCNA", quietly = TRUE))
+  .pkg <- "hdWGCNA"
+  if (!requireNamespace(.pkg, quietly = TRUE))
     stop("Package 'hdWGCNA' is required. Install with: pak::pkg_install('smorabit/hdWGCNA')")
+  .hd <- asNamespace(.pkg)
 
   if (ncol(data) < min_cells) {
     cat("Skipping group: Less than", min_cells, "cells in this subset\n")
-    return(NULL) # Return NULL for groups with insufficient cells
+    return(NULL)
   }
 
-  #Create Metacells by Groups celltype_patient
-  seurat_obj = hdWGCNA::MetacellsByGroups(seurat_obj = data,
-                                          min_cells = min_cells,
-                                          group.by = c(labels_column, samples_column),
-                                          reduction = 'pca',
-                                          k = k,
-                                          max_shared = max_shared,
-                                          ident.group = labels_column)
+  seurat_obj = .hd$MetacellsByGroups(seurat_obj = data,
+                                     min_cells = min_cells,
+                                     group.by = c(labels_column, samples_column),
+                                     reduction = 'pca',
+                                     k = k,
+                                     max_shared = max_shared,
+                                     ident.group = labels_column)
 
-  meta = hdWGCNA::GetMetacellObject(seurat_obj)
+  meta = .hd$GetMetacellObject(seurat_obj)
 
   counts = as.matrix(SeuratObject::GetAssayData(meta, assay = "RNA", slot = "counts"))
 
@@ -2975,7 +2980,7 @@ compute.subgroup.pathways <- function(subgroups,
       plot     = p,
       width    = plot_w,
       height   = plot_h,
-      device   = cairo_pdf
+      device   = "pdf"
     )
   }
   invisible(NULL)
