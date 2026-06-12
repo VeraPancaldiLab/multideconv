@@ -7,7 +7,6 @@
 compute.subgroup.pathways(
   subgroups,
   pathways = NULL,
-  counts_norm = NULL,
   file_name = "Test",
   height = 6,
   width = 12,
@@ -20,11 +19,7 @@ compute.subgroup.pathways(
 
 \item{pathways}{A numeric matrix or data frame with samples as rows and
 pathway activities as columns. Row names must match sample identifiers in
-\code{subgroups}. Mutually exclusive with \code{counts_norm}.}
-
-\item{counts_norm}{Normalized expression matrix (genes x samples) used to
-compute PROGENy pathway activity scores when \code{pathways = NULL}. Requires
-the \code{progeny} package (\code{BiocManager::install("progeny")}).}
+\code{subgroups}.}
 
 \item{file_name}{Character prefix used when naming output PDF files.}
 
@@ -40,9 +35,9 @@ the \code{progeny} package (\code{BiocManager::install("progeny")}).}
 Invisibly returns \code{NULL}; side effects are PDF files in \verb{Results/}.
 }
 \description{
-Correlates deconvolution subgroup profiles with a pathway activity matrix
-and saves one heatmap per cell type to \verb{Results/}. Supply a pre-computed
-\code{pathways} matrix (samples x pathways) directly, or provide \code{counts_norm}
-(genes x samples) and the function will compute PROGENy pathway activity
-scores internally (requires the \code{progeny} Bioconductor package).
+Correlates deconvolution subgroup profiles with a pre-computed pathway
+activity matrix and saves one heatmap per cell type to \verb{Results/}.
+Use an external tool such as
+\href{https://github.com/VeraPancaldiLab/CellTFusion}{CellTFusion} to compute
+pathway activity scores (e.g. PROGENy) before calling this function.
 }

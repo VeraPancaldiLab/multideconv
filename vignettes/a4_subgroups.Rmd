@@ -102,48 +102,28 @@ This approach is recommended whenever samples originate from distinct studies, s
 
 Once subgroups are identified, you can interpret their biological meaning by correlating each subgroup's abundance profile across samples with pathway activity scores. The function `compute.subgroup.pathways()` generates one heatmap per cell type showing how each subgroup correlates with each pathway.
 
-### Option A — Supply a pre-computed pathway matrix
-
-Any sample × pathway numeric matrix can be used. A popular choice is **PROGENy**, which models the activity of 14 cancer-relevant signalling pathways from gene expression:
+`compute.subgroup.pathways()` expects a **pre-computed** sample × pathway numeric matrix. A popular choice is **PROGENy** (14 cancer-relevant signalling pathways), which can be computed using [CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion):
 
 ```{r, eval = FALSE}
-# Install PROGENy if needed: BiocManager::install("progeny")
-library(progeny)
+# Install CellTFusion if needed (once):
+# pak::pkg_install("VeraPancaldiLab/CellTFusion")
+library(CellTFusion)
 
 counts     <- multideconv::raw_counts
 counts_tpm <- ADImpute::NormalizeTPM(counts, log = FALSE)
 
-# PROGENy returns a sample × pathway matrix
-pathway_scores <- progeny(counts_tpm, scale = FALSE, organism = "Human",
-                          top = 100, perm = 1, z_scores = FALSE)
+# CellTFusion returns a sample x pathway activity matrix
+pathway_scores <- compute_progeny(counts_tpm, organism = "Human", top = 100)
 
 compute.subgroup.pathways(
-  subgroups  = deconv_subgroups,
-  pathways   = pathway_scores,
-  file_name  = "Tutorial",
-  height     = 6,
-  width      = 12,
-  pval       = 0.05
+  subgroups = deconv_subgroups,
+  pathways  = pathway_scores,
+  file_name = "Tutorial",
+  pval      = 0.05
 )
 ```
 
-### Option B — Compute PROGENy internally
-
-If you pass `counts_norm` instead of `pathways`, the function will compute PROGENy activity scores internally (requires the `progeny` Bioconductor package):
-
-```{r, eval = FALSE}
-counts     <- multideconv::raw_counts
-counts_tpm <- ADImpute::NormalizeTPM(counts, log = FALSE)
-
-compute.subgroup.pathways(
-  subgroups   = deconv_subgroups,
-  counts_norm = counts_tpm,
-  file_name   = "Tutorial",
-  height      = 6,
-  width       = 12,
-  pval        = 0.05
-)
-```
+Any other sample × pathway matrix (e.g. from GSVA, ssGSEA, or decoupleR) can be passed as `pathways` in the same way.
 
 One PDF heatmap per cell type is saved to `Results/`. Each heatmap shows Pearson correlation between deconvolution subgroups (rows) and pathway activity scores (columns). Stars indicate significance (* p<0.05, ** p<0.01, *** p<0.001).
 

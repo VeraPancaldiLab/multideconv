@@ -43,29 +43,23 @@ Imports:
     SeuratObject,
     utils,
     grid
-Remotes: 
+Remotes:
     omnideconv/immunedeconv,
     omnideconv/omnideconv,
     omnideconv/DWLS,
     omnideconv/BayesPrism,
     omnideconv/MOMF,
-    grst/MCPcounter,
-    cozygene/bisque
+    cozygene/bisque,
+    smorabit/hdWGCNA
 Suggests:
     testthat (>= 3.0.0),
     hdWGCNA,
-    progeny,
     DeconRNASeq,
-    fgsea,
-    msigdbr,
-    nnls,
-    factoextra,
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),
     GenomicRanges,
     GeneOverlap,
-    MCPcounter (>= 1.2.0),
     knitr,
     matlib,
     limSolve,

@@ -1,6 +1,6 @@
 
 
-utils::globalVariables(c("mcp", "xcell" ,"i", ".", "samples_ids", "multisession", ".data", "Patient", "var", "id", "P", "sig_p", "r", "y", "p", "average", "Cells", "variable", "value", "pval_value", "gene", "weight", "statistic", "condition", "score", "padj", "NES", "pathway", "size", "sig", "source"))
+utils::globalVariables(c("i", ".", "samples_ids", "multisession", ".data", "Patient", "var", "id", "P", "sig_p", "r", "y", "p", "average", "Cells", "variable", "value", "pval_value", "gene", "weight", "statistic", "condition", "score", "padj", "NES", "pathway", "size", "sig", "source"))
 
 #' Standardize Cell Type Column Names
 #'
@@ -1097,44 +1097,30 @@ computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   return(quantiseq)
 }
 
-#' Computes MCPcounter
-#'
-#' @param TPM_matrix A matrix with TPM normalized counts (genes symbols as rows and samples as columns).
-#' @param genes_path Path containing the MCP genes
+# -- Deprecated: MCP and XCell helpers --
+# computeMCP and computeXCell are no longer called; MCP and xCell were removed
+# from the default method set. Kept here for reference only.
+# -------------------------------------------------------------------------------
+# computeMCP <- function(TPM_matrix, genes_path) {
+#   genes <- utils::read.table(paste0(genes_path, "/MCPcounter/MCPcounter-genes.txt"), sep = "\t", stringsAsFactors = FALSE, header = TRUE, colClasses = "character", check.names = FALSE)
+#   mcp <- MCPcounter::MCPcounter.estimate(TPM_matrix, genes = genes, featuresType = "HUGO_symbols", probesets = NULL) %>%
+#     t()
+#   colnames(mcp) = paste0("MCP_", colnames(mcp))
+#   colnames(mcp) <- colnames(mcp) %>%
+#     stringr::str_replace_all(., " ", "_")
+#   return(mcp)
+# }
 #
-#'
-#' @return A matrix with cell enrichment scores from MCP
-#'
-computeMCP <- function(TPM_matrix, genes_path) {
-  genes <- utils::read.table(paste0(genes_path, "/MCPcounter/MCPcounter-genes.txt"), sep = "\t", stringsAsFactors = FALSE, header = TRUE, colClasses = "character", check.names = FALSE)
-  mcp <- MCPcounter::MCPcounter.estimate(TPM_matrix, genes = genes, featuresType = "HUGO_symbols", probesets = NULL) %>%
-    t()
-
-  colnames(mcp) = paste0("MCP_", colnames(mcp))
-  colnames(mcp) <- colnames(mcp) %>%
-    stringr::str_replace_all(., " ", "_")
-
-  return(mcp)
-}
-
-#' Computes XCell
-#'
-#' @param TPM_matrix A matrix with TPM normalized counts (genes symbols as rows and samples as columns).
-#'
-#' @return A matrix with cell enrichment scores from XCell.
-#'
-computeXCell <- function(TPM_matrix) {
-  #t(xCell::xCellAnalysis(counts))  # try this: more cells
-  xcell = immunedeconv::deconvolute(TPM_matrix, "xcell") %>%
-    tibble::column_to_rownames("cell_type") %>%
-    t()
-
-  colnames(xcell) = paste0("XCell_", colnames(xcell))
-  colnames(xcell) <- colnames(xcell) %>%
-    stringr::str_replace_all(., " ", "_")
-
-  return(xcell)
-}
+# computeXCell <- function(TPM_matrix) {
+#   xcell = immunedeconv::deconvolute(TPM_matrix, "xcell") %>%
+#     tibble::column_to_rownames("cell_type") %>%
+#     t()
+#   colnames(xcell) = paste0("XCell_", colnames(xcell))
+#   colnames(xcell) <- colnames(xcell) %>%
+#     stringr::str_replace_all(., " ", "_")
+#   return(xcell)
+# }
+# -------------------------------------------------------------------------------
 
 #' Compute CIBERSORTx (CBSX) in parallel across multiple signatures
 #'
@@ -1631,20 +1617,6 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
   deconv_default <- NULL
   if (exists("quantiseq")) {
     deconv_default <- quantiseq
-  }
-  if (exists("mcp")) {
-    if (is.null(deconv_default)) {
-      deconv_default <- mcp
-    } else {
-      deconv_default <- cbind(deconv_default, mcp)
-    }
-  }
-  if (exists("xcell")) {
-    if (is.null(deconv_default)) {
-      deconv_default <- xcell
-    } else {
-      deconv_default <- cbind(deconv_default, xcell)
-    }
   }
 
   if(is.null(deconv_sig)){
@@ -2878,19 +2850,16 @@ prepare_multideconv_folds <- function(
 
 #' Relate Deconvolution Subgroups to Pathway Activities
 #'
-#' Correlates deconvolution subgroup profiles with a pathway activity matrix
-#' and saves one heatmap per cell type to `Results/`. Supply a pre-computed
-#' `pathways` matrix (samples x pathways) directly, or provide `counts_norm`
-#' (genes x samples) and the function will compute PROGENy pathway activity
-#' scores internally (requires the `progeny` Bioconductor package).
+#' Correlates deconvolution subgroup profiles with a pre-computed pathway
+#' activity matrix and saves one heatmap per cell type to `Results/`.
+#' Use an external tool such as
+#' [CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) to compute
+#' pathway activity scores (e.g. PROGENy) before calling this function.
 #'
 #' @param subgroups Output list from [compute.deconvolution.analysis()].
 #' @param pathways A numeric matrix or data frame with samples as rows and
 #'   pathway activities as columns. Row names must match sample identifiers in
-#'   `subgroups`. Mutually exclusive with `counts_norm`.
-#' @param counts_norm Normalized expression matrix (genes x samples) used to
-#'   compute PROGENy pathway activity scores when `pathways = NULL`. Requires
-#'   the `progeny` package (`BiocManager::install("progeny")`).
+#'   `subgroups`.
 #' @param file_name Character prefix used when naming output PDF files.
 #' @param height Plot height in inches (passed to [ggplot2::ggsave()]).
 #' @param width Plot width in inches (passed to [ggplot2::ggsave()]).
@@ -2902,31 +2871,21 @@ prepare_multideconv_folds <- function(
 #' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn
 #'   scale_x_discrete guide_colorbar labs theme_minimal theme element_text
 #'   element_blank margin ggsave
-#' @importFrom grDevices cairo_pdf
 #' @importFrom stats quantile
 #' @export
 compute.subgroup.pathways <- function(subgroups,
-                                      pathways    = NULL,
-                                      counts_norm = NULL,
-                                      file_name   = "Test",
-                                      height      = 6,
-                                      width       = 12,
-                                      par_mar     = c(4, 25, 5, 3),
-                                      pval        = 0.05) {
+                                      pathways  = NULL,
+                                      file_name = "Test",
+                                      height    = 6,
+                                      width     = 12,
+                                      par_mar   = c(4, 25, 5, 3),
+                                      pval      = 0.05) {
   if (!requireNamespace("WGCNA", quietly = TRUE))
     stop("Package 'WGCNA' is required for compute.subgroup.pathways()")
 
-  if (is.null(pathways) && !is.null(counts_norm)) {
-    if (!requireNamespace("progeny", quietly = TRUE))
-      stop("Package 'progeny' is required when counts_norm is supplied. ",
-           "Install with: BiocManager::install('progeny')")
-    pathway_scores <- progeny::progeny(counts_norm, scale = FALSE, organism = "Human",
-                                       top = 100, perm = 1, z_scores = FALSE)
-    pathways <- t(pathway_scores)
-  }
-
   if (is.null(pathways))
-    stop("Supply either 'pathways' (pre-computed matrix) or 'counts_norm' (expression matrix).")
+    stop("Supply a pre-computed 'pathways' matrix (samples x pathways). ",
+         "Use e.g. CellTFusion or progeny to compute pathway activity scores.")
 
   sig_label <- function(p) ifelse(p < 0.001, "***", ifelse(p < 0.01, "**", ifelse(p < 0.05, "*", "")))
 
