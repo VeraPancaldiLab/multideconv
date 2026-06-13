@@ -1491,6 +1491,17 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 
     deconv = do.call(cbind, deconvolution)
 
+    # Clean up per-method-signature cache files now that the full matrix is combined
+    all_sig_names <- tools::file_path_sans_ext(basename(db))
+    cache_methods_used <- algos[algos %in% c("DeconRNASeq", "Epidish", "DWLS", "CBSX", "MOMF")]
+    for (sig_name in all_sig_names) {
+      for (m in cache_methods_used) {
+        f <- cache_file(m, sig_name)
+        if (file.exists(f)) file.remove(f)
+      }
+    }
+    message("\nDeconvolution cache files removed.\n")
+
     if("DWLS"%in%algos && doParallel == T){
       cat("\nRunning DWLS in parallel using", workers,"workers...............................................................\n\n")
       dwls <- computeDWLS_parallel(TPM_matrix, db, workers)
