@@ -156,14 +156,55 @@ shiny::runApp("inst/shiny", host = "127.0.0.1", port = 3838, launch.browser = TR
 
 ## Cell types nomenclature
 
-`multideconv` works based on established cell naming conventions (Figure
-2) to simplify analysis and processing. Thus, if you would like to use
-your own deconvolution results or signatures, please make sure to follow
-these formats.
+`multideconv` works based on established cell naming conventions to
+simplify analysis and processing. Thus, if you would like to use your
+own deconvolution results or signatures, please make sure to follow
+these formats. The table below lists all recognized cell type groups and
+the standardized column name suffix each group is mapped to.
 
-![](reference/figures/cell_types.png?raw=true)
+| Cell type group                     | Standardized name suffix    |
+|-------------------------------------|-----------------------------|
+| B cells                             | `B.cells`                   |
+| B cells — naive                     | `B.naive.cells`             |
+| B cells — memory                    | `B.memory.cells`            |
+| Plasma cells                        | `Plasma`                    |
+| CD4 T cells                         | `CD4.cells`                 |
+| CD4 T cells — memory activated      | `CD4.memory.activated`      |
+| CD4 T cells — memory resting        | `CD4.memory.resting`        |
+| CD4 T cells — naive                 | `CD4.naive`                 |
+| CD4 T cells — non-regulatory        | `CD4.non.regulatory`        |
+| CD4 T cells — regulatory (Tregs)    | `CD4.regulatory`            |
+| CD8 T cells                         | `CD8.cells`                 |
+| T helper cells                      | `T.cells.helper`            |
+| T gamma-delta cells                 | `T.cells.gamma.delta`       |
+| NK cells                            | `NK.cells`                  |
+| NK cells — activated                | `NK.activated`              |
+| NK cells — resting                  | `NK.resting`                |
+| NKT cells                           | `NKT.cells`                 |
+| Monocytes                           | `Monocytes`                 |
+| Neutrophils                         | `Neutrophils`               |
+| Eosinophils                         | `Eosinophils`               |
+| Mast cells                          | `Mast.cells`                |
+| Mast cells — activated              | `Mast.activated.cells`      |
+| Mast cells — resting                | `Mast.resting.cells`        |
+| Macrophages (generic)               | `Macrophages.cells`         |
+| Macrophages M0                      | `Macrophages.M0`            |
+| Macrophages M1                      | `Macrophages.M1`            |
+| Macrophages M2                      | `Macrophages.M2`            |
+| Dendritic cells (generic)           | `Dendritic.cells`           |
+| Dendritic cells — activated         | `Dendritic.activated.cells` |
+| Dendritic cells — resting           | `Dendritic.resting.cells`   |
+| Cancer / malignant cells            | `Cancer`                    |
+| Endothelial cells                   | `Endothelial`               |
+| Fibroblasts                         | `Fibroblasts`               |
+| Cancer-associated fibroblasts (CAF) | `CAF`                       |
+| Myocytes                            | `Myocytes`                  |
 
-*Figure 2. Cell types nomenclature for `multideconv`*
+Each output column is prefixed by `<method>_<signature>_` followed by
+the suffix above. Unrecognized cell types are kept as-is under the
+`extra` group and will be discarded during
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+unless passed via `cells_extra`.
 
 ## How to add cell types other than the ones present in the nomenclature?
 

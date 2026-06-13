@@ -154,12 +154,156 @@
 <div class="section level2">
 <h2 id="cell-types-nomenclature">Cell types nomenclature<a class="anchor" aria-label="anchor" href="#cell-types-nomenclature"></a>
 </h2>
-<p><code>multideconv</code> works based on established cell naming conventions (Figure 2) to simplify analysis and processing. Thus, if you would like to use your own deconvolution results or signatures, please make sure to follow these formats.</p>
-<p align="center">
-<img src="reference/figures/cell_types.png?raw=true"></p>
-<p align="center">
-<em>Figure 2. Cell types nomenclature for <code>multideconv</code></em>
-</p>
+<p><code>multideconv</code> works based on established cell naming conventions to simplify analysis and processing. Thus, if you would like to use your own deconvolution results or signatures, please make sure to follow these formats. The table below lists all recognized cell type groups and the standardized column name suffix each group is mapped to.</p>
+<table class="table">
+<thead><tr>
+<th>Cell type group</th>
+<th>Standardized name suffix</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>B cells</td>
+<td><code>B.cells</code></td>
+</tr>
+<tr>
+<td>B cells — naive</td>
+<td><code>B.naive.cells</code></td>
+</tr>
+<tr>
+<td>B cells — memory</td>
+<td><code>B.memory.cells</code></td>
+</tr>
+<tr>
+<td>Plasma cells</td>
+<td><code>Plasma</code></td>
+</tr>
+<tr>
+<td>CD4 T cells</td>
+<td><code>CD4.cells</code></td>
+</tr>
+<tr>
+<td>CD4 T cells — memory activated</td>
+<td><code>CD4.memory.activated</code></td>
+</tr>
+<tr>
+<td>CD4 T cells — memory resting</td>
+<td><code>CD4.memory.resting</code></td>
+</tr>
+<tr>
+<td>CD4 T cells — naive</td>
+<td><code>CD4.naive</code></td>
+</tr>
+<tr>
+<td>CD4 T cells — non-regulatory</td>
+<td><code>CD4.non.regulatory</code></td>
+</tr>
+<tr>
+<td>CD4 T cells — regulatory (Tregs)</td>
+<td><code>CD4.regulatory</code></td>
+</tr>
+<tr>
+<td>CD8 T cells</td>
+<td><code>CD8.cells</code></td>
+</tr>
+<tr>
+<td>T helper cells</td>
+<td><code>T.cells.helper</code></td>
+</tr>
+<tr>
+<td>T gamma-delta cells</td>
+<td><code>T.cells.gamma.delta</code></td>
+</tr>
+<tr>
+<td>NK cells</td>
+<td><code>NK.cells</code></td>
+</tr>
+<tr>
+<td>NK cells — activated</td>
+<td><code>NK.activated</code></td>
+</tr>
+<tr>
+<td>NK cells — resting</td>
+<td><code>NK.resting</code></td>
+</tr>
+<tr>
+<td>NKT cells</td>
+<td><code>NKT.cells</code></td>
+</tr>
+<tr>
+<td>Monocytes</td>
+<td><code>Monocytes</code></td>
+</tr>
+<tr>
+<td>Neutrophils</td>
+<td><code>Neutrophils</code></td>
+</tr>
+<tr>
+<td>Eosinophils</td>
+<td><code>Eosinophils</code></td>
+</tr>
+<tr>
+<td>Mast cells</td>
+<td><code>Mast.cells</code></td>
+</tr>
+<tr>
+<td>Mast cells — activated</td>
+<td><code>Mast.activated.cells</code></td>
+</tr>
+<tr>
+<td>Mast cells — resting</td>
+<td><code>Mast.resting.cells</code></td>
+</tr>
+<tr>
+<td>Macrophages (generic)</td>
+<td><code>Macrophages.cells</code></td>
+</tr>
+<tr>
+<td>Macrophages M0</td>
+<td><code>Macrophages.M0</code></td>
+</tr>
+<tr>
+<td>Macrophages M1</td>
+<td><code>Macrophages.M1</code></td>
+</tr>
+<tr>
+<td>Macrophages M2</td>
+<td><code>Macrophages.M2</code></td>
+</tr>
+<tr>
+<td>Dendritic cells (generic)</td>
+<td><code>Dendritic.cells</code></td>
+</tr>
+<tr>
+<td>Dendritic cells — activated</td>
+<td><code>Dendritic.activated.cells</code></td>
+</tr>
+<tr>
+<td>Dendritic cells — resting</td>
+<td><code>Dendritic.resting.cells</code></td>
+</tr>
+<tr>
+<td>Cancer / malignant cells</td>
+<td><code>Cancer</code></td>
+</tr>
+<tr>
+<td>Endothelial cells</td>
+<td><code>Endothelial</code></td>
+</tr>
+<tr>
+<td>Fibroblasts</td>
+<td><code>Fibroblasts</code></td>
+</tr>
+<tr>
+<td>Cancer-associated fibroblasts (CAF)</td>
+<td><code>CAF</code></td>
+</tr>
+<tr>
+<td>Myocytes</td>
+<td><code>Myocytes</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each output column is prefixed by <code>&lt;method&gt;_&lt;signature&gt;_</code> followed by the suffix above. Unrecognized cell types are kept as-is under the <code>extra</code> group and will be discarded during <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> unless passed via <code>cells_extra</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="how-to-add-cell-types-other-than-the-ones-present-in-the-nomenclature">How to add cell types other than the ones present in the nomenclature?<a class="anchor" aria-label="anchor" href="#how-to-add-cell-types-other-than-the-ones-present-in-the-nomenclature"></a>

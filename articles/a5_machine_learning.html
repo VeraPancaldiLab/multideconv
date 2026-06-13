@@ -86,7 +86,8 @@ correlations, special care is needed to avoid data leakage. If you
 compute the full subgroup matrix on the entire dataset before splitting
 into training and test sets (or before performing k-fold
 cross-validation), the model may indirectly access information from the
-test set during training.</p>
+test set during training — a form of hidden data leakage described in
+<span class="citation">Hurtado and Pancaldi (<a href="#ref-hurtado2026pipeline">2026</a>)</span>.</p>
 <p>To address this issue, we provide the function
 <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>, which ensures proper
 separation between training and test data during the computation of
@@ -286,6 +287,12 @@ Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, et al. 2024.
 <span>“Benchmarking Second-Generation Methods for Cell-Type
 Deconvolution of Transcriptomic Data.”</span> <em>bioRxiv</em>, ahead of
 print. <a href="https://doi.org/10.1101/2024.06.10.598226" class="external-link">https://doi.org/10.1101/2024.06.10.598226</a>.
+</div>
+<div id="ref-hurtado2026pipeline" class="csl-entry">
+Hurtado, Marcelo, and Vera Pancaldi. 2026. <span>“A New Pipeline for
+Cross-Validation Fold-Aware Machine Learning Prediction of Clinical
+Outcomes Addresses Hidden Data-Leakage in Omics Based
+’Predictors’.”</span> <em>bioRxiv</em>, ahead of print. <a href="https://doi.org/10.64898/2026.03.12.711429" class="external-link">https://doi.org/10.64898/2026.03.12.711429</a>.
 </div>
 <div id="ref-10.1093/bioinformatics/btz363" class="csl-entry">
 Sturm, Gregor, Francesca Finotello, Florent Petitprez, et al. 2019.

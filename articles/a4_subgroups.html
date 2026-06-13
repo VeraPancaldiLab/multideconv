@@ -243,7 +243,7 @@ Pearson/Spearman correlations can be confounded by cohort structure.
 <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> accepts a
 <code>batch</code> argument that switches the internal correlation to
 <strong>partial correlation</strong>, controlling for cohort membership
-at every grouping step (pairwise pruning and WGCNA subgrouping).</p>
+at every pairwise pruning and subgrouping step.</p>
 <p>The <code>batch</code> vector must be a named factor or character
 vector whose names match the row names of the deconvolution matrix.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -264,8 +264,9 @@ vector whose names match the row names of the deconvolution matrix.</p>
 <li>Pairwise correlation pruning uses <strong>partial
 correlation</strong> (residuals after regressing out batch) via
 <code><a href="https://rdrr.io/pkg/ppcor/man/pcor.html" class="external-link">ppcor::pcor()</a></code>.</li>
-<li>WGCNA subgrouping uses the same partial-correlation matrix so that
-inter-cohort differences do not inflate feature similarity.</li>
+<li>The same partial-correlation matrix is used at every subgrouping
+step so that inter-cohort differences do not inflate feature
+similarity.</li>
 </ul>
 <p>This approach is recommended whenever samples originate from distinct
 studies, sequencing runs, or processing pipelines, as it prevents
@@ -283,9 +284,18 @@ with pathway activity scores. The function
 <code><a href="../reference/compute.subgroup.pathways.html">compute.subgroup.pathways()</a></code> generates one heatmap per cell
 type showing how each subgroup correlates with each pathway.</p>
 <p><code><a href="../reference/compute.subgroup.pathways.html">compute.subgroup.pathways()</a></code> expects a
-<strong>pre-computed</strong> sample × pathway numeric matrix. A popular
-choice is <strong>PROGENy</strong> (14 cancer-relevant signalling
-pathways), which can be computed using <a href="https://github.com/VeraPancaldiLab/CellTFusion" class="external-link">CellTFusion</a>:</p>
+<strong>pre-computed</strong> sample × pathway numeric matrix. As an
+example, we are going to compute pathway activities using the
+<strong>PROGENy</strong> database (Schubert et al., 2018), making use of
+the package <a href="https://github.com/VeraPancaldiLab/CellTFusion" class="external-link">CellTFusion</a>.
+PROGENy models the activity of 14 cancer-relevant signalling pathways
+from gene expression data.</p>
+<blockquote>
+<p>Schubert, M., Klinger, B., Klünemann, M., Sieber, A., Uhlitz, F.,
+Sauer, S., Garnett, M. J., Blüthgen, N., &amp; Saez-Rodriguez, J.
+(2018). Perturbation-response genes reveal signaling footprints in
+cancer gene expression. <em>Nature Communications</em>, 9(1), 20. <a href="https://doi.org/10.1038/s41467-017-02391-6" class="external-link uri">https://doi.org/10.1038/s41467-017-02391-6</a></p>
+</blockquote>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install CellTFusion if needed (once):</span></span>
 <span><span class="co"># pak::pkg_install("VeraPancaldiLab/CellTFusion")</span></span>
@@ -294,8 +304,8 @@ pathways), which can be computed using <a href="https://github.com/VeraPancaldiL
 <span><span class="va">counts</span>     <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/raw_counts.html">raw_counts</a></span></span>
 <span><span class="va">counts_tpm</span> <span class="op">&lt;-</span> <span class="fu">ADImpute</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">NormalizeTPM</a></span><span class="op">(</span><span class="va">counts</span>, log <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># CellTFusion returns a sample x pathway activity matrix</span></span>
-<span><span class="va">pathway_scores</span> <span class="op">&lt;-</span> <span class="fu">compute_progeny</span><span class="op">(</span><span class="va">counts_tpm</span>, organism <span class="op">=</span> <span class="st">"Human"</span>, top <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span><span class="co"># compute.pathway.activity() returns a sample x pathway activity matrix</span></span>
+<span><span class="va">pathway_scores</span> <span class="op">&lt;-</span> <span class="fu">compute.pathway.activity</span><span class="op">(</span><span class="va">counts_tpm</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/compute.subgroup.pathways.html">compute.subgroup.pathways</a></span><span class="op">(</span></span>
 <span>  subgroups <span class="op">=</span> <span class="va">deconv_subgroups</span>,</span>
@@ -305,10 +315,11 @@ pathways), which can be computed using <a href="https://github.com/VeraPancaldiL
 <span><span class="op">)</span></span></code></pre></div>
 <p>Any other sample × pathway matrix (e.g. from GSVA, ssGSEA, or
 decoupleR) can be passed as <code>pathways</code> in the same way.</p>
-<p>One PDF heatmap per cell type is saved to <code>Results/</code>. Each
-heatmap shows Pearson correlation between deconvolution subgroups (rows)
-and pathway activity scores (columns). Stars indicate significance (*
-p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001).</p>
+<p>One PDF heatmap per cell type is saved to <code>Results/</code>.
+Below is an example output for CD4 T cells (12 subgroups × 14 PROGENy
+pathways), where stars indicate significance levels (* p&lt;0.05, **
+p&lt;0.01, *** p&lt;0.001):</p>
+<p><img src="../reference/figures/subgroup_pathways_example.png" class="r-plt" alt="" width="90%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="replicate-deconvolution-subgroups-in-an-independent-set">

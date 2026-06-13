@@ -8,7 +8,9 @@ these subgroups are derived based on sample-level correlations, special
 care is needed to avoid data leakage. If you compute the full subgroup
 matrix on the entire dataset before splitting into training and test
 sets (or before performing k-fold cross-validation), the model may
-indirectly access information from the test set during training.
+indirectly access information from the test set during training — a form
+of hidden data leakage described in Hurtado and Pancaldi
+([2026](#ref-hurtado2026pipeline)).
 
 To address this issue, we provide the function
 [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md),
@@ -92,6 +94,11 @@ Dietrich, Alexander, Lorenzo Merotto, Konstantin Pelz, et al. 2024.
 “Benchmarking Second-Generation Methods for Cell-Type Deconvolution of
 Transcriptomic Data.” *bioRxiv*, ahead of print.
 <https://doi.org/10.1101/2024.06.10.598226>.
+
+Hurtado, Marcelo, and Vera Pancaldi. 2026. “A New Pipeline for
+Cross-Validation Fold-Aware Machine Learning Prediction of Clinical
+Outcomes Addresses Hidden Data-Leakage in Omics Based ’Predictors’.”
+*bioRxiv*, ahead of print. <https://doi.org/10.64898/2026.03.12.711429>.
 
 Sturm, Gregor, Francesca Finotello, Florent Petitprez, et al. 2019.
 “Comprehensive Evaluation of Transcriptome-Based Cell-Type
