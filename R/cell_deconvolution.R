@@ -1335,7 +1335,7 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 #' @param TPM_matrix A matrix with TPM normalized counts (samples as columns and genes symbols as rows)
 #' @param signatures A path with a directory where signatures are located
 #' @param algos A character vector with the methods to compute (Default methods are CBSX, Epidish, DeconRNASeq and DWLS)
-#' @param exclude (Optional) A character vector with the signature to exclude
+#' @param signatures_select (Optional) A character vector with the signature names to run. If NULL (default), all available signatures are used (package + custom).
 #' @param cbsx.name CIBERSORTx credential mail if CBSX will be run
 #' @param cbsx.token CIBERSORTx credential token if CBSX will be run
 #' @param doParallel Boolean value to specify if DWLS and CBSX should run in parallel (default is False)
@@ -1351,7 +1351,7 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 #' Benchmarking second-generation methods for cell-type deconvolution of transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz, Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch, Katharina and
 #' Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 #'
-compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c("CBSX", "Epidish", "DeconRNASeq", "DWLS", "MOMF"), exclude = NULL, cbsx.name, cbsx.token, doParallel = FALSE, workers = NULL, sc_obj = NULL){
+compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c("CBSX", "Epidish", "DeconRNASeq", "DWLS", "MOMF"), signatures_select = NULL, cbsx.name, cbsx.token, doParallel = FALSE, workers = NULL, sc_obj = NULL){
 
   cache_dir <- "Results/"
   dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
@@ -1372,8 +1372,18 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 
   db <- c(default_sig, user_files)
 
-  name_exclude = c()
   if(is.null(algos)==F){
+
+    # Filter signatures: if signatures_select is provided, keep only those
+    if (!is.null(signatures_select)) {
+      db <- db[tools::file_path_sans_ext(basename(db)) %in% signatures_select]
+      if (length(db) == 0) {
+        warning("None of the requested signatures were found: ",
+                paste(signatures_select, collapse = ", "))
+        return(NULL)
+      }
+    }
+
     cat("\nThe following method-signature combinations are going to be calculated...............................................................\n")
 
     cat("\nMethods\n")
@@ -1384,13 +1394,6 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
     for (i in 1:length(db)) {
       name = stringr::str_split(basename(db[[i]]), "\\.")[[1]][1]
       cat("* ", name, "\n", sep = "")
-      if(is.null(exclude)==F && name %in% exclude){
-        name_exclude = c(name_exclude, name)
-      }
-    }
-
-    if(length(name_exclude)>0){
-      cat("\nExcluding signatures: ", paste0(name_exclude, collapse = ", "), "\n")
     }
 
     deconvolution = list()
@@ -1402,9 +1405,6 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
         stop()
       }
     }
-
-    # Exclude signatures if specified by the user
-    db = db[!tools::file_path_sans_ext(basename(db)) %in% exclude]
 
     for (i in 1:length(db)) {
 
@@ -1530,11 +1530,11 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 
 #' Compute deconvolution
 #'
-#'The function calculates cell abundance based on cell type signatures using different methods and signatures. Methods available are Quantiseq, MCP, XCell, CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided signatures included signatures based on bulk and methylation data (7 methods and 10 signature in total). Signatures are present in the src/signatures directory, user can add its own signatures by adding the .txt files in this same folder. Second generation methods to perform deconvolution based on single cell data are also available if scRNAseq object is provided.
+#'The function calculates cell abundance based on cell type signatures using different methods and signatures. Methods available are Quantiseq, CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided signatures included signatures based on bulk and methylation data. Signatures are present in the src/signatures directory, user can add its own signatures by adding the .txt files in this same folder. Second generation methods to perform deconvolution based on single cell data are also available if scRNAseq object is provided.
 #'
 #' @param raw.counts A matrix with the raw counts (samples as columns and genes symbols as rows)
-#' @param methods A character vector with the deconvolution methods to run. Default are "Quantiseq", "MCP", "xCell", "CBSX", "Epidish", "DeconRNASeq", "DWLS"
-#' @param signatures_exclude A character vector with the signatures to exclude from the src/signatures folder.
+#' @param methods A character vector with the deconvolution methods to run. Default are "Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"
+#' @param signatures_select A character vector with the signature names to run. If NULL (default), all available signatures are used (package signatures + custom signatures from Results/custom_signatures/).
 #' @param normalized If raw.counts are not available, user can input its normalized counts. In that case this argument need to be set to False.
 #' @param doParallel Whether to do or not parallelization. Only CBSX and DWLS methods will run in parallel.
 #' @param workers Number of processes available to run on parallel. If no number is set, this will correspond to detectCores() - 1
@@ -1581,7 +1581,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 #' Benchmarking second-generation methods for cell-type deconvolution of transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz, Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch, Katharina and
 #' Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 #'
-compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"), signatures_exclude = NULL, normalized = TRUE, doParallel = FALSE, workers = NULL, return = TRUE, create_signature = FALSE,
+compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"), signatures_select = NULL, normalized = TRUE, doParallel = FALSE, workers = NULL, return = TRUE, create_signature = FALSE,
                                   credentials.mail = NULL, credentials.token = NULL, sc_deconv = FALSE, sc_matrix = NULL, sc_metadata = NULL, methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"), cell_label = NULL,
                                   sample_label = NULL, cell_markers = NULL, methods_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc"), name_sc_signature = NULL, file_name = NULL, cells_extra = NULL){
 
@@ -1625,7 +1625,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
     }
   }
 
-  deconv_sig = compute_methods_variable_signature(TPM_matrix, signatures = path_signatures, algos = methods, exclude = signatures_exclude, cbsx.name = credentials.mail, cbsx.token = credentials.token, doParallel, workers, sc_matrix)
+  deconv_sig = compute_methods_variable_signature(TPM_matrix, signatures = path_signatures, algos = methods, signatures_select = signatures_select, cbsx.name = credentials.mail, cbsx.token = credentials.token, doParallel, workers, sc_matrix)
 
   deconv_default <- NULL
   if (exists("quantiseq")) {
@@ -1788,11 +1788,16 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       results$MuSic = cached
     } else {
       message("\nRunning MuSiC...\n")
+      ct_annotations <- as.character(sc_metadata[, cell_annotations])
+      sample_ids     <- as.character(sc_metadata[, samples_ids])
+      n_subjects_per_ct <- tapply(sample_ids, ct_annotations, function(x) length(unique(x)))
+      keep_ct <- names(n_subjects_per_ct)[n_subjects_per_ct > 1]
+      keep_cells <- ct_annotations %in% keep_ct
       music = omnideconv::deconvolute_music(
         bulk_gene_expression = as.matrix(bulk_counts),
-        single_cell_object = as.matrix(sc_object),
-        cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
-        batch_ids = as.character(sc_metadata[,samples_ids]),
+        single_cell_object = as.matrix(sc_object)[, keep_cells],
+        cell_type_annotations = ct_annotations[keep_cells],
+        batch_ids = sample_ids[keep_cells],
         verbose = TRUE
       )$Est.prop.weighted
       save_cache("MuSic", music)
@@ -2118,39 +2123,53 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     return(corr_df)
   }
 
-  #####Scatter plot function
-  scatter_plots = function(deconv, ground, corr_method){
-    for (i in 1:ncol(deconv)) {
-      data = cbind(deconv[,i], ground)
-      colnames(data) = c("x", "y")
-      cor_test <- stats::cor.test(data$x, data$y, method = corr_method)
-      cor_value <- cor_test$estimate  # Correlation coefficient
-      p_value <- cor_test$p.value    # p-value
-
-      p <- ggplot2::ggplot(data, ggplot2::aes(x = x, y = y)) +
-        ggplot2::geom_point(color = "blue", size = 0.1, alpha = 0.7) +  # Customize the points
-        ggplot2::geom_smooth(method = "lm", se = T, color = "red") +  # Add regression line
-        ggplot2::theme_minimal() +  # Apply a minimal theme
-        ggplot2::labs(
-          x = colnames(ground),
-          #title = paste0("Linear correlation - ", colnames(ground)),  # Set the title
-          y = colnames(deconv)[i],                 # Set the x-axis label
-        ) +
-        ggplot2::theme(
-          axis.title.x = ggplot2::element_text(size = 5),
-          axis.text.x = ggplot2::element_text(size = 5),
-          axis.text.y = ggplot2::element_text(size = 5),
-          axis.title.y = ggplot2::element_text(size = 5)  # Adjust title font size and position
-        ) +
-        ggplot2::geom_text(
-          ggplot2::aes(x = mean(data$x), y = max(data$y), label = paste("r =", round(cor_value, 2), ", pval = ", round(p_value, 2))),  # Add the correlation text
-          size = 2,  # Adjust the font size of the correlation coefficient text
-          hjust = 0.5,  # Adjust the horizontal alignment of the text
-          vjust = -1     # Adjust the vertical position of the text
+  #####Global scatter plot function (all cell types per method_signature)
+  global_scatter <- function(deconvolution, groundtruth, cell_clusters, deconv_combinations, corr_method) {
+    plot_list <- list()
+    for (combo in deconv_combinations) {
+      rows_list <- list()
+      for (ct in cell_clusters) {
+        col_name <- paste0(combo, "_", ct)
+        if (!col_name %in% colnames(deconvolution)) next
+        rows_list[[length(rows_list) + 1]] <- data.frame(
+          estimate   = deconvolution[, col_name],
+          ground     = groundtruth[, ct],
+          cell_type  = ct,
+          stringsAsFactors = FALSE
         )
+      }
+      if (length(rows_list) == 0) next
+      plot_df <- do.call(rbind, rows_list)
+      plot_df <- plot_df[complete.cases(plot_df), ]
+      if (nrow(plot_df) < 3) next
 
-      print(p)
+      cor_test  <- stats::cor.test(plot_df$estimate, plot_df$ground, method = corr_method)
+      cor_value <- cor_test$estimate
+      p_value   <- cor_test$p.value
+      p_label   <- ifelse(p_value < 0.001, "p < 0.001",
+                          ifelse(p_value < 0.01, "p < 0.01",
+                                 ifelse(p_value < 0.05, "p < 0.05",
+                                        paste0("p = ", formatC(p_value, format = "f", digits = 3)))))
+      label <- paste0("r = ", formatC(cor_value, format = "f", digits = 2), "\n", p_label)
+
+      p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = ground, y = estimate, colour = cell_type)) +
+        ggplot2::geom_point(size = 2.5, alpha = 0.85) +
+        ggplot2::geom_smooth(method = "lm", se = TRUE, colour = "navy", linewidth = 0.7,
+                             ggplot2::aes(group = 1)) +
+        ggplot2::annotate("text", x = -Inf, y = Inf, label = label,
+                          hjust = -0.1, vjust = 1.3, size = 3.2, family = "mono") +
+        ggplot2::scale_colour_brewer(palette = "Dark2", name = NULL) +
+        ggplot2::labs(
+          title = gsub("_", " ", combo),
+          x     = "Ground truth (cell fractions)",
+          y     = "Estimated cell fractions"
+        ) +
+        ggplot2::theme_classic(base_size = 11) +
+        ggplot2::theme(legend.position = "right")
+
+      plot_list[[combo]] <- p
     }
+    return(plot_list)
   }
 
   cell_clusters = colnames(groundtruth)
@@ -2165,6 +2184,18 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   cells_discard = c()
   plots_all = list()
 
+  ###Global scatter plots (all cell types per method_signature)
+  if (scatter == TRUE) {
+    scatter_list <- global_scatter(deconvolution, groundtruth, cell_clusters,
+                                  deconvolution_combinations, corr_type)
+    for (combo_name in names(scatter_list)) {
+      grDevices::pdf(paste0("Results/Scatter_global_", combo_name, "_", file_name, ".pdf"),
+                     width = 6, height = 5)
+      print(scatter_list[[combo_name]])
+      grDevices::dev.off()
+    }
+  }
+
   ###Correlation computation
   for (i in 1:length(cell_clusters)) {
     idx = grep(paste0("_", cell_clusters[i], "$"), colnames(deconvolution))
@@ -2175,15 +2206,6 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     deconv = deconvolution[,idx, drop = F]
 
     ground = groundtruth[,cell_clusters[i],drop=F]
-
-    ###Scatter plots
-    if(scatter == T){
-      if(ncol(deconv)!=0){
-        pdf(paste0("Scatter_plots_", colnames(ground), "_", file_name))
-        scatter_plots(deconv, ground, corr_type)
-        dev.off()
-      }
-    }
 
     x = corr_bench(cbind(deconv, ground), corr_type, pval)
     x = x[which(x$measure1==colnames(ground)),] #only taking corr against ground truth

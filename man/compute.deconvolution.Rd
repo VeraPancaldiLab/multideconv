@@ -7,7 +7,7 @@
 compute.deconvolution(
   raw.counts,
   methods = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
-  signatures_exclude = NULL,
+  signatures_select = NULL,
   normalized = TRUE,
   doParallel = FALSE,
   workers = NULL,
@@ -31,9 +31,9 @@ compute.deconvolution(
 \arguments{
 \item{raw.counts}{A matrix with the raw counts (samples as columns and genes symbols as rows)}
 
-\item{methods}{A character vector with the deconvolution methods to run. Default are "Quantiseq", "MCP", "xCell", "CBSX", "Epidish", "DeconRNASeq", "DWLS"}
+\item{methods}{A character vector with the deconvolution methods to run. Default are "Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"}
 
-\item{signatures_exclude}{A character vector with the signatures to exclude from the src/signatures folder.}
+\item{signatures_select}{A character vector with the signature names to run. If NULL (default), all available signatures are used (package signatures + custom signatures from Results/custom_signatures/).}
 
 \item{normalized}{If raw.counts are not available, user can input its normalized counts. In that case this argument need to be set to False.}
 
@@ -75,7 +75,7 @@ compute.deconvolution(
 A matrix of cell type deconvolution features across samples
 }
 \description{
-The function calculates cell abundance based on cell type signatures using different methods and signatures. Methods available are Quantiseq, MCP, XCell, CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided signatures included signatures based on bulk and methylation data (7 methods and 10 signature in total). Signatures are present in the src/signatures directory, user can add its own signatures by adding the .txt files in this same folder. Second generation methods to perform deconvolution based on single cell data are also available if scRNAseq object is provided.
+The function calculates cell abundance based on cell type signatures using different methods and signatures. Methods available are Quantiseq, CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided signatures included signatures based on bulk and methylation data. Signatures are present in the src/signatures directory, user can add its own signatures by adding the .txt files in this same folder. Second generation methods to perform deconvolution based on single cell data are also available if scRNAseq object is provided.
 }
 \examples{
 

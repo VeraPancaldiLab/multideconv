@@ -36,14 +36,14 @@ deconv = compute.deconvolution(raw.counts = bulk,
                                file_name = "Tutorial")
 ```
 
-To exclude specific methods or signatures, use the methods or signatures_exclude arguments:
+To run only specific signatures, use the `signatures_select` argument. If `NULL` (default), all available signatures (package + custom from `Results/custom_signatures/`) are used:
 
 ```{r, eval = FALSE}
-deconv = compute.deconvolution(raw.counts = bulk, 
-                               methods = c("Quantiseq", "DeconRNASeq"), 
+deconv = compute.deconvolution(raw.counts = bulk,
+                               methods = c("Quantiseq", "DeconRNASeq"),
                                normalized = TRUE,
-                               signatures_exclude = "BPRNACan", 
-                               return = TRUE, 
+                               signatures_select = c("BPRNACan", "LM22"),
+                               return = TRUE,
                                file_name = "Tutorial")
 ```
 

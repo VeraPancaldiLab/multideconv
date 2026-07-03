@@ -8,7 +8,7 @@ compute_methods_variable_signature(
   TPM_matrix,
   signatures,
   algos = c("CBSX", "Epidish", "DeconRNASeq", "DWLS", "MOMF"),
-  exclude = NULL,
+  signatures_select = NULL,
   cbsx.name,
   cbsx.token,
   doParallel = FALSE,
@@ -23,7 +23,7 @@ compute_methods_variable_signature(
 
 \item{algos}{A character vector with the methods to compute (Default methods are CBSX, Epidish, DeconRNASeq and DWLS)}
 
-\item{exclude}{(Optional) A character vector with the signature to exclude}
+\item{signatures_select}{(Optional) A character vector with the signature names to run. If NULL (default), all available signatures are used (package + custom).}
 
 \item{cbsx.name}{CIBERSORTx credential mail if CBSX will be run}
 
