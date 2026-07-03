@@ -56,8 +56,8 @@ expression matrix either as raw or normalized counts.
 ``` r
 
 deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", file_name = "Tutorial") 
-deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", methods = c("Quantiseq", "MCP", "XCell", "DWLS"), file_name = "Test") 
-deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", signatures_exclude = "BPRNACan", file_name = "Tutorial")
+deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", methods = c("Quantiseq", "CBSX", "DWLS"), file_name = "Test") 
+deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", signatures_select = c("BPRNACan", "LM22"), file_name = "Tutorial")
 deconv = compute.deconvolution(raw.counts, normalized = T, credentials.mail = "xxxx", credentials.token = "xxxxxx", sc_deconv = T, sc_matrix = sc.object, cell_label = cell_labels, sample_label = bath_ids, name_sc_signature = "Signature_test", file_name = "Test")
 ```
 
@@ -112,7 +112,7 @@ already included in `compute.deconvolution` when setting
 
 ``` r
 
-deconv_sc = compute_sc_deconvolution_methods(raw_counts, sc_object, sc_metadata, cell_annotations, samples_ids, name_object, normalized = T, n_cores = 4, cbsx_name = "XXX", cbsx_token = "XXX")
+deconv_sc = compute_sc_deconvolution_methods(raw_counts, normalized = T, sc_object = sc_object, sc_metadata = sc_metadata, cell_annotations = cell_annotations, samples_ids = samples_ids, name_object = name_object, n_cores = 4)
 ```
 
 ## Shiny app

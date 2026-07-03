@@ -39,9 +39,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a1_deconvolution.html">Deconvolution with default methods</a></li>
-    <li><a class="dropdown-item" href="../articles/a2_single_cell.html">Single-cell deconvolution</a></li>
-    <li><a class="dropdown-item" href="../articles/a3_benchmark.html">Pseudo-bulk profiles and benchmarking</a></li>
-    <li><a class="dropdown-item" href="../articles/a4_subgroups.html">Cell type subgroup analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/a2_subgroups.html">Cell type subgroup analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/a3_single_cell.html">Single-cell deconvolution</a></li>
+    <li><a class="dropdown-item" href="../articles/a4_benchmark.html">Pseudo-bulk profiles and benchmarking</a></li>
     <li><a class="dropdown-item" href="../articles/a5_machine_learning.html">Machine learning workflows</a></li>
   </ul>
 </li>
@@ -100,14 +100,16 @@ method-signature-cell type.</p>
 <span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
-<p>To exclude specific methods or signatures, use the methods or
-signatures_exclude arguments:</p>
+<p>To run only specific signatures, use the
+<code>signatures_select</code> argument. If <code>NULL</code> (default),
+all available signatures (package + custom from
+<code>Results/custom_signatures/</code>) are used:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>, </span>
-<span>                               methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>, </span>
+<code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span>raw.counts <span class="op">=</span> <span class="va">bulk</span>,</span>
+<span>                               methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quantiseq"</span>, <span class="st">"DeconRNASeq"</span><span class="op">)</span>,</span>
 <span>                               normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                               signatures_exclude <span class="op">=</span> <span class="st">"BPRNACan"</span>, </span>
-<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                               signatures_select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BPRNACan"</span>, <span class="st">"LM22"</span><span class="op">)</span>,</span>
+<span>                               return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                               file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
 <p>To speed up computation, <code>multideconv</code> supports
 parallelization. Set <code>doParallel = TRUE</code> and specify the

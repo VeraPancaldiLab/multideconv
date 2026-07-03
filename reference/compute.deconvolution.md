@@ -2,11 +2,10 @@
 
 The function calculates cell abundance based on cell type signatures
 using different methods and signatures. Methods available are Quantiseq,
-MCP, XCell, CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided
-signatures included signatures based on bulk and methylation data (7
-methods and 10 signature in total). Signatures are present in the
-src/signatures directory, user can add its own signatures by adding the
-.txt files in this same folder. Second generation methods to perform
+CIBERSORTx, EpiDISH, DWLS and DeconRNASeq. Provided signatures included
+signatures based on bulk and methylation data. Signatures are present in
+the src/signatures directory, user can add its own signatures by adding
+the .txt files in this same folder. Second generation methods to perform
 deconvolution based on single cell data are also available if scRNAseq
 object is provided.
 
@@ -16,7 +15,7 @@ object is provided.
 compute.deconvolution(
   raw.counts,
   methods = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
-  signatures_exclude = NULL,
+  signatures_select = NULL,
   normalized = TRUE,
   doParallel = FALSE,
   workers = NULL,
@@ -48,12 +47,13 @@ compute.deconvolution(
 - methods:
 
   A character vector with the deconvolution methods to run. Default are
-  "Quantiseq", "MCP", "xCell", "CBSX", "Epidish", "DeconRNASeq", "DWLS"
+  "Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"
 
-- signatures_exclude:
+- signatures_select:
 
-  A character vector with the signatures to exclude from the
-  src/signatures folder.
+  A character vector with the signature names to run. If NULL (default),
+  all available signatures are used (package signatures + custom
+  signatures from Results/custom_signatures/).
 
 - normalized:
 

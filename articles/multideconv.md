@@ -32,12 +32,12 @@ navigation bar:
 
 - **Deconvolution with default methods** — run first-generation
   deconvolution and access built-in signatures
+- **Cell type subgroup analysis** — derive cell-type subgroups and build
+  a deconvolution dictionary
 - **Single-cell deconvolution** — construct metacells and apply
   second-generation methods
 - **Pseudo-bulk profiles and benchmarking** — create pseudo-bulk data,
   generate custom signatures, and benchmark performance
-- **Cell type subgroup analysis** — derive cell-type subgroups and build
-  a deconvolution dictionary
 - **Machine learning workflows** — use subgroup features in
   cross-validated ML models
 

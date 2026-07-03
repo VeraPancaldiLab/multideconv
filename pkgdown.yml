@@ -3,12 +3,12 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   a1_deconvolution: a1_deconvolution.html
-  a2_single_cell: a2_single_cell.html
-  a3_benchmark: a3_benchmark.html
-  a4_subgroups: a4_subgroups.html
+  a2_subgroups: a2_subgroups.html
+  a3_single_cell: a3_single_cell.html
+  a4_benchmark: a4_benchmark.html
   a5_machine_learning: a5_machine_learning.html
   multideconv: multideconv.html
-last_built: 2026-06-13T01:54Z
+last_built: 2026-07-03T14:43Z
 urls:
   reference: https://verapancaldilab.github.io/multideconv/reference
   article: https://verapancaldilab.github.io/multideconv/articles
