@@ -73,12 +73,12 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install from GitHub (requires authentication for private deps)</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"VeraPancaldiLab/multideconv"</span><span class="op">)</span></span></code></pre></div>
-<p>Several dependencies come from GitHub remotes (omnideconv, immunedeconv, DWLS, BayesPrism, MOMF, hdWGCNA, MCPcounter, bisque) — see <code>DESCRIPTION</code> for exact remotes.</p>
+<p>Several dependencies come from GitHub remotes (omnideconv, immunedeconv, DWLS, BayesPrism, MOMF, bisque) — see <code>DESCRIPTION</code> for exact remotes. <code>hdWGCNA</code> is an optional runtime dependency (install separately with <code>pak::pkg_install("smorabit/hdWGCNA")</code>) needed only by <code><a href="reference/create_metacells.html">create_metacells()</a></code> and <code><a href="reference/create_sc_signatures.html">create_sc_signatures()</a></code>; it is not a package <code>Remote</code> and is checked lazily via <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code>.</p>
 <p>CIBERSORTx requires separate credentials and Docker.</p>
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
-<p>All exported functions live in a single file: <code>R/cell_deconvolution.R</code> (~3,200 lines). This is intentional — the package exposes 15 functions but keeps implementation together.</p>
+<p>All exported functions live in a single file: <code>R/cell_deconvolution.R</code> (~3,000 lines). This is intentional — the package exposes 15 functions but keeps implementation together.</p>
 <div class="section level3">
 <h3 id="core-pipeline-flow">Core Pipeline Flow<a class="anchor" aria-label="anchor" href="#core-pipeline-flow"></a></h3>
 <ol style="list-style-type: decimal"><li><p><strong><code><a href="reference/compute.deconvolution.html">compute.deconvolution()</a></code></strong> — Runs multiple deconvolution methods on bulk RNA-seq counts. Iterates over methods in parallel (<code>doParallel</code>/<code>foreach</code>). Outputs per-method proportion matrices saved to <code>Results/</code>.</p></li>
@@ -87,14 +87,14 @@
 <ul><li>Removes zero-heavy features (&gt;90% zeros) and low-variance features</li>
 <li>Removes highly correlated features (&gt;0.9 Pearson correlation)</li>
 <li>Standardizes cell type nomenclature across methods</li>
-<li>Identifies cell subgroups via WGCNA (<code>hdWGCNA</code>)</li>
+<li>Identifies cell subgroups via iterative pairwise correlation clustering (<code>compute_subgroups</code>/<code>corr_subgroups</code>) — this is homegrown, not WGCNA/hdWGCNA</li>
 </ul></li>
-<li><p><strong>Single-cell workflow</strong> — <code><a href="reference/create_metacells.html">create_metacells()</a></code> → <code><a href="reference/create_sc_pseudobulk.html">create_sc_pseudobulk()</a></code> / <code><a href="reference/create_sc_signatures.html">create_sc_signatures()</a></code> → <code><a href="reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods()</a></code>. Constructs metacells using KNN to aggregate sparse single-cell data before running second-generation methods (DWLS, BayesPrism, MOMF via <code>omnideconv</code>).</p></li>
+<li><p><strong>Single-cell workflow</strong> — <code><a href="reference/create_metacells.html">create_metacells()</a></code> → <code><a href="reference/create_sc_pseudobulk.html">create_sc_pseudobulk()</a></code> / <code><a href="reference/create_sc_signatures.html">create_sc_signatures()</a></code> → <code><a href="reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods()</a></code>. Constructs metacells using KNN to aggregate sparse single-cell data before running second-generation methods (DWLS, BayesPrism, MOMF via <code>omnideconv</code>). <code><a href="reference/create_metacells.html">create_metacells()</a></code> and <code><a href="reference/create_sc_signatures.html">create_sc_signatures()</a></code> optionally call into <code>hdWGCNA</code> (must be installed separately, see Installation).</p></li>
 </ol></div>
 <div class="section level3">
 <h3 id="method-categories">Method Categories<a class="anchor" aria-label="anchor" href="#method-categories"></a></h3>
 <ul><li>
-<strong>First-generation</strong> (via <code>immunedeconv</code>): Quantiseq, MCP-counter, xCell, EPIC, DeconRNASeq, CIBERSORT, EpiDISH</li>
+<strong>First-generation</strong> (via <code>immunedeconv</code>/custom implementations): Quantiseq, CIBERSORTx (CBSX), EpiDISH, DeconRNASeq. MCP-counter and xCell were removed from the default method set (their helper functions are kept commented out in <code>R/cell_deconvolution.R</code> for reference).</li>
 <li>
 <strong>Second-generation</strong> (via <code>omnideconv</code>): DWLS, BayesPrism, MOMF — require single-cell reference signatures</li>
 </ul></div>
@@ -107,17 +107,18 @@
 <li>
 <code>R/zzz.R</code> — <code>.onLoad()</code> creates <code>Results/</code> and <code>Results/custom_signatures/</code> directories on attach</li>
 <li>
-<code>inst/shiny/app.R</code> — Shiny app (4 tabs: Welcome, Deconvolution, Analysis, Benchmark)</li>
+<code>inst/shiny/app.R</code> — Shiny app (5 tabs: Welcome, Deconvolution, Analysis, Dictionary &amp; Pathways, Benchmark)</li>
 <li>
 <code>inst/signatures/</code> — Bundled signature matrices</li>
 <li>
 <code>data/</code> — 10 sample datasets (bulk counts, single-cell metadata, ground truth, deconvolution results)</li>
 <li>
-<code>vignettes/</code> — 5 articles covering the full workflow: deconvolution → single-cell → benchmark → subgroups → ML</li>
+<code>vignettes/</code> — main <code>multideconv.Rmd</code> plus 5 articles: <code>a1_deconvolution</code> → <code>a2_subgroups</code> → <code>a3_single_cell</code> → <code>a4_benchmark</code> → <code>a5_machine_learning</code>
+</li>
 </ul></div>
 <div class="section level3">
 <h3 id="cell-type-nomenclature">Cell Type Nomenclature<a class="anchor" aria-label="anchor" href="#cell-type-nomenclature"></a></h3>
-<p>The package enforces standardized cell type names via <code><a href="reference/standardize_celltype_colnames.html">standardize_celltype_colnames()</a></code>. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README.</p>
+<p>The package enforces standardized cell type names via <code><a href="reference/standardize_celltype_colnames.html">standardize_celltype_colnames()</a></code>. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README. <code>get_cell_type_nomenclature()</code> is the single source of truth for the vocabulary itself (the canonical cell type vector, e.g. used to parse cell type names out of deconvolution column names) — other code, including sister packages like CellTFusion, should call it rather than hardcoding a copy of the list.</p>
 </div>
 <div class="section level3">
 <h3 id="custom-signatures">Custom Signatures<a class="anchor" aria-label="anchor" href="#custom-signatures"></a></h3>
@@ -143,7 +144,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

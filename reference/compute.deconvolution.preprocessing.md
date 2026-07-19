@@ -67,7 +67,7 @@ deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 #> Eosinophils
 #> Plasma
 #> Myocytes
-#> Fibroblast
+#> Fibroblasts
 #> Mast.cells
 #> Mast.activated.cells
 #> Mast.resting.cells

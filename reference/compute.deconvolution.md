@@ -253,7 +253,7 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Eosinophils
 #> Plasma
 #> Myocytes
-#> Fibroblast
+#> Fibroblasts
 #> Mast.cells
 #> Mast.activated.cells
 #> Mast.resting.cells
