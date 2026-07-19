@@ -2,6 +2,27 @@
 
 utils::globalVariables(c("i", ".", "samples_ids", "multisession", ".data", "Patient", "var", "id", "P", "sig_p", "r", "y", "p", "average", "Cells", "variable", "value", "pval_value", "gene", "weight", "statistic", "condition", "score", "padj", "NES", "pathway", "size", "sig", "source"))
 
+#' Canonical cell type nomenclature used by multideconv
+#'
+#' Returns the vector of cell type names recognized by multideconv's deconvolution
+#' output column naming (e.g. "B.cells", "CD4.regulatory", "Plasma"). This is the
+#' single source of truth for the package's cell type vocabulary; other packages
+#' (e.g. CellTFusion) that need to parse cell type names out of deconvolution
+#' column names should call this function rather than hardcoding their own copy,
+#' so they stay in sync when the vocabulary changes here.
+#'
+#' @param cells_extra Optional character vector of additional cell type names to append
+#'   (e.g. names from a custom signature not included by default).
+#'
+#' @returns A character vector of cell type names.
+#' @export
+get_cell_type_nomenclature <- function(cells_extra = NULL) {
+  cell_types <- c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
+                  "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory", "T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
+                  "Eosinophils", "Plasma", "Myocytes", "Fibroblasts", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
+  c(cell_types, cells_extra)
+}
+
 #' Standardize Cell Type Column Names
 #'
 #' This function standardizes the column names of a matrix containing cell type data.
@@ -383,9 +404,7 @@ compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
 
   cat("Checking consistency in deconvolution cell fractions across patients...............................................................\n\n")
 
-  cell_types = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
-                 "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
-                 "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
+  cell_types = get_cell_type_nomenclature()
 
   if(is.null(cells_extra)){
     cat("No extra cell types provided. Only the following cell types will be considered:\n", paste0(cell_types, collapse = "\n"), "\n\n")
@@ -2091,11 +2110,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     )
   }
 
-  cell_types = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
-                 "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
-                 "Eosinophils", "Plasma", "Myocytes", "Fibroblast", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
-
-  cell_types = c(cell_types, cells_extra)
+  cell_types = get_cell_type_nomenclature(cells_extra = cells_extra)
 
   pattern <- paste0("(_", gsub("\\.", "\\\\.", cell_types), ")$", collapse = "|")
   deconvolution_combinations <- unique(gsub(pattern, "", colnames(deconvolution)))

@@ -35,13 +35,13 @@ shiny::runApp('inst/shiny', host='127.0.0.1', port=3838)
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
 
-Several dependencies come from GitHub remotes (omnideconv, immunedeconv, DWLS, BayesPrism, MOMF, hdWGCNA, MCPcounter, bisque) — see `DESCRIPTION` for exact remotes.
+Several dependencies come from GitHub remotes (omnideconv, immunedeconv, DWLS, BayesPrism, MOMF, bisque) — see `DESCRIPTION` for exact remotes. `hdWGCNA` is an optional runtime dependency (install separately with `pak::pkg_install("smorabit/hdWGCNA")`) needed only by `create_metacells()` and `create_sc_signatures()`; it is not a package `Remote` and is checked lazily via `requireNamespace()`.
 
 CIBERSORTx requires separate credentials and Docker.
 
 ## Architecture
 
-All exported functions live in a single file: `R/cell_deconvolution.R` (~3,200 lines). This is intentional — the package exposes 15 functions but keeps implementation together.
+All exported functions live in a single file: `R/cell_deconvolution.R` (~3,000 lines). This is intentional — the package exposes 15 functions but keeps implementation together.
 
 ### Core Pipeline Flow
 
@@ -51,13 +51,13 @@ All exported functions live in a single file: `R/cell_deconvolution.R` (~3,200 l
    - Removes zero-heavy features (>90% zeros) and low-variance features
    - Removes highly correlated features (>0.9 Pearson correlation)
    - Standardizes cell type nomenclature across methods
-   - Identifies cell subgroups via WGCNA (`hdWGCNA`)
+   - Identifies cell subgroups via iterative pairwise correlation clustering (`compute_subgroups`/`corr_subgroups`) — this is homegrown, not WGCNA/hdWGCNA
 
-3. **Single-cell workflow** — `create_metacells()` → `create_sc_pseudobulk()` / `create_sc_signatures()` → `compute_sc_deconvolution_methods()`. Constructs metacells using KNN to aggregate sparse single-cell data before running second-generation methods (DWLS, BayesPrism, MOMF via `omnideconv`).
+3. **Single-cell workflow** — `create_metacells()` → `create_sc_pseudobulk()` / `create_sc_signatures()` → `compute_sc_deconvolution_methods()`. Constructs metacells using KNN to aggregate sparse single-cell data before running second-generation methods (DWLS, BayesPrism, MOMF via `omnideconv`). `create_metacells()` and `create_sc_signatures()` optionally call into `hdWGCNA` (must be installed separately, see Installation).
 
 ### Method Categories
 
-- **First-generation** (via `immunedeconv`): Quantiseq, MCP-counter, xCell, EPIC, DeconRNASeq, CIBERSORT, EpiDISH
+- **First-generation** (via `immunedeconv`/custom implementations): Quantiseq, CIBERSORTx (CBSX), EpiDISH, DeconRNASeq. MCP-counter and xCell were removed from the default method set (their helper functions are kept commented out in `R/cell_deconvolution.R` for reference).
 - **Second-generation** (via `omnideconv`): DWLS, BayesPrism, MOMF — require single-cell reference signatures
 
 ### File Layout
@@ -65,14 +65,14 @@ All exported functions live in a single file: `R/cell_deconvolution.R` (~3,200 l
 - `R/cell_deconvolution.R` — All function implementations
 - `R/data.R` — Documentation for built-in sample datasets
 - `R/zzz.R` — `.onLoad()` creates `Results/` and `Results/custom_signatures/` directories on attach
-- `inst/shiny/app.R` — Shiny app (4 tabs: Welcome, Deconvolution, Analysis, Benchmark)
+- `inst/shiny/app.R` — Shiny app (5 tabs: Welcome, Deconvolution, Analysis, Dictionary & Pathways, Benchmark)
 - `inst/signatures/` — Bundled signature matrices
 - `data/` — 10 sample datasets (bulk counts, single-cell metadata, ground truth, deconvolution results)
-- `vignettes/` — 5 articles covering the full workflow: deconvolution → single-cell → benchmark → subgroups → ML
+- `vignettes/` — main `multideconv.Rmd` plus 5 articles: `a1_deconvolution` → `a2_subgroups` → `a3_single_cell` → `a4_benchmark` → `a5_machine_learning`
 
 ### Cell Type Nomenclature
 
-The package enforces standardized cell type names via `standardize_celltype_colnames()`. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README.
+The package enforces standardized cell type names via `standardize_celltype_colnames()`. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README. `get_cell_type_nomenclature()` is the single source of truth for the vocabulary itself (the canonical cell type vector, e.g. used to parse cell type names out of deconvolution column names) — other code, including sister packages like CellTFusion, should call it rather than hardcoding a copy of the list.
 
 ### Custom Signatures
 
