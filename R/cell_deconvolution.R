@@ -582,7 +582,8 @@ compute.cell.types = function(data, cells_extra = NULL){
   if(is.null(cells_extra) == F){
     extra = list()
     for (i in 1:length(cells_extra)){
-      extra[[i]] = grep(cells_extra[i], colnames(data))
+      pat = paste0("_", gsub("\\.", "\\\\.", cells_extra[i]), "$")
+      extra[[i]] = grep(pat, colnames(data))
       extra[[i]] = data[, extra[[i]], drop = FALSE]
       names(extra)[i] = cells_extra[[i]]
     }
@@ -1335,6 +1336,16 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 
   if (!requireNamespace("pcaMethods", quietly = TRUE)) {
     stop("Package 'pcaMethods' is required for computeDeconRNASeq()")
+  }
+
+  # DeconRNASeq lists pcaMethods under Depends (not Imports), so its own internal code
+  # calls prep() unqualified, expecting library(DeconRNASeq) to have auto-attached
+  # pcaMethods to the search path. Loading DeconRNASeq via requireNamespace()/
+  # asNamespace() below (deliberately, to avoid attaching DeconRNASeq itself) skips that
+  # auto-attach, so prep() must be attached explicitly here or DeconRNASeq::DeconRNASeq()
+  # fails with "could not find function \"prep\"" partway through.
+  if (!"package:pcaMethods" %in% search()) {
+    attachNamespace("pcaMethods")
   }
 
   ns   <- asNamespace(.pkg)
