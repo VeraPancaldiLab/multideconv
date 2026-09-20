@@ -1349,7 +1349,17 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
   }
 
   ns   <- asNamespace(.pkg)
-  decon <- ns$DeconRNASeq(TPM_matrix, data.frame(signature_file))
+  decon <- tryCatch(
+    ns$DeconRNASeq(TPM_matrix, data.frame(signature_file)),
+    error = function(e) {
+      if (grepl('could not find function "prep"', conditionMessage(e), fixed = TRUE)) {
+        message("\nDeconRNASeq failed with \"could not find function \\\"prep\\\"\". ",
+                "This happens when pcaMethods hasn't been attached to the search path in your R session. ",
+                "Fix: add library(DeconRNASeq) at the top of your script (before calling compute.deconvolution()) and re-run.\n")
+      }
+      stop(e)
+    }
+  )
   deconRNAseq = decon$out.all
   rownames(deconRNAseq) = colnames(TPM_matrix)
 
