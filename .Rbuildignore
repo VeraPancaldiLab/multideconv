@@ -6,3 +6,13 @@
 ^docs$
 ^pkgdown$
 ^\.github$
+^\.vscode$
+^\.claude$
+^CLAUDE\.md$
+^Results$
+^Rplots\.pdf$
+^launch_app\.R$
+^pypath_log$
+^\.Rhistory$
+^inst/shiny/app\.R\.bak$
+omnipathr-log

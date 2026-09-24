@@ -1,5 +1,5 @@
 Package: multideconv
-Title: Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods
+Title: Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods
 Version: 0.0.1
 Authors@R: c( 
     person("Marcelo", "Hurtado", , "marcelo.hurtado@inserm.fr", role = c("aut", "cre"),
@@ -52,6 +52,7 @@ Remotes:
     cozygene/bisque
 Suggests:
     testthat (>= 3.0.0),
+    withr,
     WGCNA,
     UCell,
     Seurat (>= 4.4.0),

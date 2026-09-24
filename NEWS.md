@@ -15,4 +15,4 @@ This is the first release version of multideconv! 🎉
     - `compute_sc_deconvolution_methods()`
     - `compute.benchmark()`
 - New vignettes:
-    - [Getting started](https://mhurtado13.github.io/multideconv/articles/multideconv.html)
+    - [Getting started](https://verapancaldilab.github.io/multideconv/articles/multideconv.html)

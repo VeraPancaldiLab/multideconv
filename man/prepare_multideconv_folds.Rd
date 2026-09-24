@@ -54,17 +54,18 @@ prepare_multideconv_folds(
 \item{batch}{Optional batch covariate passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 }
 \value{
-A list of two elements:
 \itemize{
-\item \code{processed_folds}: A list of folds, where each fold contains:
+\item When \code{bestune} is \code{NULL} (fold mode): invisibly, a named list of processed folds, each also saved to
+\verb{Results/fold_<fold name>.rds}. Each fold contains:
 \itemize{
 \item \code{train_data}: Processed training data with cell group features and \code{target} column.
 \item \code{test_data}: Test data projected into the learned cell group feature space.
-\item \code{obs_test}: True class labels for the test set.
+\item \code{obs_test}: True class labels (or survival time/event) for the test set.
 \item \code{rowIndex}: Row indices corresponding to the test set.
-\item \code{fold_name}: Optional fold name if provided in the \code{folds} list.
+\item \code{fold_name}: Fold name if provided in the \code{folds} list.
 }
-\item \code{train_cell_data_final}: Final cell group feature matrix for the full dataset, including the \code{target} column.
+\item When \code{bestune} is provided: a list with the processed feature matrix for the full dataset (including
+the \code{target} column), the full \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}} output, and \code{bestune}.
 }
 }
 \description{

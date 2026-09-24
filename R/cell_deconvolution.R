@@ -15,6 +15,9 @@ utils::globalVariables(c("i", ".", "samples_ids", "multisession", ".data", "Pati
 #'   (e.g. names from a custom signature not included by default).
 #'
 #' @returns A character vector of cell type names.
+#' @examples
+#' get_cell_type_nomenclature()
+#' get_cell_type_nomenclature(cells_extra = "Myeloid.cells")
 #' @export
 get_cell_type_nomenclature <- function(cells_extra = NULL) {
   cell_types <- c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
@@ -418,9 +421,9 @@ compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
 
   error = F
   for(i in combinations){
-    idx <- grep(paste0(i, "_"), colnames(deconv_standarized))
+    idx <- which(startsWith(colnames(deconv_standarized), paste0(i, "_")))
     if(length(idx)>0){
-      mat = deconv_standarized[,idx] #A matrix of samples as rows and features only with combination[i] as columns
+      mat = deconv_standarized[,idx, drop = FALSE] #A matrix of samples as rows and features only with combination[i] as columns
       sums = round(rowSums(mat), 2)
       if(all(sums == 1) == F){
         cat(paste("\n\nTotal sum across samples of combination", i, "is not 1! Remember these are proportions and the total should be 1\n"))
@@ -631,14 +634,17 @@ removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method 
     corr_matrix <- matrix(NA, ncol=ncol(data), nrow=ncol(data))
     colnames(corr_matrix) <- colnames(data)
     rownames(corr_matrix) <- colnames(data)
+    diag(corr_matrix) <- 1 # A feature always belongs to its own high-correlation group
     for(i in 1:(ncol(data)-1)){
       for(j in (i+1):ncol(data)){
-        pc <- ppcor::pcor.test(data[[i]], data[[j]], batch)
+        pc <- ppcor::pcor.test(data[, i], data[, j], batch, method = corr_method)
         corr_matrix[i,j] <- pc$estimate
         corr_matrix[j,i] <- pc$estimate
       }
     }
   }
+  # Constant features give NA correlations; keep them as their own group
+  diag(corr_matrix)[is.na(diag(corr_matrix))] <- 1
   # Find highly correlated features
   contador = 1
   while(nrow(corr_matrix)>0){
@@ -832,17 +838,7 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
       }
     }
 
-    if(is.null(data_sub)==FALSE){
-      data = cbind(data, data_sub)
-    }
-
-    idx = which(duplicated(t(data)))
-    if(length(idx)>0){
-      names = colnames(data)[idx]
-      data = data[,-idx, drop = F]
-      colnames(data) = names
-    }
-    #}
+    data = data[, !duplicated(t(data)), drop = FALSE] # Drop features with identical values
 
     return(list(data, cell_subgroups, cell_groups_discard))
   }
@@ -870,7 +866,7 @@ corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
                           r = numeric(0), p = numeric(0))
     for(i in 1:(length(vec)-1)){
       for(j in (i+1):length(vec)){
-        pc <- ppcor::pcor.test(data[[vec[i]]], data[[vec[j]]], batch, method = corr_type)
+        pc <- ppcor::pcor.test(data[, vec[i]], data[, vec[j]], batch, method = corr_type)
         corr_df <- rbind(corr_df, data.frame(measure1 = vec[i],
                                              measure2 = vec[j],
                                              r = pc$estimate,
@@ -970,7 +966,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 
   deconvolution.mat = deconvolution.mat[, colSums(deconvolution.mat == 0, na.rm=TRUE) < round(zero_thr*nrow(deconvolution.mat)) , drop=FALSE]
   diff_colnames <- setdiff(colnames(deconvolution), colnames(deconvolution.mat))
-  zero_features <- deconvolution[, diff_colnames]
+  zero_features <- deconvolution[, diff_colnames, drop = FALSE]
 
   #Remove low_variance features
   if(verbose){
@@ -1074,6 +1070,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 
   #Save data to export
   if(return == TRUE){
+    ensure_results_dir()
     data.output = data.groups
     utils::write.csv(dt, paste0('Results/Deconvolution_after_subgrouping_', file_name,'.csv'))
     utils::write.csv(data.output, paste0('Results/Cell_subgroups_', file_name,'.csv'), row.names = F)
@@ -1393,8 +1390,8 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 #'
 compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c("CBSX", "Epidish", "DeconRNASeq", "DWLS", "MOMF"), signatures_select = NULL, cbsx.name, cbsx.token, doParallel = FALSE, workers = NULL, sc_obj = NULL){
 
-  cache_dir <- "Results/"
-  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+  created_results_dir <- !dir.exists("Results")
+  cache_dir <- ensure_results_dir()
   cache_file <- function(method, sig_name) file.path(cache_dir, paste0("deconv_", method, "_", sig_name, ".rds"))
   load_cache <- function(method, sig_name) {
     f <- cache_file(method, sig_name)
@@ -1440,11 +1437,20 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
 
     if("CBSX" %in% algos){
       if(is.null(cbsx.name)==T || is.null(cbsx.token)==T){
-        cat("\nYou select to run CBSX but no credentials were found")
-        cat("\nPlease set your credentials in the function for running CIBERSORTx")
-        stop()
+        warning("CBSX was selected but no CIBERSORTx credentials were provided (credentials.mail/credentials.token). Skipping CBSX.", call. = FALSE)
+        algos = setdiff(algos, "CBSX")
+        if(length(algos) == 0){
+          return(NULL)
+        }
       }
     }
+
+    if(doParallel == T && is.null(workers)){
+      workers = max(1, parallel::detectCores() - 1)
+    }
+
+    # Per-signature results; reset for every signature and never looked up outside this function
+    deconrnaseq = epidish_res = cbsx = dwls = momf = NULL
 
     for (i in 1:length(db)) {
 
@@ -1493,38 +1499,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
             cat("\nRunning MOMF...............................................................\n\n")
             momf <- computeMOMF(TPM_matrix, sc_obj, signature, signature_name)
             save_cache("MOMF", signature_name, momf)}}}
-      combined_data <- NULL
-      if (exists("deconrnaseq")) {
-        combined_data <- deconrnaseq
-      }
-      if (exists("epidish_res")) {
-        if (is.null(combined_data)) {
-          combined_data <- epidish_res
-        } else {
-          combined_data <- cbind(combined_data, epidish_res)
-        }
-      }
-      if (exists("cbsx")) {
-        if (is.null(combined_data)) {
-          combined_data <- cbsx
-        } else {
-          combined_data <- cbind(combined_data, cbsx)
-        }
-      }
-      if (exists("dwls")) {
-        if (is.null(combined_data)) {
-          combined_data <- dwls
-        } else {
-          combined_data <- cbind(combined_data, dwls)
-        }
-      }
-      if (exists("momf")) {
-        if (is.null(combined_data)) {
-          combined_data <- momf
-        } else {
-          combined_data <- cbind(combined_data, momf)
-        }
-      }
+      combined_data <- do.call(cbind, Filter(Negate(is.null), list(deconrnaseq, epidish_res, cbsx, dwls, momf)))
       deconvolution[[i]] <- combined_data
     }
 
@@ -1541,6 +1516,10 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
       }
     }
     message("\nDeconvolution cache files removed.\n")
+    # Don't leave an empty Results/ behind if it only existed for the cache
+    if (created_results_dir && length(list.files("Results", all.files = TRUE, no.. = TRUE)) == 0) {
+      unlink("Results", recursive = TRUE)
+    }
 
     if("DWLS"%in%algos && doParallel == T){
       cat("\nRunning DWLS in parallel using", workers,"workers...............................................................\n\n")
@@ -1639,6 +1618,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
     cat("* ", method, "\n", sep = "")
   }
 
+  quantiseq = NULL
   if("Quantiseq" %in% methods){
     cat("\nRunning Quantiseq...............................................................\n")
     quantiseq = computeQuantiseq(TPM_matrix)}
@@ -1667,10 +1647,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
 
   deconv_sig = compute_methods_variable_signature(TPM_matrix, signatures = path_signatures, algos = methods, signatures_select = signatures_select, cbsx.name = credentials.mail, cbsx.token = credentials.token, doParallel, workers, sc_matrix)
 
-  deconv_default <- NULL
-  if (exists("quantiseq")) {
-    deconv_default <- quantiseq
-  }
+  deconv_default <- quantiseq
 
   if(is.null(deconv_sig)){
     all_deconvolution_table = deconv_default
@@ -1692,6 +1669,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
   deconvolution = compute.deconvolution.preprocessing(all_deconvolution_table, cells_extra = cells_extra)
 
   if(return == TRUE){
+    ensure_results_dir()
     utils::write.csv(deconvolution, paste0("Results/Deconvolution_", file_name, ".csv"))
   }
 
@@ -1884,6 +1862,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
   }
 
   if(return == TRUE){
+    ensure_results_dir()
     utils::write.csv(results, paste0("Results/Deconvolution_sc_", file_name, ".csv"))
   }
 
@@ -1942,6 +1921,8 @@ create_metacells = function(sc_object, labels_column, samples_column, exclude_ce
     stop("Package 'hdWGCNA' is required for create_metacells(). ",
          "Install with: pak::pkg_install('smorabit/hdWGCNA')")
   .hd <- asNamespace(.pkg)
+  if (!requireNamespace("Seurat", quietly = TRUE))
+    stop("Package 'Seurat' is required for create_metacells().")
 
   message("\nCreating metacells...............................................................\n")
   ## Setup sc object
@@ -2031,10 +2012,10 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
   deconv_subgroups = deconv_res[["Deconvolution subgroups composition"]]
   iterations = find.maximum.iteration(deconv_subgroups)
 
-  if (is.infinite(iterations) && iterations < 0) {
+  if (!is.finite(iterations)) {
     warning("No subgroups to replicate")
-    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])] # Filter for features not found in the deconv_res (low variance, zeros, etc)
-    return(data.frame(deconvolution_test))
+    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]]), drop = FALSE] # Filter for features not found in the deconv_res (low variance, zeros, etc)
+    return(data.frame(deconvolution_test, check.names = FALSE))
   }
 
   # Create same groups composition
@@ -2042,12 +2023,14 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
     base_groups = list()
     for (i in 1:length(deconv_subgroups)){
       if(length(deconv_subgroups[[i]])!=0){
-        idy = grep(paste0("Iteration.",m), names(deconv_subgroups[[i]]))
+        idy = grep(paste0("\\.Iteration\\.", m, "$"), names(deconv_subgroups[[i]]))
         if(length(idy)!=0){
           base_groups = append(base_groups, deconv_subgroups[[i]][idy])
         }
       }
     }
+
+    if(length(base_groups) == 0) next
 
     deconv_subgroups_values = c()
     for (i in 1:length(base_groups)) {
@@ -2066,9 +2049,9 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   }
 
-  deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]])]
+  deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]]), drop = FALSE]
 
-  return(data.frame(deconvolution_test))
+  return(data.frame(deconvolution_test, check.names = FALSE))
 }
 
 #' Find maximum iteration from subgroups
@@ -2089,6 +2072,8 @@ find.maximum.iteration = function(cells.groups){
       max_iteration = c(max_iteration, local_max)
     }
   }
+
+  if(length(max_iteration) == 0) return(-Inf) # No subgroups at all
 
   return(max(max_iteration))
 }
@@ -2119,7 +2104,7 @@ find.maximum.iteration = function(cells.groups){
 #'
 compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, corr_type = "spearman", scatter = TRUE, plot = FALSE, pval = 0.05, file_name = NULL, width = 16, height = 8){
 
-  groundtruth = groundtruth[rownames(deconvolution),] #Order samples to match both features
+  groundtruth = groundtruth[rownames(deconvolution), , drop = FALSE] #Order samples to match both features
 
   # Subgroup columns are named CellType_SubgroupID (e.g. B.cells_Subgroup.1.Iteration.1).
   # Swap to SubgroupID_CellType so the standard _CellType$ matching logic works.
@@ -2176,7 +2161,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
       }
       if (length(rows_list) == 0) next
       plot_df <- do.call(rbind, rows_list)
-      plot_df <- plot_df[complete.cases(plot_df), ]
+      plot_df <- plot_df[stats::complete.cases(plot_df), ]
       if (nrow(plot_df) < 3) next
 
       cor_test  <- stats::cor.test(plot_df$estimate, plot_df$ground, method = corr_method)
@@ -2188,7 +2173,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
                                         paste0("p = ", formatC(p_value, format = "f", digits = 3)))))
       label <- paste0("r = ", formatC(cor_value, format = "f", digits = 2), "\n", p_label)
 
-      p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = ground, y = estimate, colour = cell_type)) +
+      p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$ground, y = .data$estimate, colour = .data$cell_type)) +
         ggplot2::geom_point(size = 2.5, alpha = 0.85) +
         ggplot2::geom_smooth(method = "lm", se = TRUE, colour = "navy", linewidth = 0.7,
                              ggplot2::aes(group = 1)) +
@@ -2224,6 +2209,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   if (scatter == TRUE) {
     scatter_list <- global_scatter(deconvolution, groundtruth, cell_clusters,
                                   deconvolution_combinations, corr_type)
+    if (length(scatter_list) > 0) ensure_results_dir()
     for (combo_name in names(scatter_list)) {
       grDevices::pdf(paste0("Results/Scatter_global_", combo_name, "_", file_name, ".pdf"),
                      width = 6, height = 5)
@@ -2268,8 +2254,8 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 
   ###Benchmarking plot
   if(length(cells_discard)>0){
-    corr_matrix = corr_matrix[-which(rownames(corr_matrix)%in%cells_discard),]
-    pval_matrix = pval_matrix[-which(rownames(pval_matrix)%in%cells_discard),]
+    corr_matrix = corr_matrix[!rownames(corr_matrix)%in%cells_discard, , drop = FALSE]
+    pval_matrix = pval_matrix[!rownames(pval_matrix)%in%cells_discard, , drop = FALSE]
   }
 
   ## remove NA columns
@@ -2287,13 +2273,13 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 
   ##Order methods
   corr_matrix = t(corr_matrix) %>%
-    data.frame() %>%
+    data.frame(check.names = FALSE) %>%
     dplyr::arrange(average) %>%
     t() %>%
-    data.frame()
+    data.frame(check.names = FALSE)
 
   corr_df <- reshape2::melt(corr_matrix)
-  pval_df = reshape2::melt(pval_matrix[,colnames(corr_matrix)]) #Take the same order as corr_matrix
+  pval_df = reshape2::melt(pval_matrix[,colnames(corr_matrix), drop = FALSE]) #Take the same order as corr_matrix
 
   corr_df = corr_df %>%
     dplyr::mutate(Cells = rep(rownames(corr_matrix), ncol(corr_matrix)),
@@ -2311,6 +2297,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     ggpubr::rotate_x_text(angle = 45) + ggplot2::theme(axis.text.x=ggtext::element_markdown()) + ggplot2::theme(axis.text.y=ggtext::element_markdown())
 
   if(plot){
+    ensure_results_dir()
     grDevices::pdf(paste0("Results/Benchmark_plot_", file_name,".pdf"), width = width, height = height)
     plot(g)
     grDevices::dev.off()
@@ -2332,6 +2319,8 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 #' @export
 #'
 create_sc_pseudobulk = function(sc_obj, cells_labels, sample_labels, normalized = TRUE, file_name){
+  if (!requireNamespace("Seurat", quietly = TRUE))
+    stop("Package 'Seurat' is required for create_sc_pseudobulk().")
 
   #Convert to SingleCell
   sc_obj@meta.data$Patient = as.factor(sc_obj@meta.data[,sample_labels])
@@ -2348,6 +2337,7 @@ create_sc_pseudobulk = function(sc_obj, cells_labels, sample_labels, normalized 
   }
 
   #Save pseudobulk matrix
+  ensure_results_dir()
   utils::write.table(pseudo_counts, file = paste0("Results/", file_name, ".csv"), quote = F, sep = "\t", row.names = T)
 
   return(pseudo_counts)
@@ -2567,18 +2557,18 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @param seed Random seed passed to [compute.deconvolution.analysis()].
 #' @param batch Optional batch covariate passed to [compute.deconvolution.analysis()].
 #'
-#' @return A list of two elements:
-#' \itemize{
-#'   \item \code{processed_folds}: A list of folds, where each fold contains:
+#' @return
+#' - When `bestune` is `NULL` (fold mode): invisibly, a named list of processed folds, each also saved to
+#'   `Results/fold_<fold name>.rds`. Each fold contains:
 #'     \itemize{
 #'       \item \code{train_data}: Processed training data with cell group features and `target` column.
 #'       \item \code{test_data}: Test data projected into the learned cell group feature space.
-#'       \item \code{obs_test}: True class labels for the test set.
+#'       \item \code{obs_test}: True class labels (or survival time/event) for the test set.
 #'       \item \code{rowIndex}: Row indices corresponding to the test set.
-#'       \item \code{fold_name}: Optional fold name if provided in the `folds` list.
+#'       \item \code{fold_name}: Fold name if provided in the `folds` list.
 #'     }
-#'   \item \code{train_cell_data_final}: Final cell group feature matrix for the full dataset, including the `target` column.
-#' }
+#' - When `bestune` is provided: a list with the processed feature matrix for the full dataset (including
+#'   the `target` column), the full [compute.deconvolution.analysis()] output, and `bestune`.
 #'
 #' @details The function runs the `compute.deconvolution.analysis()` function on each fold's training set and uses the trained projection
 #' to compute the test set representation. It also runs multideconv on the full dataset to return the complete processed training set.
@@ -2655,7 +2645,8 @@ prepare_multideconv_folds <- function(
   # -----------------------------
   # CASE 2: bestune NOT provided - compute folds
   # -----------------------------
-  if (is.null(ncores)) ncores <- parallel::detectCores() - 2
+  if (is.null(folds)) stop("Provide 'folds' (a list of training row indices) or 'bestune'.")
+  if (is.null(ncores)) ncores <- max(1, parallel::detectCores() - 2)
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
 
@@ -2693,7 +2684,7 @@ prepare_multideconv_folds <- function(
       seed = seed,
       batch = if (!is.null(batch)) batch[train_idx] else NULL,
       cells_extra = cells_extra,
-      return = FALSE,
+      return = FALSE
     )
 
     train_cell_data <- deconv_subgroups[[1]] %>%
@@ -2726,10 +2717,15 @@ prepare_multideconv_folds <- function(
   parallel::stopCluster(cl)
   unregister_dopar()
 
-  # Save each fold
+  # Save each fold (pipeML reads these back from Results/fold_*.rds)
+  ensure_results_dir()
+  fold_names <- if (is.null(names(folds))) paste0("Fold", seq_along(folds)) else names(folds)
+  names(processed_folds) <- fold_names
   for (i in seq_along(processed_folds)) {
-    saveRDS(processed_folds[[i]], file = file.path("Results", paste0("fold_", names(folds)[i], ".rds")))
+    saveRDS(processed_folds[[i]], file = file.path("Results", paste0("fold_", fold_names[i], ".rds")))
   }
+
+  invisible(processed_folds)
 }
 
 # -- Deprecated subgroup characterisation helpers --
@@ -3044,6 +3040,7 @@ compute.subgroup.pathways <- function(subgroups,
     print(p)
 
     safe_name <- gsub("[^A-Za-z0-9_]", "_", ct)
+    ensure_results_dir()
     ggsave(
       filename = file.path("Results", paste0(file_name, "_", safe_name, ".pdf")),
       plot     = p,
