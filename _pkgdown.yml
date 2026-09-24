@@ -58,21 +58,26 @@ reference:
   - create_metacells
   - create_sc_pseudobulk
   - create_sc_signatures
-- title: Utils
+- title: Helpers
+  desc: >
+    Exported helper functions (cell type nomenclature and single-method deconvolution)
+  contents:
+  - get_cell_type_nomenclature
+  - standardize_celltype_colnames
+  - computeCBSX
+  - computeDWLS
+  - computeMOMF
+- title: Internal
   desc: >
     Internal use (not exported functions)
   contents:
-  - standardize_celltype_colnames
   - compute.deconvolution.preprocessing
   - compute_methods_variable_signature
   - compute_sc_deconvolution_methods
-  - computeCBSX
   - computeCBSX_parallel
-  - computeDWLS
   - computeDWLS_parallel
   - computeDeconRNASeq
   - computeEpiDISH
-  - computeMOMF
   - computeMOMF_parallel
   - computeQuantiseq
   - compute_subgroups
