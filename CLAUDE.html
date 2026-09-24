@@ -118,7 +118,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="cell-type-nomenclature">Cell Type Nomenclature<a class="anchor" aria-label="anchor" href="#cell-type-nomenclature"></a></h3>
-<p>The package enforces standardized cell type names via <code><a href="reference/standardize_celltype_colnames.html">standardize_celltype_colnames()</a></code>. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README. <code>get_cell_type_nomenclature()</code> is the single source of truth for the vocabulary itself (the canonical cell type vector, e.g. used to parse cell type names out of deconvolution column names) — other code, including sister packages like CellTFusion, should call it rather than hardcoding a copy of the list.</p>
+<p>The package enforces standardized cell type names via <code><a href="reference/standardize_celltype_colnames.html">standardize_celltype_colnames()</a></code>. When adding new deconvolution methods or modifying existing ones, ensure output column names are harmonized to the shared naming convention documented in the README. <code><a href="reference/get_cell_type_nomenclature.html">get_cell_type_nomenclature()</a></code> is the single source of truth for the vocabulary itself (the canonical cell type vector, e.g. used to parse cell type names out of deconvolution column names) — other code, including sister packages like CellTFusion, should call it rather than hardcoding a copy of the list.</p>
 </div>
 <div class="section level3">
 <h3 id="custom-signatures">Custom Signatures<a class="anchor" aria-label="anchor" href="#custom-signatures"></a></h3>

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods • multideconv</title>
+<title>Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods • multideconv</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods">
 <meta name="description" content="R package that reduces dimensionality and eliminates redundancy through unsupervised filtering and iterative correlation analyses. Built on top of existing frameworks like immunedeconv (Sturm et al. 2019) and omnideconv (Dietrich et al. 2024), multideconv harmonizes outputs across methods to identify robust cell subgroups and mitigate signature-driven heterogeneity.">
 <meta property="og:description" content="R package that reduces dimensionality and eliminates redundancy through unsupervised filtering and iterative correlation analyses. Built on top of existing frameworks like immunedeconv (Sturm et al. 2019) and omnideconv (Dietrich et al. 2024), multideconv harmonizes outputs across methods to identify robust cell subgroups and mitigate signature-driven heterogeneity.">
 <meta property="og:image" content="https://verapancaldilab.github.io/multideconv/logo.png">
@@ -97,7 +97,7 @@
 <p>Before running <code>multideconv</code>, make sure to set your working directory. The <code>Results/</code> folder, where outputs will be saved, will be created in this directory.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">'~/path/to/directory'</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://verapancaldilab.github.io/multideconv/">multideconv</a></span><span class="op">)</span></span></code></pre></div>
 <p>The function calculates cell abundance based on cell type signatures using different methods and signatures through the function <code>compute.deconvolution</code> which takes as input the bulk RNAseq gene expression matrix either as raw or normalized counts.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span><span class="va">raw.counts</span>, normalized <span class="op">=</span> <span class="cn">T</span>, credentials.mail <span class="op">=</span> <span class="st">"xxxx"</span>, credentials.token <span class="op">=</span> <span class="st">"xxxxxx"</span>, file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span> </span>

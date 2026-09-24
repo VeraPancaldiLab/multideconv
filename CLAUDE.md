@@ -125,11 +125,12 @@ The package enforces standardized cell type names via
 [`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md).
 When adding new deconvolution methods or modifying existing ones, ensure
 output column names are harmonized to the shared naming convention
-documented in the README. `get_cell_type_nomenclature()` is the single
-source of truth for the vocabulary itself (the canonical cell type
-vector, e.g. used to parse cell type names out of deconvolution column
-names) — other code, including sister packages like CellTFusion, should
-call it rather than hardcoding a copy of the list.
+documented in the README.
+[`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
+is the single source of truth for the vocabulary itself (the canonical
+cell type vector, e.g. used to parse cell type names out of
+deconvolution column names) — other code, including sister packages like
+CellTFusion, should call it rather than hardcoding a copy of the list.
 
 ### Custom Signatures
 

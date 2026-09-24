@@ -138,13 +138,16 @@ It also processes the entire dataset once to provide a final processed training 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of two elements:</p><ul><li><p><code>processed_folds</code>: A list of folds, where each fold contains:</p><ul><li><p><code>train_data</code>: Processed training data with cell group features and <code>target</code> column.</p></li>
+
+<ul><li><p>When <code>bestune</code> is <code>NULL</code> (fold mode): invisibly, a named list of processed folds, each also saved to
+<code>Results/fold_&lt;fold name&gt;.rds</code>. Each fold contains:</p><ul><li><p><code>train_data</code>: Processed training data with cell group features and <code>target</code> column.</p></li>
 <li><p><code>test_data</code>: Test data projected into the learned cell group feature space.</p></li>
-<li><p><code>obs_test</code>: True class labels for the test set.</p></li>
+<li><p><code>obs_test</code>: True class labels (or survival time/event) for the test set.</p></li>
 <li><p><code>rowIndex</code>: Row indices corresponding to the test set.</p></li>
-<li><p><code>fold_name</code>: Optional fold name if provided in the <code>folds</code> list.</p></li>
+<li><p><code>fold_name</code>: Fold name if provided in the <code>folds</code> list.</p></li>
 </ul></li>
-<li><p><code>train_cell_data_final</code>: Final cell group feature matrix for the full dataset, including the <code>target</code> column.</p></li>
+<li><p>When <code>bestune</code> is provided: a list with the processed feature matrix for the full dataset (including
+the <code>target</code> column), the full <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> output, and <code>bestune</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

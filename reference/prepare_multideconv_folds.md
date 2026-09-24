@@ -104,9 +104,9 @@ prepare_multideconv_folds(
 
 ## Value
 
-A list of two elements:
-
-- `processed_folds`: A list of folds, where each fold contains:
+- When `bestune` is `NULL` (fold mode): invisibly, a named list of
+  processed folds, each also saved to `Results/fold_<fold name>.rds`.
+  Each fold contains:
 
   - `train_data`: Processed training data with cell group features and
     `target` column.
@@ -114,14 +114,17 @@ A list of two elements:
   - `test_data`: Test data projected into the learned cell group feature
     space.
 
-  - `obs_test`: True class labels for the test set.
+  - `obs_test`: True class labels (or survival time/event) for the test
+    set.
 
   - `rowIndex`: Row indices corresponding to the test set.
 
-  - `fold_name`: Optional fold name if provided in the `folds` list.
+  - `fold_name`: Fold name if provided in the `folds` list.
 
-- `train_cell_data_final`: Final cell group feature matrix for the full
-  dataset, including the `target` column.
+- When `bestune` is provided: a list with the processed feature matrix
+  for the full dataset (including the `target` column), the full
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+  output, and `bestune`.
 
 ## Details
 

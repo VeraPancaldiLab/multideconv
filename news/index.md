@@ -18,4 +18,4 @@ This is the first release version of multideconv! 🎉
   - [`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md)
 - New vignettes:
   - [Getting
-    started](https://mhurtado13.github.io/multideconv/articles/multideconv.html)
+    started](https://verapancaldilab.github.io/multideconv/articles/multideconv.html)

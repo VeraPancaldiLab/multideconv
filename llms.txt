@@ -317,32 +317,40 @@ Public single-cell utilities
 - [`create_sc_signatures()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.md)
   : Create cell type signatures from scRNAseq
 
-## Utils
+## Helpers
+
+Exported helper functions (cell type nomenclature and single-method
+deconvolution)
+
+- [`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
+  : Canonical cell type nomenclature used by multideconv
+- [`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md)
+  : Standardize Cell Type Column Names
+- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
+  : Computes CIBERSORTx (CBSX) using one signature
+- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
+  : Computes DWLS
+- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
+  : Computes MOMF
+
+## Internal
 
 Internal use (not exported functions)
 
-- [`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md)
-  : Standardize Cell Type Column Names
 - [`compute.deconvolution.preprocessing()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.preprocessing.md)
   : Compute deconvolution preprocessing
 - [`compute_methods_variable_signature()`](https://verapancaldilab.github.io/multideconv/reference/compute_methods_variable_signature.md)
   : Compute deconvolution methods with variable signatures
 - [`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md)
   : Compute second-generation deconvolution methods
-- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
-  : Computes CIBERSORTx (CBSX) using one signature
 - [`computeCBSX_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX_parallel.md)
   : Compute CIBERSORTx (CBSX) in parallel across multiple signatures
-- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
-  : Computes DWLS
 - [`computeDWLS_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS_parallel.md)
   : Compute DWLS in parallel across multiple signatures
 - [`computeDeconRNASeq()`](https://verapancaldilab.github.io/multideconv/reference/computeDeconRNASeq.md)
   : Computes DeconRNASeq
 - [`computeEpiDISH()`](https://verapancaldilab.github.io/multideconv/reference/computeEpiDISH.md)
   : Computes EpiDISH
-- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
-  : Computes MOMF
 - [`computeMOMF_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF_parallel.md)
   : Compute MOMF in parallel across multiple signatures
 - [`computeQuantiseq()`](https://verapancaldilab.github.io/multideconv/reference/computeQuantiseq.md)
