@@ -30,7 +30,7 @@ compute.deconvolution.analysis(
 
 \item{var_quantile}{Quantile threshold below which low-variance features are removed.}
 
-\item{prune_thr}{Pearson correlation threshold above which highly correlated features are pruned.}
+\item{prune_thr}{Correlation threshold (computed with \code{corr_type}) above which highly correlated features within a cell type are pruned.}
 
 \item{seed}{A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.}
 

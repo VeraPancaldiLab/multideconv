@@ -925,7 +925,7 @@ remove_low_variance <- function(data, var_quantile = 0.25) {
 #' @param corr_type Correlation type for computing the cell subgroups, whether "spearman" or "pearson".
 #' @param zero_thr Maximum fraction of zeros allowed per feature before it is discarded.
 #' @param var_quantile Quantile threshold below which low-variance features are removed.
-#' @param prune_thr Pearson correlation threshold above which highly correlated features are pruned.
+#' @param prune_thr Correlation threshold (computed with `corr_type`) above which highly correlated features within a cell type are pruned.
 #' @param seed A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.
 #' @param batch Optional batch covariate used to compute partial correlations.
 #' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
@@ -1178,7 +1178,21 @@ computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers)
 #' @export
 computeCBSX = function(TPM_matrix, signature_file, name, password, name_signature){
   omnideconv::set_cibersortx_credentials(name, password)
-  cbsx = omnideconv::deconvolute_cibersortx(TPM_matrix, signature_file)
+  cbsx = tryCatch(
+    omnideconv::deconvolute_cibersortx(TPM_matrix, signature_file),
+    error = function(e){
+      # On some machines the CIBERSORTx container fails (error code 139) when using R's temporary
+      # directory and the "..._Results.txt" output is never written. Retry once with fixed folders
+      # in the home directory; any other error is re-raised unchanged.
+      if (!grepl("does not exist", conditionMessage(e), fixed = TRUE)) stop(e)
+      input_dir = path.expand("~/user_projects/cibersort/input")
+      output_dir = path.expand("~/user_projects/cibersort/output")
+      dir.create(input_dir, recursive = TRUE, showWarnings = FALSE)
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+      message("\nCIBERSORTx failed using the temporary directory. Retrying with input_dir = ", input_dir, " and output_dir = ", output_dir, "\n")
+      omnideconv::deconvolute_cibersortx(TPM_matrix, signature_file, input_dir = input_dir, output_dir = output_dir)
+    }
+  )
 
   colnames(cbsx) = paste0("CBSX_", name_signature, "_", colnames(cbsx))
   colnames(cbsx) <- colnames(cbsx) %>%
@@ -1666,6 +1680,10 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
     }
   }
 
+  if(is.null(all_deconvolution_table) || ncol(data.frame(all_deconvolution_table)) == 0){
+    stop("No deconvolution results were produced. Check the selected methods (e.g. CBSX needs credentials.mail and credentials.token).")
+  }
+
   deconvolution = compute.deconvolution.preprocessing(all_deconvolution_table, cells_extra = cells_extra)
 
   if(return == TRUE){
@@ -1706,6 +1724,8 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
   } else {
     bulk_counts = raw_counts
   }
+
+  if(is.null(name_object)) name_object = "scRNAseq" # Avoid "Method__cell" names that break method_signature_cell parsing
 
   if(is.null(n_cores)){
     n_cores = parallel::detectCores() - 1
@@ -1774,7 +1794,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
         cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
         batch_ids = as.character(sc_metadata[,samples_ids]),
         verbose = TRUE
-      )$bulk_props
+      )$bulk.props %>% t() # BisqueRNA returns cell types x samples
       save_cache("Bisque", bisque)
       results$Bisque = bisque
     }
@@ -1946,22 +1966,24 @@ create_metacells = function(sc_object, labels_column, samples_column, exclude_ce
   cells = cells_ids[!cells_ids %in% exclude_cells]
   for (cell_type in cells) {
     for (patient in unique(data@meta.data$samples_ids)) {
-      x = subset(x = data, subset = samples_ids == patient, idents = cell_type, return.null = T)
-      if(is.null(x) == F){
-        subset_data[[contador]] <- x
+      # Pick cells from the metadata and subset by cell name: in subset(subset = ...) a metadata
+      # column named e.g. "patient" would shadow the loop variable and return empty groups
+      cells_use <- colnames(data)[which(data@meta.data$samples_ids == patient &
+                                          data@meta.data$cells_labels == cell_type)]
+      if (length(cells_use) > 0) {
+        subset_data[[contador]] <- subset(data, cells = cells_use)
         contador = contador + 1
       }
     }
   }
 
   # Set up parallelization using the future package
-  future::plan(future::multisession, workers = n_workers) # Adjust the number of workers based on your system
+  old_plan <- future::plan(future::multisession, workers = n_workers) # Adjust the number of workers based on your system
+  on.exit(future::plan(old_plan), add = TRUE) # Restore the user's plan, also on error
   # Run the function in parallel
   results <- future.apply::future_lapply(subset_data, FUN = process_group, min_cells, k, max_shared, labels_column, samples_column, future.seed = TRUE)
   results <- results[!sapply(results, is.null)]
 
-  #Stop parallelization from running in the background
-  future::plan(future::sequential)
 
   rm(data, subset_data)
   gc()
@@ -2104,6 +2126,14 @@ find.maximum.iteration = function(cells.groups){
 #'
 compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, corr_type = "spearman", scatter = TRUE, plot = FALSE, pval = 0.05, file_name = NULL, width = 16, height = 8){
 
+  missing_samples = setdiff(rownames(deconvolution), rownames(groundtruth))
+  if(length(missing_samples) == length(rownames(deconvolution))){
+    stop("No sample names (rownames) are shared between 'deconvolution' and 'groundtruth'.")
+  }
+  if(length(missing_samples) > 0){
+    warning(length(missing_samples), " samples in 'deconvolution' are missing from 'groundtruth' and will be ignored.")
+    deconvolution = deconvolution[!rownames(deconvolution) %in% missing_samples, , drop = FALSE]
+  }
   groundtruth = groundtruth[rownames(deconvolution), , drop = FALSE] #Order samples to match both features
 
   # Subgroup columns are named CellType_SubgroupID (e.g. B.cells_Subgroup.1.Iteration.1).
@@ -2382,6 +2412,7 @@ create_sc_signatures = function(sc_obj,
 
   signature_dir = "Results/custom_signatures/"
   dir.create(signature_dir, showWarnings = FALSE, recursive = TRUE)
+  if(is.null(name_signature)) name_signature = "custom" # Avoid "DWLS--scRNAseq.txt" file names
 
   sc_obj = as.matrix(sc_obj)
   signatures = list()
@@ -2493,7 +2524,15 @@ process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_
 
   meta = .hd$GetMetacellObject(seurat_obj)
 
-  counts = as.matrix(SeuratObject::GetAssayData(meta, assay = "RNA", slot = "counts"))
+  # Use the metacell object's own assay (hdWGCNA keeps the input's default assay, e.g. "SCT")
+  # and the counts accessor matching the installed SeuratObject (the `slot` argument is defunct in v5)
+  assay = SeuratObject::DefaultAssay(meta)
+  if (utils::packageVersion("SeuratObject") >= "5.0.0") {
+    counts = SeuratObject::LayerData(meta, assay = assay, layer = "counts")
+  } else {
+    counts = SeuratObject::GetAssayData(meta, assay = assay, slot = "counts")
+  }
+  counts = as.matrix(counts)
 
   result <- list(
     counts = counts,
@@ -2717,8 +2756,9 @@ prepare_multideconv_folds <- function(
   parallel::stopCluster(cl)
   unregister_dopar()
 
-  # Save each fold (pipeML reads these back from Results/fold_*.rds)
+  # Save each fold (pipeML reads back every Results/fold_*.rds, so drop stale files from earlier runs first)
   ensure_results_dir()
+  file.remove(list.files("Results", pattern = "^fold_.*\\.rds$", full.names = TRUE))
   fold_names <- if (is.null(names(folds))) paste0("Fold", seq_along(folds)) else names(folds)
   names(processed_folds) <- fold_names
   for (i in seq_along(processed_folds)) {

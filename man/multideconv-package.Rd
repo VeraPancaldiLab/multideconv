@@ -4,7 +4,7 @@
 \name{multideconv-package}
 \alias{multideconv}
 \alias{multideconv-package}
-\title{multideconv: Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods}
+\title{multideconv: Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
@@ -13,6 +13,7 @@ R package that reduces dimensionality and eliminates redundancy through unsuperv
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://verapancaldilab.github.io/multideconv/}
   \item \url{https://github.com/VeraPancaldiLab/multideconv}
 }
 
