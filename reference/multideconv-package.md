@@ -1,4 +1,4 @@
-# multideconv: Integrative pipeline for cell type deconvolution from bulk RNAseq using first and second generation methods
+# multideconv: Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods
 
 R package that reduces dimensionality and eliminates redundancy through
 unsupervised filtering and iterative correlation analyses. Built on top
@@ -10,6 +10,8 @@ heterogeneity.
 ## See also
 
 Useful links:
+
+- <https://verapancaldilab.github.io/multideconv/>
 
 - <https://github.com/VeraPancaldiLab/multideconv>
 

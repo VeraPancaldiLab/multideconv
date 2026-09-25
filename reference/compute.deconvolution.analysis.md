@@ -48,8 +48,8 @@ compute.deconvolution.analysis(
 
 - prune_thr:
 
-  Pearson correlation threshold above which highly correlated features
-  are pruned.
+  Correlation threshold (computed with `corr_type`) above which highly
+  correlated features within a cell type are pruned.
 
 - seed:
 
