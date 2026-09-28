@@ -91,49 +91,119 @@ test set during training — a form of hidden data leakage described in
 <p>To address this issue, we provide the function
 <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>, which ensures proper
 separation between training and test data during the computation of
-deconvolution subgroups. This function constructs ML folds in a way that
-subgroup features are learned only from the training data of each fold
-and then projected onto the corresponding test fold out.</p>
-<p>Below is an example usage of the <code>multideconv</code> subgroups
-using <code>pipeML</code>, an R package that includes direct flexibility
-into k-fold construction. We will add our custom function to compute the
-folds of the model using <code>multideconv</code> in the argument
+deconvolution subgroups. Within each cross-validation fold, the
+subgroups are learned only from the training samples of the fold and
+then projected onto its test samples with
+<code><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code>.</p>
+<p>Below is an example using <code>pipeML</code>, an R package that
+supports custom fold construction:
+<code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> is passed to the argument
 <code>fold_construction_fun</code>. For more information about the
-functions arguments visit the documentation of <a href="https://github.com/VeraPancaldiLab/pipeML" class="external-link">pipeML</a> :</p>
+function arguments, visit the documentation of <a href="https://github.com/VeraPancaldiLab/pipeML" class="external-link">pipeML</a>.</p>
+<div class="section level4">
+<h4 id="input-data">Input data<a class="anchor" aria-label="anchor" href="#input-data"></a>
+</h4>
+<ul>
+<li>
+<code>deconv_train</code>: deconvolution of the training samples
+(samples as rows, deconvolution features as columns), as returned by
+<code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code>.</li>
+<li>
+<code>deconv_test</code>: deconvolution of the test samples, with
+the same features.</li>
+<li>
+<code>traitData_train</code>, <code>traitData_test</code>: clinical
+data of the training and test samples, with the response in a
+<code>Response</code> column (<code>"R"</code> for responders). Rows
+must be in the same order as the deconvolution tables.</li>
+</ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pipeML</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://verapancaldilab.github.io/multideconv/">multideconv</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># traitData_train: Subset of clinical data used for training </span></span>
-<span><span class="co"># traitData_test: Subset of clinical data used for testing </span></span>
-<span><span class="co"># deconv_train: Deconvolution of samples used for training</span></span>
-<span><span class="co"># deconv_test: Deconvolution of samples used for testing</span></span>
+<span><span class="co"># Make sure the clinical data follows the order of the deconvolution tables</span></span>
+<span><span class="va">traitData_train</span> <span class="op">&lt;-</span> <span class="va">traitData_train</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">deconv_train</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">traitData_test</span>  <span class="op">&lt;-</span> <span class="va">traitData_test</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">deconv_test</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="training">Training<a class="anchor" aria-label="anchor" href="#training"></a>
+</h4>
+<p><code>compute_features.training.ML()</code> builds the
+cross-validation folds and calls
+<code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> to compute the deconvolution
+subgroups of each fold. Arguments of
+<code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> (e.g. <code>ncores</code>,
+<code>corr</code>, <code>corr_type</code>, <code>zero_thr</code>,
+<code>var_quantile</code>, <code>prune_thr</code>) can be set with
+<code>fold_construction_args_fixed</code>; they are applied in every
+fold and in the final model:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_features.training.ML</span><span class="op">(</span>features_train <span class="op">=</span> <span class="va">deconv_train</span>,</span>
+<span>                                            target_var <span class="op">=</span> <span class="va">traitData_train</span><span class="op">$</span><span class="va">Response</span>,</span>
+<span>                                            task_type <span class="op">=</span> <span class="st">"classification"</span>,</span>
+<span>                                            trait.positive <span class="op">=</span> <span class="st">"R"</span>,</span>
+<span>                                            metric <span class="op">=</span> <span class="st">"AUROC"</span>,</span>
+<span>                                            k_folds <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                                            n_rep <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                                            ncores <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                                            return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                            fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span>,</span>
+<span>                                            fold_construction_args_fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ncores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>
+<code>res$Model</code> is the selected model, trained on the
+deconvolution subgroups computed on all the training samples.</li>
+<li>
+<code>res$Custom_output</code> is the output of
+<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> on all the training
+samples: the subgroups used by the final model.</li>
+</ul>
+</div>
+<div class="section level4">
+<h4 id="prediction">Prediction<a class="anchor" aria-label="anchor" href="#prediction"></a>
+</h4>
+<p>Project the test samples onto the deconvolution subgroups learned on
+the training samples, then predict:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Replicate deconvolution subgroups in the test samples</span></span>
+<span><span class="va">dt_test</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span>deconv_res <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Custom_output</span>,</span>
+<span>                                                          deconvolution_test <span class="op">=</span> <span class="va">deconv_test</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Training in deconv subgroups</span></span>
-<span><span class="va">res</span> <span class="op">=</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_features.training.ML</span><span class="op">(</span><span class="va">deconv_train</span>, </span>
-<span>                                           <span class="va">traitData_train</span><span class="op">$</span><span class="va">Response</span>, </span>
-<span>                                           trait.positive <span class="op">=</span> <span class="st">"R"</span>, </span>
-<span>                                           metric <span class="op">=</span> <span class="st">"AUROC"</span>, </span>
-<span>                                           stack <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           k_folds <span class="op">=</span> <span class="fl">5</span>, </span>
-<span>                                           n_rep <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>                                           feature.selection <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           LODO <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           ncores <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                                           return <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                           fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span><span class="op">)</span></span>
+<span><span class="co"># Predict on the test samples</span></span>
+<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_prediction</span><span class="op">(</span>model <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Model</span>,</span>
+<span>                                   test_data <span class="op">=</span> <span class="va">dt_test</span>,</span>
+<span>                                   target_var <span class="op">=</span> <span class="va">traitData_test</span><span class="op">$</span><span class="va">Response</span>,</span>
+<span>                                   task_type <span class="op">=</span> <span class="st">"classification"</span>,</span>
+<span>                                   trait.positive <span class="op">=</span> <span class="st">"R"</span>,</span>
+<span>                                   return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Replicate deconvolution subgroups</span></span>
-<span><span class="va">dt_test</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">Custom_output</span><span class="op">$</span><span class="va">Processed_deconvolution</span>, </span>
-<span>                                            <span class="va">deconv_test</span><span class="op">)</span> </span>
+<span><span class="va">pred</span><span class="op">$</span><span class="va">AUC</span>   <span class="co"># AUROC and AUPRC with bootstrap confidence intervals</span></span></code></pre></div>
+<p>With <code>return = TRUE</code>, ROC and PR curves are saved in the
+<code>Results/</code> folder.</p>
+</div>
+<div class="section level4">
+<h4 id="which-deconvolution-subgroups-drive-the-predictions">Which deconvolution subgroups drive the predictions?<a class="anchor" aria-label="anchor" href="#which-deconvolution-subgroups-drive-the-predictions"></a>
+</h4>
+<p><code>compute_shap_values()</code> computes SHAP values on the
+held-out samples of each cross-validation fold, using the fold models
+saved during training (in
+<code>Results/fold_models/classification</code> by default). Everything
+else is taken from the trained model:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">shap</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_shap_values</span><span class="op">(</span>model_trained <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Model</span>,</span>
+<span>                                    task_type <span class="op">=</span> <span class="st">"classification"</span>,</span>
+<span>                                    n_cores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Predict in deconv subgroups</span></span>
-<span><span class="va">pred</span> <span class="op">=</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_prediction</span><span class="op">(</span><span class="va">res</span>, </span>
-<span>                                  <span class="va">dt_test</span>, </span>
-<span>                                  <span class="va">traitData_test</span><span class="op">$</span><span class="va">Response</span>, </span>
-<span>                                  trait.positive <span class="op">=</span> <span class="st">"R"</span>, </span>
-<span>                                  stack <span class="op">=</span> <span class="cn">F</span>, </span>
-<span>                                  maximize <span class="op">=</span> <span class="st">"Accuracy"</span>, </span>
-<span>                                  return <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Global importance of each deconvolution subgroup (mean |SHAP| across samples)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">shap</span><span class="op">)</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>SHAP values are in units of predicted probability of response: a
+positive value means the subgroup pushed the prediction of that sample
+towards response. See the <code>pipeML</code> vignette for plots of SHAP
+values per sample and across samples.</p>
+<p>If you train several models from the same working directory, give
+each one its own <code>fold_models_dir</code> in
+<code>compute_features.training.ML()</code> and pass the same directory
+to <code>compute_shap_values()</code>.</p>
 <p><strong>NOTE:</strong> <code>multideconv</code> is built on top of
 existing frameworks and makes extensive use of the R packages
 <code>immunedeconv</code> (<span class="citation">Sturm et al. (<a href="#ref-10.1093/bioinformatics/btz363">2019</a>)</span>) and
@@ -277,6 +347,7 @@ Bioinformatics. <a href="https://doi.org/10.1093/bib/bbz166" class="external-lin
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
