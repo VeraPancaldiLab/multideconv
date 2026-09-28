@@ -11,74 +11,113 @@ second-generation) from bulk RNA-seq data. It harmonizes outputs across
 methods, removes redundant cell types via correlation analysis, and
 identifies robust cell subgroups.
 
+## Working Rules
+
+- **Describe a fix and get approval before editing code.** Report the
+  bug, the proposed change and how it was verified; apply only after the
+  user agrees.
+- **Test with small data only.** The dev machine has ~15 GB RAM.
+  Subsample (e.g. ~200 cells x 2,000 genes, 4 bulk samples), use 1
+  worker/core, cap runs with `timeout`, and run heavy methods one at a
+  time. Never compile large packages (e.g. Seurat) from source with many
+  cores; use Posit Package Manager binaries into a temporary library
+  instead.
+- Never write test output into the package tree or the user’s home; run
+  in a temp directory
+  ([`withr::local_tempdir()`](https://withr.r-lib.org/reference/with_tempfile.html))
+  and clean up.
+
 ## Development Commands
 
 ``` r
 
-# Load package for interactive development (no need to reinstall)
-devtools::load_all()
-
-# Build documentation from roxygen2 comments
-devtools::document()
-
-# Run R CMD check
-devtools::check()
-
-# Run tests (no tests currently exist, but infrastructure is ready)
-devtools::test()
-
-# Build and preview pkgdown site
-pkgdown::build_site()
-
-# Launch the Shiny app locally
+devtools::load_all()     # interactive development
+devtools::document()     # regenerate man/ + NAMESPACE (required after any roxygen change)
+devtools::test()         # testthat suite in tests/testthat/
+devtools::check()        # R CMD check
+pkgdown::check_pkgdown() # verify _pkgdown.yml before pushing
 shiny::runApp('inst/shiny', host='127.0.0.1', port=3838)
 ```
+
+### CI (GitHub Actions)
+
+- `R-CMD-check.yaml` fails on any **WARNING**. A roxygen block without a
+  regenerated `.Rd` (forgetting
+  [`devtools::document()`](https://devtools.r-lib.org/reference/document.html))
+  produces “Undocumented code objects” and fails CI.
+- `pkgdown.yaml` fails if any documented topic is missing from the
+  `reference:` index in `_pkgdown.yml`. Every new exported/documented
+  function must be added there (sections: Main, Benchmarking, Single
+  cell functions, Helpers = exported helpers, Internal = not exported,
+  Package Data) or marked `@keywords internal`.
+- Non-package files at top level must be listed in `.Rbuildignore`
+  (CLAUDE.md, Results, Rplots.pdf, launch_app.R, .vscode, .claude,
+  pypath_log, omnipathr-log, …). Do not ignore `vignettes/Results/`: the
+  a4 vignette embeds `vignettes/Results/Benchmark.png`.
 
 ## Installation
 
 ``` r
 
-# Install from GitHub (requires authentication for private deps)
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
 
 Several dependencies come from GitHub remotes (omnideconv, immunedeconv,
-DWLS, BayesPrism, MOMF, bisque) — see `DESCRIPTION` for exact remotes.
-`hdWGCNA` is an optional runtime dependency (install separately with
-`pak::pkg_install("smorabit/hdWGCNA")`) needed only by
-[`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md)
-and
-[`create_sc_signatures()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.md);
-it is not a package `Remote` and is checked lazily via
-[`requireNamespace()`](https://rdrr.io/r/base/ns-load.html).
+DWLS, BayesPrism, MOMF, bisque) — see `DESCRIPTION`. `hdWGCNA` is an
+optional runtime dependency (`pak::pkg_install("smorabit/hdWGCNA")`)
+needed only by
+[`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md);
+it is not a `Remote` and is checked via
+[`requireNamespace()`](https://rdrr.io/r/base/ns-load.html). `Seurat` is
+in Suggests: functions using it
+([`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md),
+[`create_sc_pseudobulk()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_pseudobulk.md))
+must check [`requireNamespace("Seurat")`](https://satijalab.org/seurat)
+first.
 
-CIBERSORTx requires separate credentials and Docker.
+CIBERSORTx requires credentials and Docker (image
+`cibersortx/fractions`). AutogeneS runs in omnideconv’s Python conda env
+`r-omnideconv` (module `autogenes`).
 
 ## Architecture
 
-All exported functions live in a single file: `R/cell_deconvolution.R`
-(~3,000 lines). This is intentional — the package exposes 15 functions
-but keeps implementation together.
+All functions live in a single file: `R/cell_deconvolution.R` (~3,000
+lines). This is intentional.
 
 ### Core Pipeline Flow
 
 1.  **[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md)**
-    — Runs multiple deconvolution methods on bulk RNA-seq counts.
-    Iterates over methods in parallel (`doParallel`/`foreach`). Outputs
-    per-method proportion matrices saved to `Results/`.
-
+    — TPM-normalizes (`normalized = TRUE` means “normalize the input”),
+    runs Quantiseq plus the signature-based methods over every signature
+    (bundled + `Results/custom_signatures/`), then standardizes names
+    via
+    [`compute.deconvolution.preprocessing()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.preprocessing.md).
+    Per-method/signature results are cached as
+    `Results/deconv_<method>_<sig>.rds` while running (crash recovery)
+    and deleted at the end; `Results/` is removed again if it was
+    created only for the cache. It stops with a clear error if no method
+    produced output.
+    - **CBSX without credentials is skipped with a warning** (it is in
+      the default `methods`), not a hard error.
+    - `doParallel = TRUE` with `workers = NULL` uses
+      `detectCores() - 1`.
 2.  **[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)**
-    — Post-processes deconvolution results:
-
-    - Removes zero-heavy features (\>90% zeros) and low-variance
-      features
-    - Removes highly correlated features (\>0.9 Pearson correlation)
-    - Standardizes cell type nomenclature across methods
-    - Identifies cell subgroups via iterative pairwise correlation
-      clustering (`compute_subgroups`/`corr_subgroups`) — this is
-      homegrown, not WGCNA/hdWGCNA
-
-3.  **Single-cell workflow** —
+    — removes zero-heavy features (`zero_thr`) and low-variance features
+    (`var_quantile`, global quantile), splits by cell type
+    ([`compute.cell.types()`](https://verapancaldilab.github.io/multideconv/reference/compute.cell.types.md)),
+    prunes highly correlated features within a cell type (`prune_thr`,
+    using `corr_type` — not always Pearson), then builds subgroups
+    iteratively
+    ([`compute_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/compute_subgroups.md)/[`corr_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/corr_subgroups.md),
+    homegrown, not WGCNA). With `batch`, correlations are partial
+    correlations (`ppcor`) controlling for batch.
+3.  **[`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)**
+    — applies the learned subgroups (medians of member features,
+    iteration by iteration) to a new cohort. On the training data it
+    reproduces the “Deconvolution matrix” exactly.
+4.  **[`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)**
+    — fold-aware feature construction for pipeML (see below).
+5.  **Single-cell workflow** —
     [`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md)
     →
     [`create_sc_pseudobulk()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_pseudobulk.md)
@@ -86,68 +125,143 @@ but keeps implementation together.
     [`create_sc_signatures()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.md)
     →
     [`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md).
-    Constructs metacells using KNN to aggregate sparse single-cell data
-    before running second-generation methods (DWLS, BayesPrism, MOMF via
-    `omnideconv`).
-    [`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md)
-    and
-    [`create_sc_signatures()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.md)
-    optionally call into `hdWGCNA` (must be installed separately, see
-    Installation).
 
 ### Method Categories
 
-- **First-generation** (via `immunedeconv`/custom implementations):
-  Quantiseq, CIBERSORTx (CBSX), EpiDISH, DeconRNASeq. MCP-counter and
-  xCell were removed from the default method set (their helper functions
-  are kept commented out in `R/cell_deconvolution.R` for reference).
-- **Second-generation** (via `omnideconv`): DWLS, BayesPrism, MOMF —
-  require single-cell reference signatures
+- **First-generation / signature-based**: Quantiseq (`immunedeconv`,
+  TIL10), EpiDISH, DeconRNASeq, DWLS, CIBERSORTx (CBSX, via
+  `omnideconv`), MOMF (needs `sc_matrix`). MCP-counter and xCell were
+  removed (helpers kept commented out).
+- **Second-generation**
+  ([`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md),
+  via `omnideconv`, need a single-cell reference): AutogeneS,
+  BayesPrism, Bisque, CPM, MuSiC, SCDC. AutogeneS and CPM are slow even
+  on tiny inputs (tens of minutes / \>5 min).
+
+### Method-specific pitfalls
+
+- **Result element names differ per method** and are extracted by name
+  (`$proportions`, `$theta`, `$bulk.props`, `$cellTypePredictions`,
+  `$Est.prop.weighted`, `$prop.est.mvw`, `$cell.prop`). A wrong name
+  silently yields `NULL` and the method disappears from the output.
+  BisqueRNA returns `bulk.props` as **cell types x samples**, so it is
+  transposed; every method must end up samples x cell types.
+- **CIBERSORTx fallback**
+  ([`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md),
+  also used by the parallel version): omnideconv defaults
+  `input_dir`/`output_dir` to
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html). On some machines
+  the container crashes (error code 139,
+  `..._Results.txt does not exist`). Only on that error it retries once
+  with `~/user_projects/cibersort/{input,output}` (created on demand);
+  any other error is re-raised.
+- `name_object` / `name_signature` default to `"scRNAseq"` / `"custom"`
+  when `NULL`, to avoid `Method__cell` names and `DWLS--scRNAseq.txt`
+  files.
+
+### Metacells (Seurat 4 and 5)
+
+[`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md)
+/ `process_group()` must work with both Seurat 4 (SeuratObject 4.x,
+`Assay`) and Seurat 5 (SeuratObject 5.x, `Assay5`, possibly split
+layers). Verified on Seurat 4.4.0 and 5.5.1. - Read counts from the
+metacell object’s own assay (`DefaultAssay(meta)`; hdWGCNA keeps the
+input’s default assay, e.g. `SCT`), with `LayerData(layer = "counts")`
+on SeuratObject \>= 5 and `GetAssayData(slot = "counts")` on 4. The
+`slot` argument is defunct in recent SeuratObject 5 and `layer` does not
+exist in 4. - Group subsets are built by selecting cell names from the
+metadata with [`which()`](https://rdrr.io/r/base/which.html) and calling
+`subset(data, cells = cells_use)`. Do **not** use
+`subset(subset = samples_ids == patient, ...)`: a metadata column named
+e.g. `patient` shadows the loop variable and silently returns empty
+groups. [`which()`](https://rdrr.io/r/base/which.html) handles `NA`
+labels. - [`subset()`](https://rdrr.io/r/base/subset.html) is base R’s
+S3 generic; it dispatches to `SeuratObject`’s `subset.Seurat`.
+`Seurat::subset` does not exist — do not write it. - The user’s `future`
+plan is saved and restored (`on.exit`), also on error. hdWGCNA’s
+`MetacellsByGroups()` needs a `pca` reduction already present in the
+input object.
+
+### Cross-validation folds (`prepare_multideconv_folds()` ↔︎ pipeML)
+
+- `folds` is a list of **training** row indices
+  (e.g. `caret::createMultiFolds`); the test set is the complement.
+- Fold mode writes `Results/fold_<fold name>.rds` (each with
+  `train_data`, `test_data`, `obs_test`, `rowIndex`, `fold_name`) and
+  returns the folds invisibly. pipeML reads back **every**
+  `Results/fold_*.rds` in alphabetical order and relies on each file’s
+  own `rowIndex`, so stale `fold_*.rds` files are deleted before writing
+  (pipeML’s survival path never deletes them). Unnamed folds are named
+  `Fold1`, `Fold2`, …
+- `bestune` mode returns
+  `list(features_with_target, full_analysis_output, bestune)`.
+- Workers (`doParallel`) load the **installed** multideconv, not
+  `load_all()` code: reinstall (e.g. into a temp library via
+  `R CMD INSTALL -l`) before testing parallel code paths.
 
 ### File Layout
 
-- `R/cell_deconvolution.R` — All function implementations
-- `R/data.R` — Documentation for built-in sample datasets
-- `R/zzz.R` — `.onLoad()` creates `Results/` and
-  `Results/custom_signatures/` directories on attach
-- `inst/shiny/app.R` — Shiny app (5 tabs: Welcome, Deconvolution,
-  Analysis, Dictionary & Pathways, Benchmark)
-- `inst/signatures/` — Bundled signature matrices
-- `data/` — 10 sample datasets (bulk counts, single-cell metadata,
-  ground truth, deconvolution results)
-- `vignettes/` — main `multideconv.Rmd` plus 5 articles:
-  `a1_deconvolution` → `a2_subgroups` → `a3_single_cell` →
-  `a4_benchmark` → `a5_machine_learning`
+- `R/cell_deconvolution.R` — all function implementations
+- `R/data.R` — documentation for built-in datasets
+- `R/zzz.R` — `ensure_results_dir()` helper; `.onLoad()` creates
+  `Results/custom_signatures/` **only in interactive sessions** (CRAN/R
+  CMD check forbid writing to the working directory at load time)
+- `inst/shiny/app.R` — Shiny app (creates its own `Results/`)
+- `inst/signatures/` — bundled signature matrices (LM22, TIL10,
+  CBSX-\*-scRNAseq)
+- `data/` — sample datasets
+- `tests/testthat/` — test suite (small built-in data, runs in a temp
+  dir)
+- `vignettes/` — `multideconv.Rmd` plus articles `a1_deconvolution` →
+  `a5_machine_learning`
+
+### Output files
+
+Every function that writes into `Results/` must call
+`ensure_results_dir()` first; do not assume `.onLoad()` created it.
 
 ### Cell Type Nomenclature
 
-The package enforces standardized cell type names via
-[`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md).
-When adding new deconvolution methods or modifying existing ones, ensure
-output column names are harmonized to the shared naming convention
-documented in the README.
+Column names follow `method_signature_celltype`, with `_` as the
+separator.
+[`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md)
+harmonizes cell names (it only renames the part after the last `_`, so
+cell labels in custom signatures must not contain `_`).
 [`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
-is the single source of truth for the vocabulary itself (the canonical
-cell type vector, e.g. used to parse cell type names out of
-deconvolution column names) — other code, including sister packages like
-CellTFusion, should call it rather than hardcoding a copy of the list.
+is the single source of truth for the vocabulary; other code, including
+sister packages like CellTFusion, should call it rather than hardcode a
+copy. All cell names in the bundled signatures map to the correct cell
+type.
+
+[`compute.cell.types()`](https://verapancaldilab.github.io/multideconv/reference/compute.cell.types.md)
+intentionally matches cell types by **unanchored substring**
+(`grep("Plasma", ...)`), so older/non-standard names
+(e.g. `T.cells.CD4.memory.activated`, `Plasma.cells` in `deconv_bulk`)
+are still recognized. Anchoring the patterns breaks this.
+
+Subgroup names are `<CellType>_Subgroup.<i>.Iteration.<m>`. Match
+iterations exactly (`"\\.Iteration\\.<m>$"`), otherwise `Iteration.1`
+also matches `Iteration.10`.
 
 ### Custom Signatures
 
-Users can add `.txt` signature files to `Results/custom_signatures/`
-(created on `.onLoad()`). These are picked up automatically by
-[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md).
+Users can add `.txt` signature files to `Results/custom_signatures/`;
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md)
+picks them up automatically (use `signatures_select` to restrict).
 
 ### Parallel Execution
 
-Long-running deconvolution steps use `doParallel`/`foreach` for
-method-level parallelism and `future`/`future.apply` for sample-level
-parallelism. When debugging, set `plan(sequential)` to disable
-parallelism.
+`doParallel`/`foreach` for method-level parallelism and
+`future`/`future.apply` for metacells. When debugging, set
+`future::plan(future::sequential)`.
 
-## Testing Infrastructure
+## Testing
 
-Tests use `testthat` edition 3 (configured in DESCRIPTION) but no test
-cases exist yet. The built-in datasets (`raw_counts`, `deconv_bulk`,
-`subgroups`, etc.) are the intended inputs for future tests — load them
-with `data(raw_counts)` etc.
+`tests/testthat/` (testthat edition 3, `withr` in Suggests) covers
+nomenclature, preprocessing, analysis + replication, correlation pruning
+(with/without batch), subgroup deduplication, iteration matching,
+benchmark, fold construction and CBSX skipping. Tests use the built-in
+datasets (`deconvolution`, `cells_groundtruth`, `raw_counts`) and run in
+a temporary directory;
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md)
+tests are `skip_on_cran()`.
