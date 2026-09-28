@@ -184,26 +184,25 @@ the training samples, then predict:</p>
 <div class="section level4">
 <h4 id="which-deconvolution-subgroups-drive-the-predictions">Which deconvolution subgroups drive the predictions?<a class="anchor" aria-label="anchor" href="#which-deconvolution-subgroups-drive-the-predictions"></a>
 </h4>
-<p><code>compute_shap_values()</code> computes SHAP values on the
-held-out samples of each cross-validation fold, using the fold models
-saved during training (in
-<code>Results/fold_models/classification</code> by default). Everything
-else is taken from the trained model:</p>
+<p><code>compute_shap_values()</code> computes SHAP values for the final
+model (<code>res$Model</code>), trained on the deconvolution subgroups
+computed on all the training samples (<code>res$Custom_output</code>).
+Each subgroup therefore has the same definition for all samples.
+Everything else is taken from the trained model:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">shap</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_shap_values</span><span class="op">(</span>model_trained <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Model</span>,</span>
-<span>                                    task_type <span class="op">=</span> <span class="st">"classification"</span>,</span>
-<span>                                    n_cores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>                                    task_type <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Global importance of each deconvolution subgroup (mean |SHAP| across samples)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">shap</span><span class="op">)</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p>SHAP values are in units of predicted probability of response: a
 positive value means the subgroup pushed the prediction of that sample
-towards response. See the <code>pipeML</code> vignette for plots of SHAP
-values per sample and across samples.</p>
-<p>If you train several models from the same working directory, give
-each one its own <code>fold_models_dir</code> in
-<code>compute_features.training.ML()</code> and pass the same directory
-to <code>compute_shap_values()</code>.</p>
+towards response. The final model was trained on the samples it
+explains, so SHAP values describe how the model uses each subgroup on
+the training data; compare its training performance with the
+cross-validation performance to check that it does not overfit. See the
+<code>pipeML</code> vignette for plots of SHAP values per sample and
+across samples.</p>
 <p><strong>NOTE:</strong> <code>multideconv</code> is built on top of
 existing frameworks and makes extensive use of the R packages
 <code>immunedeconv</code> (<span class="citation">Sturm et al. (<a href="#ref-10.1093/bioinformatics/btz363">2019</a>)</span>) and
