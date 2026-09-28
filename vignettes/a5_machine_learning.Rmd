@@ -86,20 +86,17 @@ With `return = TRUE`, ROC and PR curves are saved in the `Results/` folder.
 
 ### Which deconvolution subgroups drive the predictions?
 
-`compute_shap_values()` computes SHAP values on the held-out samples of each cross-validation fold, using the fold models saved during training (in `Results/fold_models/classification` by default). Everything else is taken from the trained model:
+`compute_shap_values()` computes SHAP values for the final model (`res$Model`), trained on the deconvolution subgroups computed on all the training samples (`res$Custom_output`). Each subgroup therefore has the same definition for all samples. Everything else is taken from the trained model:
 
 ```{r, eval = FALSE}
 shap <- pipeML::compute_shap_values(model_trained = res$Model,
-                                    task_type = "classification",
-                                    n_cores = 3)
+                                    task_type = "classification")
 
 # Global importance of each deconvolution subgroup (mean |SHAP| across samples)
 head(sort(colMeans(abs(shap)), decreasing = TRUE), 10)
 ```
 
-SHAP values are in units of predicted probability of response: a positive value means the subgroup pushed the prediction of that sample towards response. See the `pipeML` vignette for plots of SHAP values per sample and across samples.
-
-If you train several models from the same working directory, give each one its own `fold_models_dir` in `compute_features.training.ML()` and pass the same directory to `compute_shap_values()`.
+SHAP values are in units of predicted probability of response: a positive value means the subgroup pushed the prediction of that sample towards response. The final model was trained on the samples it explains, so SHAP values describe how the model uses each subgroup on the training data; compare its training performance with the cross-validation performance to check that it does not overfit. See the `pipeML` vignette for plots of SHAP values per sample and across samples.
 
 **NOTE:** `multideconv` is built on top of existing frameworks and makes extensive use of the R packages `immunedeconv` (@10.1093/bioinformatics/btz363) and `omnideconv` (@Dietrich2024.06.10.598226). If you use `multideconv` in your work, please cite our package along with these foundational packages. We also encourage you to cite the individual deconvolution algorithms you employ in your analysis.
 
