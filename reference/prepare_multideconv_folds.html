@@ -58,9 +58,6 @@ It also processes the entire dataset once to provide a final processed training 
 <span>  folds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bestune <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  time_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  event_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  trait.positive <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cells_extra <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
 <span>  corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
@@ -77,7 +74,9 @@ It also processes the entire dataset once to provide a final processed training 
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A matrix or data frame of deconvolution features (samples x features) and a column named <code>target</code> indicating class labels.</p></dd>
+<dd><p>A data frame of deconvolution features (samples x features) plus the outcome, as given by pipeML:
+a <code>target</code> column (classification) or <code>time</code> and <code>event</code> columns (survival). The outcome columns are not used
+to compute the subgroups; they are added back to the returned data.</p></dd>
 
 
 <dt id="arg-folds">folds<a class="anchor" aria-label="anchor" href="#arg-folds"></a></dt>
@@ -90,18 +89,6 @@ It also processes the entire dataset once to provide a final processed training 
 
 <dt id="arg-ncores">ncores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
 <dd><p>Number of CPU cores for parallel fold processing.</p></dd>
-
-
-<dt id="arg-time-var">time_var<a class="anchor" aria-label="anchor" href="#arg-time-var"></a></dt>
-<dd><p>Optional survival time vector used when target labels are not provided.</p></dd>
-
-
-<dt id="arg-event-var">event_var<a class="anchor" aria-label="anchor" href="#arg-event-var"></a></dt>
-<dd><p>Optional survival event vector used when target labels are not provided.</p></dd>
-
-
-<dt id="arg-trait-positive">trait.positive<a class="anchor" aria-label="anchor" href="#arg-trait-positive"></a></dt>
-<dd><p>Label in <code>event_var</code> that defines event = 1.</p></dd>
 
 
 <dt id="arg-cells-extra">cells_extra<a class="anchor" aria-label="anchor" href="#arg-cells-extra"></a></dt>
@@ -140,14 +127,15 @@ It also processes the entire dataset once to provide a final processed training 
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
 
 <ul><li><p>When <code>bestune</code> is <code>NULL</code> (fold mode): invisibly, a named list of processed folds, each also saved to
-<code>Results/fold_&lt;fold name&gt;.rds</code>. Each fold contains:</p><ul><li><p><code>train_data</code>: Processed training data with cell group features and <code>target</code> column.</p></li>
-<li><p><code>test_data</code>: Test data projected into the learned cell group feature space.</p></li>
+<code>Results/fold_&lt;fold name&gt;.rds</code>. Each fold contains:</p><ul><li><p><code>train_data</code>: Processed training data with cell group features and the outcome columns.</p></li>
+<li><p><code>test_data</code>: Test data projected into the learned cell group feature space (plus <code>time</code> and
+<code>event</code> for survival).</p></li>
 <li><p><code>obs_test</code>: True class labels (or survival time/event) for the test set.</p></li>
 <li><p><code>rowIndex</code>: Row indices corresponding to the test set.</p></li>
 <li><p><code>fold_name</code>: Fold name if provided in the <code>folds</code> list.</p></li>
 </ul></li>
 <li><p>When <code>bestune</code> is provided: a list with the processed feature matrix for the full dataset (including
-the <code>target</code> column), the full <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> output, and <code>bestune</code>.</p></li>
+the outcome columns), the full <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> output, and <code>bestune</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

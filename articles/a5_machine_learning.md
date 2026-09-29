@@ -132,6 +132,36 @@ cross-validation performance to check that it does not overfit. See the
 `pipeML` vignette for plots of SHAP values per sample and across
 samples.
 
+#### Survival outcomes
+
+[`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
+also works for survival analysis. `pipeML` gives it the survival time
+and event of the training samples (in the `time` and `event` columns of
+its `data` argument), so no extra argument is needed:
+
+``` r
+
+res_survival <- pipeML::compute_features.training.ML(features_train = deconv_train,
+                                                     task_type = "survival",
+                                                     time_var = traitData_train$time,
+                                                     event_var = traitData_train$event,   # 1 = event, 0 = censored
+                                                     k_folds = 5,
+                                                     n_rep = 10,
+                                                     ncores = 3,
+                                                     fold_construction_fun = prepare_multideconv_folds,
+                                                     fold_construction_args_fixed = list(ncores = 3))
+
+dt_test <- multideconv::replicate_deconvolution_subgroups(deconv_res = res_survival$Custom_output,
+                                                          deconvolution_test = deconv_test)
+
+pred_survival <- pipeML::compute_prediction(model = res_survival$Model,
+                                            test_data = dt_test,
+                                            task_type = "survival",
+                                            time_var = traitData_test$time,
+                                            event_var = traitData_test$event)
+pred_survival$c_index
+```
+
 **NOTE:** `multideconv` is built on top of existing frameworks and makes
 extensive use of the R packages `immunedeconv` (Sturm et al.
 ([2019](#ref-10.1093/bioinformatics/btz363))) and `omnideconv` (Dietrich

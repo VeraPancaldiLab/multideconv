@@ -14,9 +14,6 @@ prepare_multideconv_folds(
   folds = NULL,
   bestune = NULL,
   ncores = NULL,
-  time_var = NULL,
-  event_var = NULL,
-  trait.positive = NULL,
   cells_extra = NULL,
   corr = 0.7,
   corr_type = "spearman",
@@ -32,8 +29,11 @@ prepare_multideconv_folds(
 
 - data:
 
-  A matrix or data frame of deconvolution features (samples x features)
-  and a column named `target` indicating class labels.
+  A data frame of deconvolution features (samples x features) plus the
+  outcome, as given by pipeML: a `target` column (classification) or
+  `time` and `event` columns (survival). The outcome columns are not
+  used to compute the subgroups; they are added back to the returned
+  data.
 
 - folds:
 
@@ -48,20 +48,6 @@ prepare_multideconv_folds(
 - ncores:
 
   Number of CPU cores for parallel fold processing.
-
-- time_var:
-
-  Optional survival time vector used when target labels are not
-  provided.
-
-- event_var:
-
-  Optional survival event vector used when target labels are not
-  provided.
-
-- trait.positive:
-
-  Label in `event_var` that defines event = 1.
 
 - cells_extra:
 
@@ -109,10 +95,10 @@ prepare_multideconv_folds(
   Each fold contains:
 
   - `train_data`: Processed training data with cell group features and
-    `target` column.
+    the outcome columns.
 
   - `test_data`: Test data projected into the learned cell group feature
-    space.
+    space (plus `time` and `event` for survival).
 
   - `obs_test`: True class labels (or survival time/event) for the test
     set.
@@ -122,7 +108,7 @@ prepare_multideconv_folds(
   - `fold_name`: Fold name if provided in the `folds` list.
 
 - When `bestune` is provided: a list with the processed feature matrix
-  for the full dataset (including the `target` column), the full
+  for the full dataset (including the outcome columns), the full
   [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
   output, and `bestune`.
 

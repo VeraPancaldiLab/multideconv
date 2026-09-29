@@ -203,6 +203,35 @@ the training data; compare its training performance with the
 cross-validation performance to check that it does not overfit. See the
 <code>pipeML</code> vignette for plots of SHAP values per sample and
 across samples.</p>
+</div>
+<div class="section level4">
+<h4 id="survival-outcomes">Survival outcomes<a class="anchor" aria-label="anchor" href="#survival-outcomes"></a>
+</h4>
+<p><code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> also works for survival
+analysis. <code>pipeML</code> gives it the survival time and event of
+the training samples (in the <code>time</code> and <code>event</code>
+columns of its <code>data</code> argument), so no extra argument is
+needed:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res_survival</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_features.training.ML</span><span class="op">(</span>features_train <span class="op">=</span> <span class="va">deconv_train</span>,</span>
+<span>                                                     task_type <span class="op">=</span> <span class="st">"survival"</span>,</span>
+<span>                                                     time_var <span class="op">=</span> <span class="va">traitData_train</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>                                                     event_var <span class="op">=</span> <span class="va">traitData_train</span><span class="op">$</span><span class="va">event</span>,   <span class="co"># 1 = event, 0 = censored</span></span>
+<span>                                                     k_folds <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                                                     n_rep <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                                                     ncores <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                                                     fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span>,</span>
+<span>                                                     fold_construction_args_fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ncores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dt_test</span> <span class="op">&lt;-</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span>deconv_res <span class="op">=</span> <span class="va">res_survival</span><span class="op">$</span><span class="va">Custom_output</span>,</span>
+<span>                                                          deconvolution_test <span class="op">=</span> <span class="va">deconv_test</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pred_survival</span> <span class="op">&lt;-</span> <span class="fu">pipeML</span><span class="fu">::</span><span class="fu">compute_prediction</span><span class="op">(</span>model <span class="op">=</span> <span class="va">res_survival</span><span class="op">$</span><span class="va">Model</span>,</span>
+<span>                                            test_data <span class="op">=</span> <span class="va">dt_test</span>,</span>
+<span>                                            task_type <span class="op">=</span> <span class="st">"survival"</span>,</span>
+<span>                                            time_var <span class="op">=</span> <span class="va">traitData_test</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>                                            event_var <span class="op">=</span> <span class="va">traitData_test</span><span class="op">$</span><span class="va">event</span><span class="op">)</span></span>
+<span><span class="va">pred_survival</span><span class="op">$</span><span class="va">c_index</span></span></code></pre></div>
 <p><strong>NOTE:</strong> <code>multideconv</code> is built on top of
 existing frameworks and makes extensive use of the R packages
 <code>immunedeconv</code> (<span class="citation">Sturm et al. (<a href="#ref-10.1093/bioinformatics/btz363">2019</a>)</span>) and
