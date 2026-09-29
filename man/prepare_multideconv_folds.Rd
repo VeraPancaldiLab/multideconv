@@ -9,9 +9,6 @@ prepare_multideconv_folds(
   folds = NULL,
   bestune = NULL,
   ncores = NULL,
-  time_var = NULL,
-  event_var = NULL,
-  trait.positive = NULL,
   cells_extra = NULL,
   corr = 0.7,
   corr_type = "spearman",
@@ -23,19 +20,15 @@ prepare_multideconv_folds(
 )
 }
 \arguments{
-\item{data}{A matrix or data frame of deconvolution features (samples x features) and a column named \code{target} indicating class labels.}
+\item{data}{A data frame of deconvolution features (samples x features) plus the outcome, as given by pipeML:
+a \code{target} column (classification) or \code{time} and \code{event} columns (survival). The outcome columns are not used
+to compute the subgroups; they are added back to the returned data.}
 
 \item{folds}{A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.}
 
 \item{bestune}{Optional tuning object; when provided, folds are skipped and full-data processing is returned.}
 
 \item{ncores}{Number of CPU cores for parallel fold processing.}
-
-\item{time_var}{Optional survival time vector used when target labels are not provided.}
-
-\item{event_var}{Optional survival event vector used when target labels are not provided.}
-
-\item{trait.positive}{Label in \code{event_var} that defines event = 1.}
 
 \item{cells_extra}{Optional character vector of additional cell labels to include.}
 
@@ -58,14 +51,15 @@ prepare_multideconv_folds(
 \item When \code{bestune} is \code{NULL} (fold mode): invisibly, a named list of processed folds, each also saved to
 \verb{Results/fold_<fold name>.rds}. Each fold contains:
 \itemize{
-\item \code{train_data}: Processed training data with cell group features and \code{target} column.
-\item \code{test_data}: Test data projected into the learned cell group feature space.
+\item \code{train_data}: Processed training data with cell group features and the outcome columns.
+\item \code{test_data}: Test data projected into the learned cell group feature space (plus \code{time} and
+\code{event} for survival).
 \item \code{obs_test}: True class labels (or survival time/event) for the test set.
 \item \code{rowIndex}: Row indices corresponding to the test set.
 \item \code{fold_name}: Fold name if provided in the \code{folds} list.
 }
 \item When \code{bestune} is provided: a list with the processed feature matrix for the full dataset (including
-the \code{target} column), the full \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}} output, and \code{bestune}.
+the outcome columns), the full \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}} output, and \code{bestune}.
 }
 }
 \description{

@@ -98,6 +98,32 @@ head(sort(colMeans(abs(shap)), decreasing = TRUE), 10)
 
 SHAP values are in units of predicted probability of response: a positive value means the subgroup pushed the prediction of that sample towards response. The final model was trained on the samples it explains, so SHAP values describe how the model uses each subgroup on the training data; compare its training performance with the cross-validation performance to check that it does not overfit. See the `pipeML` vignette for plots of SHAP values per sample and across samples.
 
+### Survival outcomes
+
+`prepare_multideconv_folds()` also works for survival analysis. `pipeML` gives it the survival time and event of the training samples (in the `time` and `event` columns of its `data` argument), so no extra argument is needed:
+
+```{r, eval = FALSE}
+res_survival <- pipeML::compute_features.training.ML(features_train = deconv_train,
+                                                     task_type = "survival",
+                                                     time_var = traitData_train$time,
+                                                     event_var = traitData_train$event,   # 1 = event, 0 = censored
+                                                     k_folds = 5,
+                                                     n_rep = 10,
+                                                     ncores = 3,
+                                                     fold_construction_fun = prepare_multideconv_folds,
+                                                     fold_construction_args_fixed = list(ncores = 3))
+
+dt_test <- multideconv::replicate_deconvolution_subgroups(deconv_res = res_survival$Custom_output,
+                                                          deconvolution_test = deconv_test)
+
+pred_survival <- pipeML::compute_prediction(model = res_survival$Model,
+                                            test_data = dt_test,
+                                            task_type = "survival",
+                                            time_var = traitData_test$time,
+                                            event_var = traitData_test$event)
+pred_survival$c_index
+```
+
 **NOTE:** `multideconv` is built on top of existing frameworks and makes extensive use of the R packages `immunedeconv` (@10.1093/bioinformatics/btz363) and `omnideconv` (@Dietrich2024.06.10.598226). If you use `multideconv` in your work, please cite our package along with these foundational packages. We also encourage you to cite the individual deconvolution algorithms you employ in your analysis.
 
 | method | license | citation |

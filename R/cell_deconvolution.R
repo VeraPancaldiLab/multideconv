@@ -2580,13 +2580,12 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' For each fold, it generates training and test datasets by computing deconvolution subgroups features from the deconvolution matrix.
 #' It also processes the entire dataset once to provide a final processed training set.
 #'
-#' @param data A matrix or data frame of deconvolution features (samples x features) and a column named `target` indicating class labels.
+#' @param data A data frame of deconvolution features (samples x features) plus the outcome, as given by pipeML:
+#'   a `target` column (classification) or `time` and `event` columns (survival). The outcome columns are not used
+#'   to compute the subgroups; they are added back to the returned data.
 #' @param folds A list of integer vectors indicating row indices for the training set in each fold. The test set is implicitly defined as the complement.
 #' @param bestune Optional tuning object; when provided, folds are skipped and full-data processing is returned.
 #' @param ncores Number of CPU cores for parallel fold processing.
-#' @param time_var Optional survival time vector used when target labels are not provided.
-#' @param event_var Optional survival event vector used when target labels are not provided.
-#' @param trait.positive Label in `event_var` that defines event = 1.
 #' @param cells_extra Optional character vector of additional cell labels to include.
 #' @param corr Minimum correlation threshold passed to [compute.deconvolution.analysis()].
 #' @param corr_type Correlation type passed to [compute.deconvolution.analysis()].
@@ -2600,14 +2599,15 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' - When `bestune` is `NULL` (fold mode): invisibly, a named list of processed folds, each also saved to
 #'   `Results/fold_<fold name>.rds`. Each fold contains:
 #'     \itemize{
-#'       \item \code{train_data}: Processed training data with cell group features and `target` column.
-#'       \item \code{test_data}: Test data projected into the learned cell group feature space.
+#'       \item \code{train_data}: Processed training data with cell group features and the outcome columns.
+#'       \item \code{test_data}: Test data projected into the learned cell group feature space (plus `time` and
+#'         `event` for survival).
 #'       \item \code{obs_test}: True class labels (or survival time/event) for the test set.
 #'       \item \code{rowIndex}: Row indices corresponding to the test set.
 #'       \item \code{fold_name}: Fold name if provided in the `folds` list.
 #'     }
 #' - When `bestune` is provided: a list with the processed feature matrix for the full dataset (including
-#'   the `target` column), the full [compute.deconvolution.analysis()] output, and `bestune`.
+#'   the outcome columns), the full [compute.deconvolution.analysis()] output, and `bestune`.
 #'
 #' @details The function runs the `compute.deconvolution.analysis()` function on each fold's training set and uses the trained projection
 #' to compute the test set representation. It also runs multideconv on the full dataset to return the complete processed training set.
@@ -2621,9 +2621,6 @@ prepare_multideconv_folds <- function(
     folds = NULL,
     bestune = NULL,
     ncores = NULL,
-    time_var = NULL,
-    event_var = NULL,
-    trait.positive = NULL,
     cells_extra = NULL,
     corr = 0.7,
     corr_type = "spearman",
@@ -2634,23 +2631,23 @@ prepare_multideconv_folds <- function(
     batch = NULL
 ) {
 
+  # Outcome columns given by pipeML in data: "target" (classification) or "time" + "event" (survival).
+  # They are removed before computing the deconvolution subgroups and added back to the returned data
+  if ("target" %in% colnames(data)) {
+    outcome_cols <- "target"
+  } else if (all(c("time", "event") %in% colnames(data))) {
+    outcome_cols <- c("time", "event")
+  } else {
+    stop("data must contain a 'target' column (classification) or 'time' and 'event' columns (survival)")
+  }
+  survival <- !identical(outcome_cols, "target")
+  outcome <- data[, outcome_cols, drop = FALSE]
+  data <- data[, setdiff(colnames(data), outcome_cols), drop = FALSE]
+
   # -----------------------------
   # CASE 1: bestune provided - compute full training once
   # -----------------------------
   if (!is.null(bestune)) {
-
-    # Determine target / survival info
-    if ("target" %in% colnames(data)) {
-      obs_train <- data$target
-      data$target <- NULL
-    } else if (!is.null(time_var) && !is.null(event_var)) {
-      obs_train <- list(
-        time  = time_var,
-        event = as.numeric(event_var == trait.positive)
-      )
-    } else {
-      stop("Data must contain 'target' column or both time_var and event_var")
-    }
 
     # Compute deconvolution on full dataset
     deconv_subgroups_final <- compute.deconvolution.analysis(
@@ -2667,14 +2664,7 @@ prepare_multideconv_folds <- function(
       verbose = FALSE
     )
 
-    train_cell_data_final <- deconv_subgroups_final[[1]] %>%
-      dplyr::mutate(target = if (is.list(obs_train)) NA else obs_train)
-
-    # For survival info
-    if (is.list(obs_train)) {
-      train_cell_data_final <- train_cell_data_final %>%
-        dplyr::mutate(time = obs_train$time, event = obs_train$event)
-    }
+    train_cell_data_final <- cbind(deconv_subgroups_final[[1]], outcome)
 
     custom_output <- deconv_subgroups_final
 
@@ -2698,23 +2688,9 @@ prepare_multideconv_folds <- function(
     train_idx <- folds[[i]]
     test_idx  <- setdiff(seq_len(nrow(data)), train_idx)
 
-    # TRAIN
-    train_data <- data[train_idx, , drop = FALSE]
-
-    if ("target" %in% colnames(train_data)) {
-      obs_train <- train_data$target
-      train_data$target <- NULL
-    } else if (!is.null(time_var) && !is.null(event_var)) {
-      obs_train <- list(
-        time  = time_var[train_idx],
-        event = as.numeric(event_var[train_idx] == trait.positive)
-      )
-    } else {
-      stop("Data must contain 'target' column or both time_var and event_var")
-    }
-
+    # TRAIN: subgroups learned on the training samples of the fold
     deconv_subgroups <- compute.deconvolution.analysis(
-      deconvolution = train_data,
+      deconvolution = data[train_idx, , drop = FALSE],
       corr = corr,
       corr_type = corr_type,
       zero_thr = zero_thr,
@@ -2726,28 +2702,16 @@ prepare_multideconv_folds <- function(
       return = FALSE
     )
 
-    train_cell_data <- deconv_subgroups[[1]] %>%
-      dplyr::mutate(target = if (is.list(obs_train)) NA else obs_train)
+    train_cell_data <- cbind(deconv_subgroups[[1]], outcome[train_idx, , drop = FALSE])
 
-    if (is.list(obs_train)) {
-      train_cell_data <- train_cell_data %>%
-        dplyr::mutate(time = obs_train$time, event = obs_train$event)
-    }
-
-    # TEST
-    test_data_raw <- data[test_idx, , drop = FALSE]
-    obs_test <- if ("target" %in% colnames(data)) data$target[test_idx] else list(
-      time  = time_var[test_idx],
-      event = as.numeric(event_var[test_idx] == trait.positive)
-    )
-    test_data_raw$target <- NULL
-
-    test_data <- replicate_deconvolution_subgroups(deconv_subgroups, test_data_raw)
+    # TEST: test samples projected onto the subgroups learned on the training samples
+    test_data <- replicate_deconvolution_subgroups(deconv_subgroups, data[test_idx, , drop = FALSE])
+    if (survival) test_data <- cbind(test_data, outcome[test_idx, , drop = FALSE])  # pipeML evaluates each fold with them
 
     list(
       train_data = train_cell_data,
       test_data  = test_data,
-      obs_test   = obs_test,
+      obs_test   = if (survival) outcome[test_idx, , drop = FALSE] else outcome$target[test_idx],
       rowIndex   = test_idx,
       fold_name  = names(folds)[i]
     )

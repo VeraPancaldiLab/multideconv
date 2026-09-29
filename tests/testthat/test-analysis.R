@@ -83,3 +83,28 @@ test_that("prepare_multideconv_folds returns and saves the processed folds", {
   expect_true(all(file.exists(file.path("Results", c("fold_F1.rds", "fold_F2.rds")))))
   expect_equal(nrow(folds$F1$test_data), 5)
 })
+
+test_that("prepare_multideconv_folds handles survival outcomes given as time and event columns", {
+  data("deconvolution", package = "multideconv", envir = environment())
+  dd <- deconvolution
+  dd$time <- seq_len(nrow(dd)) * 10
+  dd$event <- rep(c(1, 0), length.out = nrow(dd))
+
+  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10, F2 = 5:15), ncores = 1, seed = 1)
+  tr <- folds$F1$train_data; te <- folds$F1$test_data
+  expect_true(all(c("time", "event") %in% colnames(tr)))
+  expect_true(all(c("time", "event") %in% colnames(te)))
+  expect_false("target" %in% colnames(tr))
+  expect_equal(te$time, dd$time[folds$F1$rowIndex])
+  expect_setequal(setdiff(colnames(te), c("time", "event")), setdiff(colnames(tr), c("time", "event")))
+
+  final <- prepare_multideconv_folds(dd[1:15, ], bestune = data.frame(), seed = 1)
+  expect_equal(final[[1]]$event, dd$event[1:15])
+  expect_false("target" %in% colnames(final[[1]]))
+})
+
+test_that("prepare_multideconv_folds requires an outcome in data", {
+  data("deconvolution", package = "multideconv", envir = environment())
+  expect_error(prepare_multideconv_folds(deconvolution, folds = list(F1 = 1:10), ncores = 1),
+               "must contain a 'target' column")
+})
