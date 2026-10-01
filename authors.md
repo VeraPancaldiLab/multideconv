@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/VeraPancaldiLab/multideconv/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/VeraPancaldiLab/multideconv/blob/v0.2.0/DESCRIPTION)
 
 Hurtado M, Pancaldi V (2026). *multideconv: Integrative Pipeline for
 Cell Type Deconvolution from Bulk RNAseq using First and Second
