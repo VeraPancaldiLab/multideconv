@@ -5,7 +5,8 @@ test_that("get_cell_type_nomenclature returns the vocabulary plus extras", {
   ct <- get_cell_type_nomenclature()
   expect_type(ct, "character")
   expect_true(all(c("B.cells", "CD8.cells", "CD4.regulatory") %in% ct))
-  expect_equal(tail(get_cell_type_nomenclature("Myeloid.cells"), 1), "Myeloid.cells")
+  expect_equal(tail(get_cell_type_nomenclature("mesenchymal"), 1), "mesenchymal")
+  expect_false(any(duplicated(get_cell_type_nomenclature("Myeloid.cells"))))
 })
 
 test_that("standardize_celltype_colnames harmonises macrophage names", {
@@ -24,7 +25,7 @@ test_that("preprocessing handles method-signature combinations with a single col
 
 test_that("compute.deconvolution.analysis runs and its subgroups replicate exactly", {
   data("deconvolution", package = "multideconv", envir = environment())
-  res <- compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)
+  res <- compute.deconvolution.analysis(deconvolution, corr = 0.7)
   expect_named(res)
   expect_equal(nrow(res[["Deconvolution matrix"]]), nrow(deconvolution))
   expect_false(dir.exists("Results")) # return = FALSE must not write anything
@@ -35,34 +36,38 @@ test_that("compute.deconvolution.analysis runs and its subgroups replicate exact
                as.matrix(res[["Deconvolution matrix"]]), ignore_attr = TRUE)
 })
 
-test_that("removeCorrelatedFeatures prunes correlated pairs with and without batch", {
-  set.seed(1)
-  d <- data.frame(a = rnorm(20)); d$b <- d$a + rnorm(20, sd = 0.01); d$c <- rnorm(20); d$e <- rnorm(20)
-  expect_length(multideconv:::removeCorrelatedFeatures(d, 0.9, "x", 1)[[1]], 3)
-  kept_batch <- suppressWarnings(multideconv:::removeCorrelatedFeatures(d, 0.9, "x", 1, batch = rep(1:2, 10))[[1]])
-  expect_equal(ncol(kept_batch), 3)
+test_that("compute_subgroups only groups features whose every pair correlates >= corr, whatever the column order", {
+  set.seed(1); n <- 30; a <- rnorm(n); b <- rnorm(n)
+  y <- data.frame(M1_S_B.cells = a + rnorm(n, sd = 0.2), M2_S_B.cells = a + rnorm(n, sd = 0.2), M3_S_B.cells = a + rnorm(n, sd = 0.2),
+                  M4_S_B.cells = b + rnorm(n, sd = 0.2), M5_S_B.cells = b + rnorm(n, sd = 0.2), M6_S_B.cells = rnorm(n))
+  res <- multideconv:::compute_subgroups(y, 0.7, "spearman", "B.cells")
+  expect_equal(lapply(res[[2]], sort), list(B.cells_Subgroup.1 = c("M1_S_B.cells", "M2_S_B.cells", "M3_S_B.cells"),
+                                            B.cells_Subgroup.2 = c("M4_S_B.cells", "M5_S_B.cells")))
+  for (g in res[[2]]) expect_gte(min(cor(y[, g], method = "spearman")), 0.7)
+  shuffled <- multideconv:::compute_subgroups(y[, c(6, 4, 2, 5, 1, 3)], 0.7, "spearman", "B.cells")
+  expect_equal(lapply(shuffled[[2]], sort), lapply(res[[2]], sort))
 })
 
-test_that("compute_subgroups keeps correct names when dropping duplicated features", {
+test_that("compute_subgroups groups same-method features and keeps names of ungrouped ones", {
   set.seed(3)
   y <- data.frame(A_S1_B.cells = runif(20)); y$A_S2_B.cells <- y$A_S1_B.cells
   y$C_S_B.cells <- runif(20); y$D_S_B.cells <- runif(20)
-  out <- multideconv:::compute_subgroups(y, 0.7, "spearman", "B.cells")[[1]]
-  expect_equal(colnames(out), c("A_S1_B.cells", "C_S_B.cells", "D_S_B.cells"))
-  expect_equal(out$C_S_B.cells, y$C_S_B.cells)
+  res <- multideconv:::compute_subgroups(y, 0.7, "spearman", "B.cells")
+  expect_length(res, 2)
+  expect_setequal(colnames(res[[1]]), c("B.cells_Subgroup.1", "C_S_B.cells", "D_S_B.cells"))
+  expect_equal(res[[2]]$B.cells_Subgroup.1, c("A_S1_B.cells", "A_S2_B.cells"))
+  expect_equal(res[[1]]$C_S_B.cells, y$C_S_B.cells)
 })
 
-test_that("replicate_deconvolution_subgroups does not confuse Iteration.1 with Iteration.10", {
+test_that("replicate_deconvolution_subgroups computes subgroup medians, also from earlier subgroups", {
   test <- data.frame(a = 1:3, b = 3:5, c = 10:12)
-  groups <- list(B.cells = list(
-    B.cells_Subgroup.1.Iteration.1 = c("a", "b"),
-    B.cells_Subgroup.1.Iteration.10 = c("c", "B.cells_Subgroup.1.Iteration.1")
-  ))
+  groups <- list(B.cells = list(B.cells_Subgroup.1 = c("a", "b"),
+                                B.cells_Subgroup.2 = c("c", "B.cells_Subgroup.1")))
   res <- list(`Deconvolution subgroups composition` = groups,
-              `Deconvolution matrix` = data.frame(B.cells_Subgroup.1.Iteration.10 = 0))
-  expect_equal(multideconv:::find.maximum.iteration(groups), 10)
+              `Deconvolution matrix` = data.frame(B.cells_Subgroup.1 = 0, B.cells_Subgroup.2 = 0))
   out <- replicate_deconvolution_subgroups(res, test)
-  expect_equal(out$B.cells_Subgroup.1.Iteration.10, c(6, 7, 8))
+  expect_equal(out$B.cells_Subgroup.1, c(2, 3, 4))
+  expect_equal(out$B.cells_Subgroup.2, c(6, 7, 8))
 })
 
 test_that("compute.benchmark works with one or many ground-truth cell types", {
@@ -78,7 +83,7 @@ test_that("prepare_multideconv_folds returns and saves the processed folds", {
   data("deconvolution", package = "multideconv", envir = environment())
   dd <- deconvolution
   dd$target <- rep(c("a", "b"), length.out = nrow(dd))
-  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10, F2 = 5:15), ncores = 1, seed = 1)
+  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10, F2 = 5:15), ncores = 1)
   expect_named(folds, c("F1", "F2"))
   expect_true(all(file.exists(file.path("Results", c("fold_F1.rds", "fold_F2.rds")))))
   expect_equal(nrow(folds$F1$test_data), 5)
@@ -90,7 +95,7 @@ test_that("prepare_multideconv_folds handles survival outcomes given as time and
   dd$time <- seq_len(nrow(dd)) * 10
   dd$event <- rep(c(1, 0), length.out = nrow(dd))
 
-  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10, F2 = 5:15), ncores = 1, seed = 1)
+  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10, F2 = 5:15), ncores = 1)
   tr <- folds$F1$train_data; te <- folds$F1$test_data
   expect_true(all(c("time", "event") %in% colnames(tr)))
   expect_true(all(c("time", "event") %in% colnames(te)))
@@ -98,7 +103,7 @@ test_that("prepare_multideconv_folds handles survival outcomes given as time and
   expect_equal(te$time, dd$time[folds$F1$rowIndex])
   expect_setequal(setdiff(colnames(te), c("time", "event")), setdiff(colnames(tr), c("time", "event")))
 
-  final <- prepare_multideconv_folds(dd[1:15, ], bestune = data.frame(), seed = 1)
+  final <- prepare_multideconv_folds(dd[1:15, ], bestune = data.frame())
   expect_equal(final[[1]]$event, dd$event[1:15])
   expect_false("target" %in% colnames(final[[1]]))
 })

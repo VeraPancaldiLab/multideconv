@@ -19,3 +19,4 @@ A matrix with cell abundance deconvolve with DWLS
 \description{
 Computes DWLS
 }
+\keyword{internal}

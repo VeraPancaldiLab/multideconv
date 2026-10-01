@@ -13,9 +13,7 @@ prepare_multideconv_folds(
   corr = 0.7,
   corr_type = "spearman",
   zero_thr = 0.9,
-  var_quantile = 0.25,
-  prune_thr = 0.9,
-  seed = NULL,
+  cv_thr = 0.1,
   batch = NULL
 )
 }
@@ -38,11 +36,7 @@ to compute the subgroups; they are added back to the returned data.}
 
 \item{zero_thr}{Maximum zero fraction passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 
-\item{var_quantile}{Variance quantile threshold passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
-
-\item{prune_thr}{Pruning correlation threshold passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
-
-\item{seed}{Random seed passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+\item{cv_thr}{Minimum coefficient of variation passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 
 \item{batch}{Optional batch covariate passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 }

@@ -5,11 +5,7 @@ utils::globalVariables(c("i", ".", "samples_ids", "multisession", ".data", "Pati
 #' Canonical cell type nomenclature used by multideconv
 #'
 #' Returns the vector of cell type names recognized by multideconv's deconvolution
-#' output column naming (e.g. "B.cells", "CD4.regulatory", "Plasma"). This is the
-#' single source of truth for the package's cell type vocabulary; other packages
-#' (e.g. CellTFusion) that need to parse cell type names out of deconvolution
-#' column names should call this function rather than hardcoding their own copy,
-#' so they stay in sync when the vocabulary changes here.
+#' output column naming (e.g. "B.cells", "CD4.regulatory", "Plasma"). 
 #'
 #' @param cells_extra Optional character vector of additional cell type names to append
 #'   (e.g. names from a custom signature not included by default).
@@ -17,13 +13,14 @@ utils::globalVariables(c("i", ".", "samples_ids", "multisession", ".data", "Pati
 #' @returns A character vector of cell type names.
 #' @examples
 #' get_cell_type_nomenclature()
-#' get_cell_type_nomenclature(cells_extra = "Myeloid.cells")
+#' get_cell_type_nomenclature(cells_extra = "mesenchymal")
 #' @export
 get_cell_type_nomenclature <- function(cells_extra = NULL) {
   cell_types <- c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
                   "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory", "T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
-                  "Eosinophils", "Plasma", "Myocytes", "Fibroblasts", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF", "uncharacterized_cell")
-  c(cell_types, cells_extra)
+                  "Eosinophils", "Plasma", "Myocytes", "Fibroblasts", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF",
+                  "Dendritic.plasmacytoid.cells", "Myeloid.cells", "Basophils", "Epithelial", "Pericytes", "Mural.cells", "T.cells.proliferative", "uncharacterized_cell")
+  unique(c(cell_types, cells_extra))
 }
 
 #' Standardize Cell Type Column Names
@@ -47,11 +44,7 @@ standardize_celltype_colnames <- function(mat) {
   colnames(mat) <- gsub(" ", ".", colnames(mat))
   empty <- mat[, FALSE, drop = FALSE]
   # initialize blocks as a named list of empty matrices
-  names_order <- c("B","B.naive","B.memory","Macrophages","M0","M1","M2","Monocytes","Neutrophils",
-                   "NK","NK.activated","NK.resting","NKT","CD4","CD4.memory.activated","CD4.memory.resting",
-                   "CD4.naive","CD4.non.regulatory","CD4.regulatory","CD8","Thelper","Tgamma","Dendritic",
-                   "Dendritic.activated","Dendritic.resting","Cancer","Endothelial","Eosinophils","Plasma",
-                   "Myocytes","Fibroblasts","Mast","Mast.activated","Mast.resting","CAF","extra")
+  names_order <- c(setdiff(get_cell_type_nomenclature(), "uncharacterized_cell"), "extra")
 
   blocks <- setNames(rep(list(empty), length(names_order)), names_order)
 
@@ -80,38 +73,38 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## Macrophages and subtypes
-  blocks$Macrophages <- mat[, cols("acrophage|^Macro$"), drop = FALSE]
-  blocks$M0 <- mat[, cols("M0"), drop = FALSE]
-  blocks$M1 <- mat[, cols("M1"), drop = FALSE]
-  blocks$M2 <- mat[, cols("M2"), drop = FALSE]
-  if (length(cols("LM22", blocks$M2)) > 0) blocks$M2 <- blocks$M2[, -cols("LM22", blocks$M2), drop = FALSE]
+  blocks$Macrophages.cells <- mat[, cols("acrophage|^Macro$"), drop = FALSE]
+  blocks$Macrophages.M0 <- mat[, cols("M0"), drop = FALSE]
+  blocks$Macrophages.M1 <- mat[, cols("M1"), drop = FALSE]
+  blocks$Macrophages.M2 <- mat[, cols("M2"), drop = FALSE]
+  if (length(cols("LM22", blocks$Macrophages.M2)) > 0) blocks$Macrophages.M2 <- blocks$Macrophages.M2[, -cols("LM22", blocks$Macrophages.M2), drop = FALSE]
   test <- mat[, cols("LM22"), drop = FALSE]
   if (ncol(test)) test <- test[, cols("Macrophages.M2", test), drop = FALSE]
-  if (ncol(test)) blocks$M2 <- cbind(blocks$M2, test)
+  if (ncol(test)) blocks$Macrophages.M2 <- cbind(blocks$Macrophages.M2, test)
 
-  idx <- which(colnames(blocks$Macrophages) %in% c(colnames(blocks$M0), colnames(blocks$M1), colnames(blocks$M2)))
-  if (length(idx)) blocks$Macrophages <- blocks$Macrophages[, -idx, drop = FALSE]
-  if (ncol(blocks$Macrophages)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages), drop = FALSE]
-    colnames(blocks$Macrophages) <- rn(colnames(blocks$Macrophages),
+  idx <- which(colnames(blocks$Macrophages.cells) %in% c(colnames(blocks$Macrophages.M0), colnames(blocks$Macrophages.M1), colnames(blocks$Macrophages.M2)))
+  if (length(idx)) blocks$Macrophages.cells <- blocks$Macrophages.cells[, -idx, drop = FALSE]
+  if (ncol(blocks$Macrophages.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages.cells), drop = FALSE]
+    colnames(blocks$Macrophages.cells) <- rn(colnames(blocks$Macrophages.cells),
       "^macrophages?([._-]cells?)?$|^macro$", "Macrophages.cells")
   }
 
-  if (ncol(blocks$M0)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$M0), drop = FALSE]
-    colnames(blocks$M0) <- rn(colnames(blocks$M0),
+  if (ncol(blocks$Macrophages.M0)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages.M0), drop = FALSE]
+    colnames(blocks$Macrophages.M0) <- rn(colnames(blocks$Macrophages.M0),
       "^macrophages?[._-]?m0$|^m0$", "Macrophages.M0")
   }
 
-  if (ncol(blocks$M1)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$M1), drop = FALSE]
-    colnames(blocks$M1) <- rn(colnames(blocks$M1),
+  if (ncol(blocks$Macrophages.M1)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages.M1), drop = FALSE]
+    colnames(blocks$Macrophages.M1) <- rn(colnames(blocks$Macrophages.M1),
       "^macrophages?[._-]?m1$|^m1$", "Macrophages.M1")
   }
 
-  if (ncol(blocks$M2)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$M2), drop = FALSE]
-    colnames(blocks$M2) <- rn(colnames(blocks$M2),
+  if (ncol(blocks$Macrophages.M2)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Macrophages.M2), drop = FALSE]
+    colnames(blocks$Macrophages.M2) <- rn(colnames(blocks$Macrophages.M2),
       "^macrophages?[._-]?m2$|^m2$", "Macrophages.M2")
   }
 
@@ -132,20 +125,20 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## NK and subtypes
-  blocks$NK <- mat[, cols("NK"), drop = FALSE]
-  blocks$NKT <- if (ncol(blocks$NK)) blocks$NK[, cols("NKT", blocks$NK), drop = FALSE] else empty
-  blocks$NK.activated <- if (ncol(blocks$NK)) blocks$NK[, cols("activated", blocks$NK, value = TRUE), drop = FALSE] else empty
-  blocks$NK.resting <- if (ncol(blocks$NK)) blocks$NK[, cols("resting", blocks$NK, value = TRUE), drop = FALSE] else empty
-  idx <- which(colnames(blocks$NK) %in% c(colnames(blocks$NK.activated), colnames(blocks$NK.resting), colnames(blocks$NKT)))
-  if (length(idx)) blocks$NK <- blocks$NK[, -idx, drop = FALSE]
-  if (ncol(blocks$NK)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$NK), drop = FALSE]
-    colnames(blocks$NK) <- rn(colnames(blocks$NK),
+  blocks$NK.cells <- mat[, cols("NK"), drop = FALSE]
+  blocks$NKT.cells <- if (ncol(blocks$NK.cells)) blocks$NK.cells[, cols("NKT", blocks$NK.cells), drop = FALSE] else empty
+  blocks$NK.activated <- if (ncol(blocks$NK.cells)) blocks$NK.cells[, cols("activated", blocks$NK.cells, value = TRUE), drop = FALSE] else empty
+  blocks$NK.resting <- if (ncol(blocks$NK.cells)) blocks$NK.cells[, cols("resting", blocks$NK.cells, value = TRUE), drop = FALSE] else empty
+  idx <- which(colnames(blocks$NK.cells) %in% c(colnames(blocks$NK.activated), colnames(blocks$NK.resting), colnames(blocks$NKT.cells)))
+  if (length(idx)) blocks$NK.cells <- blocks$NK.cells[, -idx, drop = FALSE]
+  if (ncol(blocks$NK.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$NK.cells), drop = FALSE]
+    colnames(blocks$NK.cells) <- rn(colnames(blocks$NK.cells),
       "^nk[._-]?cells?$|^nk$", "NK.cells")
   }
-  if (ncol(blocks$NKT)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$NKT), drop = FALSE]
-    colnames(blocks$NKT) <- rn(colnames(blocks$NKT),
+  if (ncol(blocks$NKT.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$NKT.cells), drop = FALSE]
+    colnames(blocks$NKT.cells) <- rn(colnames(blocks$NKT.cells),
       "^nkt[._-]?cells?$|^nkt$", "NKT.cells")
   }
   if (ncol(blocks$NK.activated)) {
@@ -165,26 +158,26 @@ standardize_celltype_colnames <- function(mat) {
   is_tcell_variant <- grepl("(^|[^a-z0-9])(t|tcell|t\\.cells|t_cells|t cells)([^a-z0-9]|$)", lower, perl = TRUE)
   is_memory <- grepl("memory", lower)
   cd4_idx <- which(is_cd4 | (is_tcell_variant & is_memory))
-  blocks$CD4 <- mat[, cd4_idx, drop = FALSE]
+  blocks$CD4.cells <- mat[, cd4_idx, drop = FALSE]
 
-  blocks$CD4.memory.activated <- if (ncol(blocks$CD4)) blocks$CD4[, cols("activated", blocks$CD4), drop = FALSE] else empty
-  blocks$CD4.memory.resting <- if (ncol(blocks$CD4)) blocks$CD4[, cols("resting", blocks$CD4), drop = FALSE] else empty
-  blocks$CD4.naive <- if (ncol(blocks$CD4)) blocks$CD4[, cols("naive", blocks$CD4), drop = FALSE] else empty
-  if (ncol(blocks$CD4)) {
-    cn <- colnames(blocks$CD4)
+  blocks$CD4.memory.activated <- if (ncol(blocks$CD4.cells)) blocks$CD4.cells[, cols("activated", blocks$CD4.cells), drop = FALSE] else empty
+  blocks$CD4.memory.resting <- if (ncol(blocks$CD4.cells)) blocks$CD4.cells[, cols("resting", blocks$CD4.cells), drop = FALSE] else empty
+  blocks$CD4.naive <- if (ncol(blocks$CD4.cells)) blocks$CD4.cells[, cols("naive", blocks$CD4.cells), drop = FALSE] else empty
+  if (ncol(blocks$CD4.cells)) {
+    cn <- colnames(blocks$CD4.cells)
     canon <- stringr::str_to_lower(stringr::str_replace_all(cn, "[ _\\-]+", "."))
     non_reg_idx <- grep("(^|\\.)non[._-]?regulatory(\\.|$)", canon, perl = TRUE)
     reg_idx <- grep("(^|\\.)((tregs?)|tregulatory|t\\.cells\\.regulatory)(\\.|$)", canon, perl = TRUE)
 
-    blocks$CD4.non.regulatory <- if(length(non_reg_idx) > 0) blocks$CD4[, non_reg_idx, drop = FALSE] else empty
-    blocks$CD4.regulatory <- if(length(reg_idx) > 0) blocks$CD4[, reg_idx, drop = FALSE] else empty
+    blocks$CD4.non.regulatory <- if(length(non_reg_idx) > 0) blocks$CD4.cells[, non_reg_idx, drop = FALSE] else empty
+    blocks$CD4.regulatory <- if(length(reg_idx) > 0) blocks$CD4.cells[, reg_idx, drop = FALSE] else empty
   }
 
-  idx <- which(colnames(blocks$CD4) %in% c(colnames(blocks$CD4.memory.activated), colnames(blocks$CD4.memory.resting), colnames(blocks$CD4.naive), colnames(blocks$CD4.non.regulatory), colnames(blocks$CD4.regulatory)))
-  if (length(idx)) blocks$CD4 <- blocks$CD4[, -idx, drop = FALSE]
-  if (ncol(blocks$CD4)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4), drop = FALSE]
-    colnames(blocks$CD4) <- rn(colnames(blocks$CD4),
+  idx <- which(colnames(blocks$CD4.cells) %in% c(colnames(blocks$CD4.memory.activated), colnames(blocks$CD4.memory.resting), colnames(blocks$CD4.naive), colnames(blocks$CD4.non.regulatory), colnames(blocks$CD4.regulatory)))
+  if (length(idx)) blocks$CD4.cells <- blocks$CD4.cells[, -idx, drop = FALSE]
+  if (ncol(blocks$CD4.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$CD4.cells), drop = FALSE]
+    colnames(blocks$CD4.cells) <- rn(colnames(blocks$CD4.cells),
       "^(t[._-]?cells?[._-]?)?cd4([._-]?t[._-]?cells?|[._-]?cells?|[._-]?)?$|^cd4t$", "CD4.cells")
   }
   if (ncol(blocks$CD4.memory.activated)) {
@@ -219,49 +212,55 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## CD8
-  blocks$CD8 <- mat[, cols("CD8"), drop = FALSE]
-  if (ncol(blocks$CD8)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$CD8), drop = FALSE]
-    colnames(blocks$CD8) <- rn(colnames(blocks$CD8),
+  blocks$CD8.cells <- mat[, cols("CD8"), drop = FALSE]
+  if (ncol(blocks$CD8.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$CD8.cells), drop = FALSE]
+    colnames(blocks$CD8.cells) <- rn(colnames(blocks$CD8.cells),
       "^(t[._-]?cells?[._-]?)?cd8([._-]?t[._-]?cells?|[._-]?cells?|[._-]?)?$|^cd8t$", "CD8.cells")
   }
 
   ## Thelper
-  blocks$Thelper <- mat[, cols("helper"), drop = FALSE]
-  if (ncol(blocks$Thelper)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Thelper), drop = FALSE]
-    colnames(blocks$Thelper) <- rn(colnames(blocks$Thelper),
+  blocks$T.cells.helper <- mat[, cols("helper"), drop = FALSE]
+  if (ncol(blocks$T.cells.helper)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$T.cells.helper), drop = FALSE]
+    colnames(blocks$T.cells.helper) <- rn(colnames(blocks$T.cells.helper),
       "^t[._-]?cells?[._-]?(follicular[._-])?helper$", "T.cells.helper")
   }
 
   ## Tgamma
-  blocks$Tgamma <- mat[, cols("gamma"), drop = FALSE]
-  if (ncol(blocks$Tgamma)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Tgamma), drop = FALSE]
-    colnames(blocks$Tgamma) <- rn(colnames(blocks$Tgamma),
+  blocks$T.cells.gamma.delta <- mat[, cols("gamma"), drop = FALSE]
+  if (ncol(blocks$T.cells.gamma.delta)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$T.cells.gamma.delta), drop = FALSE]
+    colnames(blocks$T.cells.gamma.delta) <- rn(colnames(blocks$T.cells.gamma.delta),
       "^t[._-]?cells?[._-]?gamma[._-]?delta$", "T.cells.gamma.delta")
   }
 
   ## Dendritic and subtypes
-  blocks$Dendritic <- mat[, cols("endritic"), drop = FALSE]
-  blocks$Dendritic.activated <- if (ncol(blocks$Dendritic)) blocks$Dendritic[, cols("activated", blocks$Dendritic), drop = FALSE] else empty
-  blocks$Dendritic.resting <- if (ncol(blocks$Dendritic)) blocks$Dendritic[, cols("resting", blocks$Dendritic), drop = FALSE] else empty
-  idx <- which(colnames(blocks$Dendritic) %in% c(colnames(blocks$Dendritic.activated), colnames(blocks$Dendritic.resting)))
-  if (length(idx)) blocks$Dendritic <- blocks$Dendritic[, -idx, drop = FALSE]
-  if (ncol(blocks$Dendritic)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic), drop = FALSE]
-    colnames(blocks$Dendritic) <- rn(colnames(blocks$Dendritic),
+  blocks$Dendritic.cells <- mat[, cols("endritic"), drop = FALSE]
+  blocks$Dendritic.activated.cells <- if (ncol(blocks$Dendritic.cells)) blocks$Dendritic.cells[, cols("activated", blocks$Dendritic.cells), drop = FALSE] else empty
+  blocks$Dendritic.resting.cells <- if (ncol(blocks$Dendritic.cells)) blocks$Dendritic.cells[, cols("resting", blocks$Dendritic.cells), drop = FALSE] else empty
+  blocks$Dendritic.plasmacytoid.cells <- if (ncol(blocks$Dendritic.cells)) blocks$Dendritic.cells[, cols("plasmacytoid", blocks$Dendritic.cells), drop = FALSE] else empty
+  idx <- which(colnames(blocks$Dendritic.cells) %in% c(colnames(blocks$Dendritic.activated.cells), colnames(blocks$Dendritic.resting.cells), colnames(blocks$Dendritic.plasmacytoid.cells)))
+  if (length(idx)) blocks$Dendritic.cells <- blocks$Dendritic.cells[, -idx, drop = FALSE]
+  if (ncol(blocks$Dendritic.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.cells), drop = FALSE]
+    colnames(blocks$Dendritic.cells) <- rn(colnames(blocks$Dendritic.cells),
       "^(myeloid[._-])?dendritic[._-]?cells?$|^dendritic$", "Dendritic.cells")
   }
-  if (ncol(blocks$Dendritic.activated)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.activated), drop = FALSE]
-    colnames(blocks$Dendritic.activated) <- rn(colnames(blocks$Dendritic.activated),
+  if (ncol(blocks$Dendritic.activated.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.activated.cells), drop = FALSE]
+    colnames(blocks$Dendritic.activated.cells) <- rn(colnames(blocks$Dendritic.activated.cells),
       "^(myeloid[._-])?dendritic[._-]?cells?[._-]activated$|^dendritic[._-]activated[._-]?cells?$", "Dendritic.activated.cells")
   }
-  if (ncol(blocks$Dendritic.resting)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.resting), drop = FALSE]
-    colnames(blocks$Dendritic.resting) <- rn(colnames(blocks$Dendritic.resting),
+  if (ncol(blocks$Dendritic.resting.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.resting.cells), drop = FALSE]
+    colnames(blocks$Dendritic.resting.cells) <- rn(colnames(blocks$Dendritic.resting.cells),
       "^(myeloid[._-])?dendritic[._-]?cells?[._-]resting$|^dendritic[._-]resting[._-]?cells?$", "Dendritic.resting.cells")
+  }
+  if (ncol(blocks$Dendritic.plasmacytoid.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Dendritic.plasmacytoid.cells), drop = FALSE]
+    colnames(blocks$Dendritic.plasmacytoid.cells) <- rn(colnames(blocks$Dendritic.plasmacytoid.cells),
+      "^plasmacytoid[._-]dendritic([._-]cells?)?$|^dendritic[._-]cells?[._-]plasmacytoid$", "Dendritic.plasmacytoid.cells")
   }
 
   ## CAF
@@ -312,68 +311,86 @@ standardize_celltype_colnames <- function(mat) {
   }
 
   ## Myocytes / Fibroblasts
-  blocks$Myocytes <- mat[, cols("yocytes"), drop = FALSE]
-  if (ncol(blocks$Myocytes)) mat <- mat[, !colnames(mat) %in% colnames(blocks$Myocytes), drop = FALSE]
+  blocks$Myocytes <- mat[, cols("yocyte"), drop = FALSE]
+  if (ncol(blocks$Myocytes)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Myocytes), drop = FALSE]
+    colnames(blocks$Myocytes) <- rn(colnames(blocks$Myocytes), "^myocytes?$", "Myocytes")
+  }
   blocks$Fibroblasts <- mat[, cols("ibroblast"), drop = FALSE]
-  if (ncol(blocks$Fibroblasts)) mat <- mat[, !colnames(mat) %in% colnames(blocks$Fibroblasts), drop = FALSE]
+  if (ncol(blocks$Fibroblasts)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Fibroblasts), drop = FALSE]
+    colnames(blocks$Fibroblasts) <- rn(colnames(blocks$Fibroblasts), "^fibroblasts?$", "Fibroblasts")
+  }
 
   ## Mast and subtypes
-  blocks$Mast <- mat[, cols("Mast"), drop = FALSE]
-  blocks$Mast.activated <- if (ncol(blocks$Mast)) blocks$Mast[, cols("activated", blocks$Mast), drop = FALSE] else empty
-  blocks$Mast.resting <- if (ncol(blocks$Mast)) blocks$Mast[, cols("resting", blocks$Mast), drop = FALSE] else empty
-  idx <- which(colnames(blocks$Mast) %in% c(colnames(blocks$Mast.activated), colnames(blocks$Mast.resting)))
-  if (length(idx)) blocks$Mast <- blocks$Mast[, -idx, drop = FALSE]
-  if (ncol(blocks$Mast)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast), drop = FALSE]
-    colnames(blocks$Mast) <- rn(colnames(blocks$Mast),
+  blocks$Mast.cells <- mat[, cols("Mast"), drop = FALSE]
+  blocks$Mast.activated.cells <- if (ncol(blocks$Mast.cells)) blocks$Mast.cells[, cols("activated", blocks$Mast.cells), drop = FALSE] else empty
+  blocks$Mast.resting.cells <- if (ncol(blocks$Mast.cells)) blocks$Mast.cells[, cols("resting", blocks$Mast.cells), drop = FALSE] else empty
+  idx <- which(colnames(blocks$Mast.cells) %in% c(colnames(blocks$Mast.activated.cells), colnames(blocks$Mast.resting.cells)))
+  if (length(idx)) blocks$Mast.cells <- blocks$Mast.cells[, -idx, drop = FALSE]
+  if (ncol(blocks$Mast.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.cells), drop = FALSE]
+    colnames(blocks$Mast.cells) <- rn(colnames(blocks$Mast.cells),
       "^mast[._-]?cells?$|^mast$", "Mast.cells")
   }
-  if (ncol(blocks$Mast.activated)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.activated), drop = FALSE]
-    colnames(blocks$Mast.activated) <- rn(colnames(blocks$Mast.activated),
+  if (ncol(blocks$Mast.activated.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.activated.cells), drop = FALSE]
+    colnames(blocks$Mast.activated.cells) <- rn(colnames(blocks$Mast.activated.cells),
       "^mast[._-]?cells?[._-]activated$|^mast[._-]activated([._-]cells?)?$", "Mast.activated.cells")
   }
-  if (ncol(blocks$Mast.resting)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.resting), drop = FALSE]
-    colnames(blocks$Mast.resting) <- rn(colnames(blocks$Mast.resting),
+  if (ncol(blocks$Mast.resting.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$Mast.resting.cells), drop = FALSE]
+    colnames(blocks$Mast.resting.cells) <- rn(colnames(blocks$Mast.resting.cells),
       "^mast[._-]?cells?[._-]resting$|^mast[._-]resting([._-]cells?)?$", "Mast.resting.cells")
   }
 
+  ## Other cell types: one block each (search pattern, rename pattern, standard name)
+  other <- list(
+    list("yeloid",     "^myeloid([._-]cells?)?$",                                   "Myeloid.cells"),
+    list("asophil",    "^basophils?$",                                              "Basophils"),
+    list("pithelial",  "^epithelial([._-]cells?)?$",                                "Epithelial"),
+    list("ericyte",    "^pericytes?$",                                              "Pericytes"),
+    list("mural",      "^mural([._-]cells?)?$",                                     "Mural.cells"),
+    list("proliferat", "^t[._-]?cells?[._-]?proliferat(ive|ing)$",                  "T.cells.proliferative")
+  )
+  for (o in other) {
+    blocks[[o[[3]]]] <- mat[, cols(o[[1]]), drop = FALSE]
+    if (ncol(blocks[[o[[3]]]])) {
+      mat <- mat[, !colnames(mat) %in% colnames(blocks[[o[[3]]]]), drop = FALSE]
+      colnames(blocks[[o[[3]]]]) <- rn(colnames(blocks[[o[[3]]]]), o[[2]], o[[3]])
+    }
+  }
+
   ## B cells (naive / memory) and final B
-  blocks$B.naive <- mat[, cols("naive"), drop = FALSE]
-  if (ncol(blocks$B.naive)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$B.naive), drop = FALSE]
-    colnames(blocks$B.naive) <- rn(colnames(blocks$B.naive),
+  blocks$B.naive.cells <- mat[, cols("naive"), drop = FALSE]
+  if (ncol(blocks$B.naive.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$B.naive.cells), drop = FALSE]
+    colnames(blocks$B.naive.cells) <- rn(colnames(blocks$B.naive.cells),
       "^b[._-]?cells?[._-]naive$|^b[._-]naive([._-]cells?)?$", "B.naive.cells")
   }
 
-  blocks$B.memory <- mat[, cols("memory"), drop = FALSE]
-  if (ncol(blocks$B.memory)) {
-    mat <- mat[, !colnames(mat) %in% colnames(blocks$B.memory), drop = FALSE]
-    colnames(blocks$B.memory) <- rn(colnames(blocks$B.memory),
+  blocks$B.memory.cells <- mat[, cols("memory"), drop = FALSE]
+  if (ncol(blocks$B.memory.cells)) {
+    mat <- mat[, !colnames(mat) %in% colnames(blocks$B.memory.cells), drop = FALSE]
+    colnames(blocks$B.memory.cells) <- rn(colnames(blocks$B.memory.cells),
       "^b[._-]?cells?[._-]memory$|^b[._-]memory([._-]cells?)?$", "B.memory.cells")
   }
 
-  idx <- which(colnames(mat) %in% c(colnames(blocks$B.naive), colnames(blocks$B.memory)))
+  idx <- which(colnames(mat) %in% c(colnames(blocks$B.naive.cells), colnames(blocks$B.memory.cells)))
   if (length(idx)) mat <- mat[, -idx, drop = FALSE]
 
   if (ncol(mat)) {
     colnames(mat) <- rn(colnames(mat),
       "^b[._-]?cells?$|^b[._-]?cell$|^bcell$|^b[._-]lineage$|^b$", "B.cells")
-    blocks$B <- mat[, cols("B.cells"), drop = FALSE]
-    if (ncol(blocks$B)) mat <- mat[, !colnames(mat) %in% colnames(blocks$B), drop = FALSE]
+    blocks$B.cells <- mat[, cols("B.cells"), drop = FALSE]
+    if (ncol(blocks$B.cells)) mat <- mat[, !colnames(mat) %in% colnames(blocks$B.cells), drop = FALSE]
   }
 
   ## remaining are extra
   blocks$extra <- mat
 
-  # assemble in fixed order (include any created on the fly like malignant)
-  final_names <- c("B","B.naive","B.memory","Macrophages","M0","M1","M2","Monocytes","Neutrophils",
-                   "NK","NK.activated","NK.resting","NKT","CD4","CD4.memory.activated","CD4.memory.resting",
-                   "CD4.naive","CD4.non.regulatory","CD4.regulatory","CD8","Thelper","Tgamma","Dendritic",
-                   "Dendritic.activated","Dendritic.resting","Cancer","Endothelial","Eosinophils","Plasma",
-                   "Myocytes","Fibroblasts","Mast","Mast.activated","Mast.resting","CAF","extra")
-  existing <- intersect(final_names, names(blocks))
+  # assemble in fixed order (blocks created on the fly, like malignant, are already merged)
+  existing <- intersect(names_order, names(blocks))
   cell_types <- do.call(cbind, unname(blocks[existing]))
 
   return(cell_types)
@@ -393,6 +410,7 @@ standardize_celltype_colnames <- function(mat) {
 #'
 #' deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 #'
+#' @keywords internal
 compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
   cat("Preprocessing deconvolution features...............................................................\n\n")
 
@@ -465,124 +483,17 @@ compute.deconvolution.preprocessing = function(deconv, cells_extra = NULL){
 #'   cells_extra = extra_cells
 #' )
 #'
+#' @keywords internal
 compute.cell.types = function(data, cells_extra = NULL){
-  ##### B cells
-  B = grep("B.cells", colnames(data))
-  B = data[, B, drop = FALSE]
-  ##### B naive
-  B.naive = grep("B.naive.cells", colnames(data))
-  B.naive = data[, B.naive, drop = FALSE]
-  ##### B memory
-  B.memory = grep("B.memory.cells", colnames(data))
-  B.memory = data[, B.memory, drop = FALSE]
-  ##### Macrophages (M0, M1, M2)
-  Macrophages = grep("Macrophages.cells", colnames(data))
-  Macrophages = data[, Macrophages, drop = FALSE]
-  M0 = grep("Macrophages.M0", colnames(data))
-  M0 = data[, M0, drop = FALSE]
-  M1 = grep("Macrophages.M1", colnames(data))
-  M1 = data[, M1, drop = FALSE]
-  M2 = grep("Macrophages.M2", colnames(data))
-  M2 = data[, M2, drop = FALSE]
-  ##### Monocytes
-  Monocytes = grep("Monocytes", colnames(data))
-  Monocytes = data[, Monocytes, drop = FALSE]
-  ##### Neutrophils
-  Neutrophils = grep("Neutrophils", colnames(data))
-  Neutrophils = data[, Neutrophils, drop = FALSE]
-  ##### NK cells (activated, resting)
-  NK = grep("NK.cells", colnames(data))
-  NK = data[, NK, drop = FALSE]
-  NK.activated = grep("NK.activated", colnames(data))
-  NK.activated = data[, NK.activated, drop = FALSE]
-  NK.resting = grep("NK.resting", colnames(data))
-  NK.resting = data[, NK.resting, drop = FALSE]
-  ##### NKT cells
-  NKT = grep("NKT.cells", colnames(data))
-  NKT = data[, NKT, drop = FALSE]
-  ##### CD4 cells (activated, resting)
-  CD4 = grep("CD4.cells", colnames(data))
-  CD4 = data[, CD4, drop = FALSE]
-  #memory = CD4[,grep("memory", colnames(CD4))]
-  #helper = CD4[,grep("Th", colnames(CD4))]
-  #CD4 = CD4[,-which(colnames(CD4)%in%c(colnames(memory), colnames(helper)))]
-  CD4.memory.activated = grep("CD4.memory.activated", colnames(data))
-  CD4.memory.activated = data[, CD4.memory.activated, drop = FALSE]
-  CD4.memory.resting = grep("CD4.memory.resting", colnames(data))
-  CD4.memory.resting = data[, CD4.memory.resting, drop = FALSE]
-  CD4.naive = grep("CD4.naive", colnames(data))
-  CD4.naive = data[, CD4.naive, drop = FALSE]
-  ##### CD8 cells
-  CD8 = grep("CD8.cells", colnames(data))
-  CD8 = data[, CD8, drop = FALSE]
-  #naive = grep("naive", colnames(CD8))
-  #naive = CD8[, naive, drop = FALSE]
-  #memory = grep("memory", colnames(CD8))
-  #memory = CD8[, memory, drop = FALSE]
-  #CD8 = CD8[,-which(colnames(CD8)%in%c(colnames(memory), colnames(naive)))]
-  ##### Regulatory T cells
-  CD4.regulatory = grep("CD4.regulatory", colnames(data))
-  CD4.regulatory = data[, CD4.regulatory, drop = FALSE]
-  ##### Non regulatory T cells
-  CD4.non.regulatory = grep("CD4.non.regulatory", colnames(data))
-  CD4.non.regulatory = data[, CD4.non.regulatory, drop = FALSE]
-  ##### Helper T cells
-  Thelper = grep("T.cells.helper", colnames(data))
-  Thelper = data[, Thelper, drop = FALSE]
-  ##### Gamma delta T cells
-  Tgamma = grep("T.cells.gamma.delta", colnames(data))
-  Tgamma = data[, Tgamma, drop = FALSE]
-  ##### Dendritic cells (activated, resting)
-  Dendritic = grep("Dendritic.cells", colnames(data))
-  Dendritic = data[, Dendritic, drop = FALSE]
-  Dendritic.activated = grep("Dendritic.activated.cells", colnames(data))
-  Dendritic.activated = data[, Dendritic.activated, drop = FALSE]
-  Dendritic.resting = grep("Dendritic.resting.cells", colnames(data))
-  Dendritic.resting = data[, Dendritic.resting, drop = FALSE]
-  ##### Cancer cells
-  Cancer = grep("Cancer", colnames(data))
-  Cancer = data[, Cancer, drop = FALSE]
-  ##### Endothelial cells
-  Endothelial = grep("Endothelial", colnames(data))
-  Endothelial = data[, Endothelial, drop = FALSE]
-  ##### Eosinophils cells
-  Eosinophils = grep("Eosinophils", colnames(data))
-  Eosinophils = data[, Eosinophils, drop = FALSE]
-  ##### Plasma cells
-  Plasma = grep("Plasma", colnames(data))
-  Plasma = data[, Plasma, drop = FALSE]
-  ##### Myocytes cells
-  Myocytes = grep("Myocytes", colnames(data))
-  Myocytes = data[, Myocytes, drop = FALSE]
-  ##### Fibroblasts cells
-  Fibroblasts = grep("Fibroblasts", colnames(data))
-  Fibroblasts = data[, Fibroblasts, drop = FALSE]
-  ##### Mast cells
-  Mast = grep("Mast.cells", colnames(data))
-  Mast = data[, Mast, drop = FALSE]
-  Mast.activated = grep("Mast.activated.cells", colnames(data))
-  Mast.activated = data[, Mast.activated, drop = FALSE]
-  Mast.resting = grep("Mast.resting.cells", colnames(data))
-  Mast.resting = data[, Mast.resting, drop = FALSE]
-  ##### CAF cells
-  CAF = grep("CAF", colnames(data))
-  CAF = data[, CAF, drop = FALSE]
+  # One element per cell type of the package vocabulary (same names and order as before)
+  cell_names = setdiff(get_cell_type_nomenclature(), "uncharacterized_cell")
+  cell_types = lapply(cell_names, function(cell) data[, grep(cell, colnames(data)), drop = FALSE])
+  names(cell_types) = cell_names
+  cell_types_matrix = do.call(cbind, unname(cell_types))
 
-  #####Output list
-  cell_types = list(B, B.naive, B.memory, Macrophages, M0, M1, M2, Monocytes, Neutrophils, NK, NK.activated, NK.resting, NKT, CD4, CD4.memory.activated, CD4.memory.resting, CD4.naive,
-                    CD8, CD4.regulatory, CD4.non.regulatory, Thelper, Tgamma, Dendritic, Dendritic.activated, Dendritic.resting, Cancer, Endothelial, Eosinophils, Plasma, Myocytes, Fibroblasts, Mast, Mast.activated,
-                    Mast.resting, CAF)
-
-  names(cell_types) = c("B.cells", "B.naive.cells", "B.memory.cells", "Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Neutrophils", "NK.cells", "NK.activated", "NK.resting", "NKT.cells", "CD4.cells", "CD4.memory.activated",
-                        "CD4.memory.resting", "CD4.naive", "CD8.cells", "CD4.regulatory", "CD4.non.regulatory","T.cells.helper", "T.cells.gamma.delta", "Dendritic.cells", "Dendritic.activated.cells", "Dendritic.resting.cells", "Cancer", "Endothelial",
-                        "Eosinophils", "Plasma", "Myocytes", "Fibroblasts", "Mast.cells", "Mast.activated.cells", "Mast.resting.cells", "CAF")
-
-  cell_types_matrix = cbind(B, B.naive, B.memory, Macrophages, M0, M1, M2, Monocytes, Neutrophils, NK, NK.activated, NK.resting, NKT, CD4, CD4.memory.activated, CD4.memory.resting, CD4.naive,
-                            CD8, CD4.regulatory, CD4.non.regulatory, Thelper, Tgamma, Dendritic, Dendritic.activated, Dendritic.resting, Cancer, Endothelial, Eosinophils, Plasma, Myocytes, Fibroblasts, Mast, Mast.activated,
-                            Mast.resting, CAF)
-
-  ####Add extra cells (if exist)
-  if(is.null(cells_extra) == F){
+  ####Add extra cells (if exist), skipping those already in the vocabulary
+  cells_extra = setdiff(cells_extra, cell_names)
+  if(length(cells_extra) > 0){
     extra = list()
     for (i in 1:length(cells_extra)){
       pat = paste0("_", gsub("\\.", "\\\\.", cells_extra[i]), "$")
@@ -603,244 +514,80 @@ compute.cell.types = function(data, cells_extra = NULL){
 
 }
 
-#' Remove high correlated cell deconvolution features
-#'
-#' If two deconvolution features within a specific cell type are found to be highly correlated, one feature is kept randomly for further analysis.
-#'
-#' @param data Deconvolution matrix
-#' @param threshold Threshold for defined high correlated features
-#' @param name Cell type name corresponding to the given matrix in 'data'
-#' @param n_seed Seed to ensure reproducibility regarding the choice of the feature.
-#' @param corr_method Correlation type whether "spearman" or "pearson".
-#' @param batch Optional batch covariate used to compute partial correlations.
-#'
-#' @return A list containing
-#'
-#' - Deconvolution matrix with only one deconvolution feature per high-correlated pair.
-#' - Highly correlated features found
-#' - Cell type name
-#'
-removeCorrelatedFeatures <- function(data, threshold, name, n_seed, corr_method = "spearman", batch = NULL) {
-
-  features_high_corr = c()
-  cell_name = c()
-
-  # Compute correlation matrix
-  if(is.null(batch)){
-    corr_matrix <- stats::cor(data, method = corr_method)
-  } else {
-    if(is.factor(batch) || is.character(batch)) batch <- as.numeric(as.factor(batch))
-    # Pairwise partial correlation
-    corr_matrix <- matrix(NA, ncol=ncol(data), nrow=ncol(data))
-    colnames(corr_matrix) <- colnames(data)
-    rownames(corr_matrix) <- colnames(data)
-    diag(corr_matrix) <- 1 # A feature always belongs to its own high-correlation group
-    for(i in 1:(ncol(data)-1)){
-      for(j in (i+1):ncol(data)){
-        pc <- ppcor::pcor.test(data[, i], data[, j], batch, method = corr_method)
-        corr_matrix[i,j] <- pc$estimate
-        corr_matrix[j,i] <- pc$estimate
-      }
-    }
-  }
-  # Constant features give NA correlations; keep them as their own group
-  diag(corr_matrix)[is.na(diag(corr_matrix))] <- 1
-  # Find highly correlated features
-  contador = 1
-  while(nrow(corr_matrix)>0){
-    set.seed(n_seed)
-    feature = data.frame(corr_matrix[1, , drop = FALSE]) #Extract first row feature
-    feature = feature %>%                                #Take only high corr above threshold
-      dplyr::mutate_all(~ifelse(. > threshold, ., NA))
-    feature <- feature[, colSums(!is.na(feature)) == nrow(feature), drop = FALSE]
-
-    corr_matrix = corr_matrix[-which(rownames(corr_matrix)%in%colnames(feature)),-which(colnames(corr_matrix)%in%colnames(feature)), drop = F] #Remove already joined features
-
-    if(ncol(feature)>1){
-      keep = colnames(feature)[sample(ncol(feature), size = 1)] #From high corr group, keep only one feature
-
-      if(length(features_high_corr)>0){
-        features_high_corr = c(features_high_corr, colnames(feature))
-      }else{
-        features_high_corr = colnames(feature)
-      }
-
-      feature = feature[,-which(colnames(feature)%in%keep), drop = F]
-
-      if(contador==1){
-        new_data <- data[, -which(colnames(data)%in%colnames(feature)), drop = F] #Remove rest of the features from original data
-      }else{
-        new_data <- new_data[, -which(colnames(new_data)%in%colnames(feature)), drop = F] #Remove rest of the features from original data
-      }
-      contador = contador + 1
-      cell_name = name
-    }else{
-      if(contador == 1){
-        new_data = data
-      }else{ #If it already started the loop
-        new_data = new_data
-      }
-    }
-  }
-
-  if(length(cell_name)==0){
-    cell_name = NULL
-  }
-
-  return(list(new_data, features_high_corr, cell_name))
-}
-
-#' Remove subgroups that have the same method across different signatures
-#'
-#' @param groups Cell groups of features within cell types.
-#'
-#' @return List of position of groups which have features of same method.
-#'
-remove_subgroups = function(groups){
-  lis = c()
-  for (pos in 1:length(groups)){
-    x = c()
-    if(length(groups[[pos]])!=0){
-      for (i in 1:length(groups[[pos]])) {
-        x =  c(x,stringr::str_split(groups[[pos]][[i]], "_")[[1]][[1]])
-      }
-      if(length(unique(x)) == 1){
-        lis = c(lis, pos)
-      }
-    }
-  }
-
-  return(lis)
-}
-
 #' Compute deconvolution subgroups
 #'
-#' @param deconvolution A matrix with unprocessed cell deconvolution results
+#' Groups the features of one cell type by complete-linkage hierarchical clustering on their correlations:
+#' features end up in the same subgroup only if every pair of them correlates at least `thres_corr`
+#' (non-significant correlations, p >= 0.05, count as 0). Each subgroup is replaced by the row median of
+#' its members. The result does not depend on the column order.
+#'
+#' @param deconvolution A matrix with the deconvolution features of one cell type (samples as rows)
 #' @param thres_corr A numeric value with the minimum correlation allowed to group cell deconvolution features
 #' @param corr_type Correlation type whether "spearman" or "pearson".
-#' @param file_name Base name for subgroup
-#' @param batch Optional batch covariate used to compute partial correlations.
+#' @param file_name Cell type name, used as prefix of the subgroup names (`<file_name>_Subgroup.<i>`)
+#' @param batch Optional batch labels, one per sample in the same order as the rows. A factor or character
+#'   is treated as categorical: correlations become partial correlations controlling for one indicator column
+#'   per batch. A numeric vector is used as a single linear covariate.
 #'
 #' @return A list containing
 #'
-#' - A matrix with the processed deconvolution features
-#' - Cell subgroups obtained by linear correlation
-#' - Cell subgroups obtained by proportionality correlation
-#' - Discard cell features either because of low variance or high zero number
+#' - A data frame with the final features: the subgroup medians plus the features that were not grouped
+#' - The subgroups composition: a named list with the members of every subgroup
 #'
+#' @keywords internal
 compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, batch = NULL){
-  data = data.frame(deconvolution)
+  data = data.frame(deconvolution, check.names = FALSE)
 
   cell_subgroups = list()
-  #cell_groups_similarity = list()
-  cell_groups_discard = list()
   if (ncol(data) < 2) {
-    return(list(data, cell_subgroups, cell_groups_discard))
+    return(list(data, cell_subgroups))
   }else{
 
-    #################### Linear-based correlation
-    #if(k==2 | k==3){
-    terminate = FALSE
-    iteration = 1
-    while (terminate == FALSE) {
-      corr_df <- corr_subgroups(data, corr_type = corr_type, batch = batch)
-      vec = colnames(data)
-      indice = 1
-      subgroup = list()
-      data_sub = c()
-      while(length(vec)>0){ #Keep running until no features are left
-        if(vec[1] %in% corr_df$measure1){ #Check if feature still no-grouped
-          tab = corr_df[corr_df$measure1 == vec[1],] #Take one feature against the others
-          tab = tab[tab$r>thres_corr,] #Select features corr above the threshold
-          if(nrow(tab)!=0){ #If algorithm found features above corr
-            subgroup[[indice]] = c(vec[1], tab$measure2) #Save features as subgroup
-            idx = which(corr_df$measure1 %in% subgroup[[indice]])
-            if(length(idx)>0){corr_df = corr_df[-idx,]} #Remove features already subgroupped
-            idy = which(corr_df$measure2 %in% subgroup[[indice]])
-            if(length(idy)>0){corr_df = corr_df[-idy,]} #Remove features already subgroupped
-            vec = vec[-which(vec%in%subgroup[[indice]])] #Remove feature already subgroupped from vector
-            indice = indice + 1
-          }else{ #Condition when there is no correlation above the threshold (features no subgroupped)
-            corr_df = corr_df[-which(corr_df$measure1 == vec[1]),] #Remove variable from corr matrix to keep subgrouping the others
-            if(length(which(corr_df$measure2==vec[1]))>0){corr_df = corr_df[-which(corr_df$measure2 == vec[1]),]}
-            vec = vec[-1] #Remove variable from vector to keep analyzing the others
-            indice = indice #Not increase index cause no subgroup appeared
-          }
-        }else{ #If feature is not in corr matrix it means that there is no any significant correlation against it and other features
-          vec = vec[-1] #Remove variable from vector to keep analyzing the others
-          indice = indice  #Not increase index cause no subgroup appeared
+    #################### Complete-linkage grouping
+    # Correlation matrix of all features (non-significant or missing correlations count as 0)
+    corr_df <- corr_subgroups(data, corr_type = corr_type, batch = batch)
+    corr_mat = matrix(0, ncol(data), ncol(data), dimnames = list(colnames(data), colnames(data)))
+    corr_mat[cbind(corr_df$measure1, corr_df$measure2)] = corr_df$r
+    corr_mat[cbind(corr_df$measure2, corr_df$measure1)] = corr_df$r
+    diag(corr_mat) = 1
+    corr_mat = corr_mat[order(colnames(corr_mat)), order(colnames(corr_mat))] #Fixed order: ties are broken the same way whatever the column order
+    # Two groups join only if every pair of features across them correlates >= thres_corr
+    clusters = stats::cutree(stats::hclust(stats::as.dist(1 - corr_mat), method = "complete"), h = 1 - thres_corr)
+    subgroup = unname(split(names(clusters), clusters))
+    subgroup = subgroup[lengths(subgroup) > 1] #Features without partners are kept as they are
+    data_sub = c()
+
+    if(length(subgroup)!=0){
+      for (i in 1:length(subgroup)){ #Name subgroups
+        names(subgroup)[i] = paste0(file_name, "_Subgroup.", i)
+      }
+      #Take median expression of subgroups
+      for(i in 1:length(subgroup)){ #Create data frame with features subgroupped
+        sub = data.frame(data[,colnames(data)%in%subgroup[[i]]], check.names = FALSE) #Map features that are inside each subgroup from input (deconvolution)
+        sub$median = matrixStats::rowMedians(as.matrix(sub), useNames = FALSE) #Compute median of subgroup across patients
+        data_sub = data.frame(cbind(data_sub, sub$median), check.names = FALSE) #Save median in a new data frame
+        colnames(data_sub)[i] = names(subgroup)[i]
+        name = colnames(data)[which(!(colnames(data)%in%subgroup[[i]]))]
+        data = data.frame(data[,-which(colnames(data)%in%subgroup[[i]]), drop = FALSE], check.names = FALSE) #Remove from deconvolution features that are subgrouped
+        if(ncol(data.frame(data))==1){
+          data = as.data.frame(data)
+          colnames(data)[1] = name
         }
       }
 
-      if(length(subgroup)!=0){
-        for (i in 1:length(subgroup)){ #Name subgroups
-          names(subgroup)[i] = paste0(file_name, "_Subgroup.", i, ".Iteration.", iteration)
-        }
-        ###Check whenever some subgroups belong to the same method
-        if(iteration == 1){
-          idx = remove_subgroups(subgroup) #Map subgroups with same method
-          if(length(idx)>0){
-            if(length(cell_groups_discard)>0){
-              cell_groups_discard = c(cell_groups_discard, subgroup[idx])
-              duplica = which(duplicated(cell_groups_discard)) #check if there are subgroups duplicated discarded
-              if(length(duplica)>0){
-                cell_groups_discard = cell_groups_discard[-duplica]
-              }
-            }
-            else{
-              cell_groups_discard = subgroup[idx]
-            }
-            subgroup = subgroup[-idx] #Remove subgroups if all subgroupped features belong to the same method
-          }
-        }
+      rownames(data_sub) = rownames(data) #List of patients
+      cell_subgroups = subgroup
 
-        if(length(subgroup)!=0){ #check if after removal of subgroups with equal method, you still have subgroups (when iteration == 1)
-          #Take median expression of subgroups
-          for(i in 1:length(subgroup)){ #Create data frame with features subgroupped
-            sub = data.frame(data[,colnames(data)%in%subgroup[[i]]]) #Map features that are inside each subgroup from input (deconvolution)
-            sub$median = matrixStats::rowMedians(as.matrix(sub), useNames = FALSE) #Compute median of subgroup across patients
-            data_sub = data.frame(cbind(data_sub, sub$median)) #Save median in a new data frame
-            colnames(data_sub)[i] = names(subgroup)[i]
-            name = colnames(data)[which(!(colnames(data)%in%subgroup[[i]]))]
-            data = data.frame(data[,-which(colnames(data)%in%subgroup[[i]]), drop = FALSE]) #Remove from deconvolution features that are subgrouped
-            if(ncol(data.frame(data))==1){
-              data = as.data.frame(data)
-              colnames(data)[1] = name
-            }
-          }
-
-          rownames(data_sub) = rownames(data) #List of patients
-
-          if(iteration == 1){ #Save what is inside the first subgroups
-            cell_subgroups = subgroup
-            data_sub = data.frame(data_sub[,colnames(data_sub)%in%names(cell_subgroups), drop = FALSE])
-            colnames(data_sub) = names(cell_subgroups)
-          }else{
-            for (i in 1:length(subgroup)) {
-              cell_subgroups[[length(cell_subgroups)+1]] = subgroup[[i]]
-              names(cell_subgroups)[length(cell_subgroups)] = names(subgroup)[i]
-            }
-          }
-
-          if(ncol(data)!=0){
-            data = cbind(data, data_sub)
-          }else{
-            data = data_sub #data will be 0 if all deconvolution features have been subgroupped
-            terminate = TRUE
-          }
-          iteration = iteration + 1
-        }else{
-          terminate = TRUE #when the only subgroup that keep grouping is composed from the same method
-        }
-
+      if(ncol(data)!=0){
+        data = cbind(data, data_sub)
       }else{
-        terminate = TRUE
+        data = data_sub #data will be 0 if all deconvolution features have been subgroupped
       }
     }
 
     data = data[, !duplicated(t(data)), drop = FALSE] # Drop features with identical values
 
-    return(list(data, cell_subgroups, cell_groups_discard))
+    return(list(data, cell_subgroups))
   }
 
 }
@@ -849,15 +596,18 @@ compute_subgroups = function(deconvolution, thres_corr, corr_type, file_name, ba
 #'
 #' @param data Matrix with features to correlate
 #' @param corr_type Correlation type whether "spearman" or "pearson".
-#' @param batch Optional batch covariate used to compute partial correlations.
+#' @param batch Optional batch labels, one per sample in the same order as the rows. A factor or character
+#'   is treated as categorical: correlations become partial correlations controlling for one indicator column
+#'   per batch. A numeric vector is used as a single linear covariate.
 #'
 #' @return Dataframe containing all significant correlations (pvalue < 0.05)
 #'
+#' @keywords internal
 corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
   if (!is.null(batch)) {
-    # Convert batch to numeric if factor or character
+    # Categorical batch: one indicator column per batch (first batch = reference), so each batch's own shift is removed
     if(is.factor(batch) || is.character(batch)){
-      batch <- as.numeric(as.factor(batch))
+      batch <- stats::model.matrix(~ factor(batch))[, -1, drop = FALSE]
     }
 
     # Compute all pairwise partial correlations controlling for batch
@@ -873,10 +623,11 @@ corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
                                              p = pc$p.value))
       }
     }
+    corr_df <- corr_df[which(!is.na(corr_df$r) & corr_df$p < 0.05), ] # Keep significant, non-NA correlations (as without batch)
   } else {
     # Original correlation using Hmisc::rcorr
     M <- Hmisc::rcorr(data.matrix(data), type = corr_type)
-    Mdf <- purrr::map(M[c("r", "P", "n")], ~data.frame(.x))
+    Mdf <- purrr::map(M[c("r", "P", "n")], ~data.frame(.x, check.names = FALSE))
     corr_df <- Mdf %>%
       purrr::map(~tibble::rownames_to_column(.x, var = "measure1")) %>%
       purrr::map(~tidyr::pivot_longer(.x, -measure1, names_to = "measure2")) %>%
@@ -898,18 +649,22 @@ corr_subgroups <- function(data, corr_type = "spearman", batch = NULL) {
 
 #' Remove low variance deconvolution features
 #'
+#' Removes features that barely vary across samples: features whose coefficient of variation
+#' (CV = standard deviation / mean) is below `cv_thr`. Each feature is judged on its own, so features
+#' of rare cell types (small values) are kept as long as they vary relative to their size.
+#'
 #' @param data Deconvolution features
-#' @param var_quantile Quantile threshold below which features are discarded.
+#' @param cv_thr Minimum coefficient of variation; features below it are discarded.
 #'
 #' @return A list containing
 #'
 #' - Deconvolution matrix after removal of low variance.
 #' - Discarded low variance features.
 #'
-remove_low_variance <- function(data, var_quantile = 0.25) {
-  vars <- apply(data, 2, var)
-  threshold = quantile(vars, var_quantile)
-  low_variance <- which(vars < threshold)
+#' @keywords internal
+remove_low_variance <- function(data, cv_thr = 0.1) {
+  cv <- apply(data, 2, stats::sd) / abs(colMeans(data))
+  low_variance <- which(cv < cv_thr | is.nan(cv)) # NaN: constant all-zero feature
 
   data_filt = if (length(low_variance) == 0) data else data[, -low_variance, drop = FALSE]
   low_var_features = data[, low_variance, drop = FALSE]
@@ -924,10 +679,11 @@ remove_low_variance <- function(data, var_quantile = 0.25) {
 #' @param corr Minimum correlation threshold for subgroupping the deconvolution features
 #' @param corr_type Correlation type for computing the cell subgroups, whether "spearman" or "pearson".
 #' @param zero_thr Maximum fraction of zeros allowed per feature before it is discarded.
-#' @param var_quantile Quantile threshold below which low-variance features are removed.
-#' @param prune_thr Correlation threshold (computed with `corr_type`) above which highly correlated features within a cell type are pruned.
-#' @param seed A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.
-#' @param batch Optional batch covariate used to compute partial correlations.
+#' @param cv_thr Minimum coefficient of variation (standard deviation / mean) across samples; features below it are removed.
+#' @param batch Optional batch labels, one per sample in the same order as the rows. A factor or character
+#'   is treated as categorical: correlations become partial correlations controlling for one indicator column
+#'   per batch. A numeric vector is used as a single linear covariate. With only one batch, ordinary
+#'   correlations are used.
 #' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
 #' @param file_name A string specifying the file name of the .csv file with the deconvolution subgroups
 #' @param return Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.
@@ -938,11 +694,9 @@ remove_low_variance <- function(data, var_quantile = 0.25) {
 #' - A matrix with the deconvolution after processing
 #' - The deconvolution subgroups per cell type
 #' - The deconvolution subgroups composition
-#' - The deconvolution groups discarded caused they are all belonging to the same method
 #' - The discarded features because they contain a high number of zeros across samples (> 90%)
 #' - Discarded features due to low variance across samples
 #' - Discarded cell types because they are not supported in the pipeline
-#' - High correlated deconvolution pairs (>high_corr)
 #'
 #' @export
 #'
@@ -950,12 +704,16 @@ remove_low_variance <- function(data, var_quantile = 0.25) {
 #'
 #' data("deconvolution")
 #'
-#' processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)
+#' processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7)
 #'
 #' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 #'
-compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", zero_thr = 0.9, var_quantile = 0.25, prune_thr = 0.9, seed = NULL, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
+compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", zero_thr = 0.9, cv_thr = 0.1, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
   deconvolution.mat = deconvolution
+
+  if(!is.null(batch) && length(unique(batch)) < 2){
+    batch = NULL
+  }
 
   # #####Unsupervised filtering
   #
@@ -973,15 +731,9 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     cat(paste0("Removing low variance features...............................................................\n\n"))
   }
 
-  variance = remove_low_variance(deconvolution.mat, var_quantile = var_quantile)
+  variance = remove_low_variance(deconvolution.mat, cv_thr = cv_thr)
   deconvolution.mat = variance[[1]]
   low_variance_features = variance[[2]]
-
-  # #Scale deconvolution features by columns for making them comparable between cell types (0-1).
-  # cat("Scaling deconvolution features for comparison between cell types...............................................................\n\n")
-  # for (i in 1:ncol(deconvolution.mat)) {
-  #   deconvolution.mat[,i] = deconvolution.mat[,i]/max(deconvolution.mat[,i])
-  # }
 
   #####Cell types split
   if(verbose){
@@ -992,54 +744,26 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
   cells = cells_types[[1]]
   cells_discarded = cells_types[[2]]
 
-  ######Pairwise correlation filtering (Highly correlated variables >0.9) within cell types
-  if(verbose){
-    cat("Finding group of features with high correlation between each other...............................................................\n\n")
-  }
-
-  features_high_corr = list()
-  j = 1
-  for (i in 1:length(cells)) {
-    data = cells[[i]]
-    if(is.null(ncol(data))==T){
-      cells[[i]] = data
-    }else if(ncol(data)>1){
-      data = removeCorrelatedFeatures(data, prune_thr, names(cells)[i], seed, corr_method = corr_type, batch = batch)
-      cells[[i]] = data[[1]]
-      if(length(data[[2]])>0 && is.null(data[[3]])==F){
-        features_high_corr[[j]] = data[[2]]
-        names(features_high_corr)[j] = data[[3]]
-        j = j+1
-      }
-    }
-  }
-
   #####Subgrouping of deconvolution features
   res = list()
   groups = list()
-  #groups_similarity = list()
-  groups_discard = list()
   for (i in 1:length(cells)) {
     x = compute_subgroups(cells[[i]], file_name = names(cells)[i], thres_corr = corr, corr_type = corr_type, batch = batch)
     res = c(res, x[1])
     groups = c(groups, x[2])
-    #groups_similarity = c(groups_similarity, x[3])
-    groups_discard = c(groups_discard, x[3])
   }
 
   names_cells = names(cells)
 
   names(res) = names_cells
   names(groups) = names_cells
-  #names(groups_similarity) = names_cells
-  names(groups_discard) = names_cells
 
   #####Preparing output
   dt = c()
   for (i in 1:length(res)) {
     dt = c(dt, as.data.frame(res[[i]]))
   }
-  dt = data.frame(dt)
+  dt = data.frame(dt, check.names = FALSE)
   rownames(dt) = rownames(deconvolution.mat)
 
   #####Create and export table with subgroups
@@ -1080,10 +804,9 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     message("Deconvolution features subgroupped")
   }
 
-  results = list(dt, res, groups, groups_discard, zero_features, low_variance_features, cells_discarded, features_high_corr)
+  results = list(dt, res, groups, zero_features, low_variance_features, cells_discarded)
   names(results) = c("Deconvolution matrix", "Deconvolution subgroups per cell types", "Deconvolution subgroups composition",
-                     "Discarded groups with equal method", "Discarded features with high number of zeros", "Discarded features with low variance", "Discarded cell types",
-                     "High correlated deconvolution groups (>0.9) per cell type")
+                     "Discarded features with high number of zeros", "Discarded features with low variance", "Discarded cell types")
   return(results)
 
 }
@@ -1096,6 +819,7 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
 #'
 #' @return A matrix with cell abundance deconvolve with QuanTIseq
 #'
+#' @keywords internal
 computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   TPM_matrix = TPM_matrix[rownames(TPM_matrix)%in%rownames(immunedeconv::dataset_racle$expr_mat),] #To avoid problems regarding gene names (quantiseq error)
   
@@ -1114,31 +838,6 @@ computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
   return(quantiseq)
 }
 
-# -- Deprecated: MCP and XCell helpers --
-# computeMCP and computeXCell are no longer called; MCP and xCell were removed
-# from the default method set. Kept here for reference only.
-# -------------------------------------------------------------------------------
-# computeMCP <- function(TPM_matrix, genes_path) {
-#   genes <- utils::read.table(paste0(genes_path, "/MCPcounter/MCPcounter-genes.txt"), sep = "\t", stringsAsFactors = FALSE, header = TRUE, colClasses = "character", check.names = FALSE)
-#   mcp <- MCPcounter::MCPcounter.estimate(TPM_matrix, genes = genes, featuresType = "HUGO_symbols", probesets = NULL) %>%
-#     t()
-#   colnames(mcp) = paste0("MCP_", colnames(mcp))
-#   colnames(mcp) <- colnames(mcp) %>%
-#     stringr::str_replace_all(., " ", "_")
-#   return(mcp)
-# }
-#
-# computeXCell <- function(TPM_matrix) {
-#   xcell = immunedeconv::deconvolute(TPM_matrix, "xcell") %>%
-#     tibble::column_to_rownames("cell_type") %>%
-#     t()
-#   colnames(xcell) = paste0("XCell_", colnames(xcell))
-#   colnames(xcell) <- colnames(xcell) %>%
-#     stringr::str_replace_all(., " ", "_")
-#   return(xcell)
-# }
-# -------------------------------------------------------------------------------
-
 #' Compute CIBERSORTx (CBSX) in parallel across multiple signatures
 #'
 #' @param TPM_matrix A matrix with TPM normalized counts (genes symbols as rows and samples as columns).
@@ -1149,13 +848,14 @@ computeQuantiseq <- function(TPM_matrix, name_signature = "TIL10") {
 #'
 #' @return A matrix with cell abundance deconvolve with CBSX
 #'
+#' @keywords internal
 computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
+  cbsx = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr"), .export = "computeCBSX") %dopar% { # internal function: exported to the workers explicitly
     signature <- utils::read.delim(signatures[[i]], row.names=1)
-    signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
+    signature_name = tools::file_path_sans_ext(basename(signatures[[i]]))
     computeCBSX(TPM_matrix, signature, name, password, signature_name)
   }
 
@@ -1175,7 +875,7 @@ computeCBSX_parallel = function(TPM_matrix, signatures, name, password, workers)
 #'
 #' @return A matrix with cell abundance deconvolve with CBSX
 #'
-#' @export
+#' @keywords internal
 computeCBSX = function(TPM_matrix, signature_file, name, password, name_signature){
   omnideconv::set_cibersortx_credentials(name, password)
   cbsx = tryCatch(
@@ -1209,13 +909,14 @@ computeCBSX = function(TPM_matrix, signature_file, name, password, name_signatur
 #'
 #' @return A matrix with cell abundance deconvolve with DWLS
 #'
+#' @keywords internal
 computeDWLS_parallel = function(TPM_matrix, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
+  dwls = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr"), .export = "computeDWLS") %dopar% { # internal function: exported to the workers explicitly
     signature <- utils::read.delim(signatures[[i]], row.names=1)
-    signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
+    signature_name = tools::file_path_sans_ext(basename(signatures[[i]]))
     computeDWLS(TPM_matrix, signature, signature_name)
   }
 
@@ -1233,7 +934,7 @@ computeDWLS_parallel = function(TPM_matrix, signatures, workers){
 #'
 #' @return A matrix with cell abundance deconvolve with DWLS
 #'
-#' @export
+#' @keywords internal
 computeDWLS = function(TPM_matrix, signature_file, name_signature){
   genes = rownames(signature_file)
 
@@ -1262,7 +963,7 @@ computeDWLS = function(TPM_matrix, signature_file, name_signature){
 #'
 #' @return A matrix with cell abundance deconvolve with MOMF
 #'
-#' @export
+#' @keywords internal
 computeMOMF = function(TPM_matrix, sc_object, signature_file, name_signature){
 
   genes = rownames(signature_file)
@@ -1293,13 +994,14 @@ computeMOMF = function(TPM_matrix, sc_object, signature_file, name_signature){
 #'
 #' @return A matrix with cell abundance deconvolve with MOMF
 #'
+#' @keywords internal
 computeMOMF_parallel = function(TPM_matrix, sc_object, signatures, workers){
   cl = parallel::makeCluster(workers)
   doParallel::registerDoParallel(cl)
 
-  momf = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr")) %dopar% {
+  momf = foreach::foreach (i=1:length(signatures), .combine=cbind, .packages = c("multideconv", "dplyr"), .export = "computeMOMF") %dopar% { # internal function: exported to the workers explicitly
     signature <- utils::read.delim(signatures[[i]], row.names=1)
-    signature_name = stringr::str_split(basename(signatures[[i]]), "\\.")[[1]][1]
+    signature_name = tools::file_path_sans_ext(basename(signatures[[i]]))
     computeMOMF(TPM_matrix, sc_object, signature, signature_name)
   }
 
@@ -1317,6 +1019,7 @@ computeMOMF_parallel = function(TPM_matrix, sc_object, signatures, workers){
 #'
 #' @return A matrix with cell abundance deconvolve with EpiDISH
 #'
+#' @keywords internal
 computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
   epi <- EpiDISH::epidish(TPM_matrix, as.matrix(signature_file), method = "RPC", maxit = 500)
   epidish = epi$estF
@@ -1337,6 +1040,7 @@ computeEpiDISH = function(TPM_matrix, signature_file, name_signature){
 #' @return A matrix with cell abundance deconvolve with DeconRNASeq
 #'
 #' @import pcaMethods
+#' @keywords internal
 computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
   .pkg <- "DeconRNASeq"
   if (!requireNamespace(.pkg, quietly = TRUE)) {
@@ -1402,11 +1106,15 @@ computeDeconRNASeq = function(TPM_matrix, signature_file, name_signature){
 #' Benchmarking second-generation methods for cell-type deconvolution of transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz, Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch, Katharina and
 #' Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 #'
+#' @keywords internal
 compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c("CBSX", "Epidish", "DeconRNASeq", "DWLS", "MOMF"), signatures_select = NULL, cbsx.name, cbsx.token, doParallel = FALSE, workers = NULL, sc_obj = NULL){
 
   created_results_dir <- !dir.exists("Results")
   cache_dir <- ensure_results_dir()
-  cache_file <- function(method, sig_name) file.path(cache_dir, paste0("deconv_", method, "_", sig_name, ".rds"))
+  # Fingerprint of the input data, so cached results are only reused for the same TPM matrix
+  fp_file <- tempfile(); saveRDS(TPM_matrix, fp_file, compress = FALSE)
+  data_id <- substr(unname(tools::md5sum(fp_file)), 1, 8); unlink(fp_file)
+  cache_file <- function(method, sig_name) file.path(cache_dir, paste0("deconv_", method, "_", sig_name, "_", data_id, ".rds"))
   load_cache <- function(method, sig_name) {
     f <- cache_file(method, sig_name)
     if (file.exists(f)) {
@@ -1424,6 +1132,10 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
   db <- c(default_sig, user_files)
 
   if(is.null(algos)==F){
+
+    if (length(db) == 0) {
+      stop("No signature files (.txt) found in '", signatures, "' or '", signature_dir, "'.")
+    }
 
     # Filter signatures: if signatures_select is provided, keep only those
     if (!is.null(signatures_select)) {
@@ -1443,7 +1155,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
     }
     cat("\nSignatures\n")
     for (i in 1:length(db)) {
-      name = stringr::str_split(basename(db[[i]]), "\\.")[[1]][1]
+      name = tools::file_path_sans_ext(basename(db[[i]]))
       cat("* ", name, "\n", sep = "")
     }
 
@@ -1469,16 +1181,7 @@ compute_methods_variable_signature = function(TPM_matrix, signatures, algos = c(
     for (i in 1:length(db)) {
 
       signature <- utils::read.delim(db[[i]], row.names=1)
-      signature_name = stringr::str_split(basename(db[[i]]), "\\.")[[1]][1]
-
-      ###Check whether common genes between counts and signature have values different than 0 to avoid NAs
-      # common.data <- rownames(TPM_matrix) %in% rownames(signature)
-      # data.check <- TPM_matrix[common.data,]
-      # zero = any(rowSums(data.check != 0) == 0)
-      # if(zero){
-      #   exclude = c(exclude, signature_name)
-      #   warning("Common genes between count matrix and signature ", signature_name, " are all zero values")
-      # }
+      signature_name = tools::file_path_sans_ext(basename(db[[i]]))
 
       if("DeconRNASeq"%in%algos){
         cached <- load_cache("DeconRNASeq", signature_name)
@@ -1636,13 +1339,6 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
   if("Quantiseq" %in% methods){
     cat("\nRunning Quantiseq...............................................................\n")
     quantiseq = computeQuantiseq(TPM_matrix)}
-  # if("MCP" %in% methods){
-  #   cat("\nRunning MCPCounter...............................................................\n")
-  #   mcp = computeMCP(TPM_matrix, path_signatures)}
-  # if("xCell" %in% methods){
-  #   xcell = computeXCell(TPM_matrix)
-  #   cat("\nRunning XCell...............................................................\n")}
-  #
   default_sig = "Quantiseq" #This was including MCP and XCell before
   methods = methods[!(methods %in% default_sig)]
   if(length(methods) == 0){
@@ -1718,6 +1414,7 @@ compute.deconvolution <- function(raw.counts, methods = c("Quantiseq", "CBSX", "
 #' Benchmarking second-generation methods for cell-type deconvolution of transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz, Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch, Katharina and
 #' Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 #'
+#' @keywords internal
 compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, methods_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC"), sc_object, sc_metadata, cell_annotations, samples_ids, name_object, n_cores = NULL, return = FALSE, file_name = NULL){
   if(normalized){
     bulk_counts = ADImpute::NormalizeTPM(raw_counts)
@@ -1727,15 +1424,31 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
 
   if(is.null(name_object)) name_object = "scRNAseq" # Avoid "Method__cell" names that break method_signature_cell parsing
 
+  # Method names are matched ignoring case (e.g. "MuSiC" = "MuSic"); unknown names are reported
+  valid_sc = c("Autogenes", "BayesPrism", "Bisque", "CPM", "MuSic", "SCDC")
+  matched_sc = valid_sc[match(tolower(methods_sc), tolower(valid_sc))]
+  if(anyNA(matched_sc)){
+    warning("Unknown single-cell methods ignored: ", paste(methods_sc[is.na(matched_sc)], collapse = ", "),
+            ". Available: ", paste(valid_sc, collapse = ", "), call. = FALSE)
+  }
+  methods_sc = matched_sc[!is.na(matched_sc)]
+
+  sc_object = as.matrix(sc_object) # Convert once (each conversion of a large reference costs a lot of memory)
+
   if(is.null(n_cores)){
     n_cores = parallel::detectCores() - 1
     message("\nUsing ", n_cores, " cores available for running...\n")
   }
 
   # Set up per-method caching to survive crashes
-  cache_dir <- "Results/"
-  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
-  cache_file <- function(method) file.path(cache_dir, paste0("sc_deconv_", method, "_", name_object, ".rds"))
+  created_results_dir <- !dir.exists("Results")
+  cache_dir <- ensure_results_dir()
+  # Fingerprint of the inputs (bulk and single-cell reference), so cached results are only reused for the same data
+  fp_file <- tempfile()
+  saveRDS(list(raw_counts, dim(sc_object), dimnames(sc_object), sum(sc_object),
+               if (!is.null(sc_metadata)) sc_metadata[, c(cell_annotations, samples_ids), drop = FALSE]), fp_file, compress = FALSE)
+  data_id <- substr(unname(tools::md5sum(fp_file)), 1, 8); unlink(fp_file)
+  cache_file <- function(method) file.path(cache_dir, paste0("sc_deconv_", method, "_", name_object, "_", data_id, ".rds"))
   load_cache <- function(method){
     f <- cache_file(method)
     if(file.exists(f)){
@@ -1756,7 +1469,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       message("\nRunning AutogeneS...\n")
       autogenes = omnideconv::deconvolute_autogenes(
         bulk_gene_expression = bulk_counts,
-        single_cell_object = as.matrix(sc_object),
+        single_cell_object = sc_object,
         cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
         verbose = TRUE
       )$proportions
@@ -1773,7 +1486,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       message("\nRunning BayesPrism...\n")
       bayesprism = omnideconv::deconvolute_bayesprism(
         bulk_gene_expression = raw_counts,
-        single_cell_object = as.matrix(sc_object),
+        single_cell_object = sc_object,
         cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
         n_cores = n_cores
       )$theta
@@ -1790,7 +1503,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       message("\nRunning Bisque...\n")
       bisque = omnideconv::deconvolute_bisque(
         bulk_gene_expression = as.matrix(raw_counts),
-        single_cell_object = as.matrix(sc_object),
+        single_cell_object = sc_object,
         cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
         batch_ids = as.character(sc_metadata[,samples_ids]),
         verbose = TRUE
@@ -1806,7 +1519,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       results$CPM = cached
     } else {
       message("\nRunning CPM...\n")
-      sampled_SCData <- stratified_sample_cells(as.matrix(sc_object), sc_metadata, cell_annotations, n_cells_per_type = 500) #Sample cells to a max of 500 per cell type
+      sampled_SCData <- stratified_sample_cells(sc_object, sc_metadata, cell_annotations, n_cells_per_type = 500) #Sample cells to a max of 500 per cell type
       set.seed(123) #Stochastic method (CPM is not deterministic)
       cpm = omnideconv::deconvolute_cpm(
         bulk_gene_expression = data.frame(raw_counts),
@@ -1831,9 +1544,13 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       n_subjects_per_ct <- tapply(sample_ids, ct_annotations, function(x) length(unique(x)))
       keep_ct <- names(n_subjects_per_ct)[n_subjects_per_ct > 1]
       keep_cells <- ct_annotations %in% keep_ct
+      dropped_ct <- setdiff(unique(ct_annotations), keep_ct)
+      if(length(dropped_ct) > 0){
+        message("MuSiC needs each cell type in at least 2 samples; not estimated: ", paste(dropped_ct, collapse = ", "))
+      }
       music = omnideconv::deconvolute_music(
         bulk_gene_expression = as.matrix(bulk_counts),
-        single_cell_object = as.matrix(sc_object)[, keep_cells],
+        single_cell_object = sc_object[, keep_cells],
         cell_type_annotations = ct_annotations[keep_cells],
         batch_ids = sample_ids[keep_cells],
         verbose = TRUE
@@ -1851,7 +1568,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       message("\nRunning SCDC...\n")
       scdc = omnideconv::deconvolute_scdc(
         bulk_gene_expression = as.matrix(bulk_counts),
-        single_cell_object = as.matrix(sc_object),
+        single_cell_object = sc_object,
         cell_type_annotations = as.character(sc_metadata[,cell_annotations]),
         batch_ids = as.character(sc_metadata[,samples_ids]),
         verbose = TRUE
@@ -1879,6 +1596,10 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
       if(file.exists(f)) file.remove(f)
     }
     message("\nSc-deconvolution cache files removed.\n")
+    # Don't leave an empty Results/ behind if it only existed for the cache
+    if (created_results_dir && length(list.files("Results", all.files = TRUE, no.. = TRUE)) == 0) {
+      unlink("Results", recursive = TRUE)
+    }
   }
 
   if(return == TRUE){
@@ -1911,18 +1632,18 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
 
 #' Create meta-cells from a single cell object using the KNN algorithm. This function is adapted from the R package hdWGCNA (Morabito et al., 2023)
 #'
-#' @param sc_object A matrix with the counts from scRNAseq object (genes as rows and cells as columns)
-#' @param labels_column A character vector with the cell labels (need to be of the same order as in the sc_object)
-#' @param samples_column A character vector with the samples labels (need to be of the same order as in the sc_object)
+#' @param sc_object A Seurat object with raw counts and a PCA already computed (`RunPCA()`), used to find each cell's nearest neighbours.
+#' @param labels_column Name of the metadata column with the cell type labels.
+#' @param samples_column Name of the metadata column with the sample labels.
 #' @param exclude_cells Cell types to discard from metacell algorithm.
 #' @param min_cells The minimum number of cells in a particular grouping to construct metacells.
 #' @param k Number of nearest neighbors to aggregate for KNN algorithm.
-#' @param max_shared The maximum number of cells to be shared across two metacells.
+#' @param max_shared The maximum number of cells to be shared across two metacells (keep it below `k`, otherwise metacells can overlap completely).
 #' @param n_workers Number of cores to use for paralellization.
 #' @param min_meta Minimum number of metacells allowed. Below this number, metacells of this cell type will be discarded.
 #'
 #' @return A list with two elements:
-#' - The metacell count matrix (genes as rownames and cells as columns)
+#' - The metacell count matrix (genes as rownames and metacells as columns): each metacell is the sum of the counts of its `k` cells
 #' - The metadata matrix corresponding to the metacell object
 #'
 #' @export
@@ -1934,7 +1655,7 @@ compute_sc_deconvolution_methods = function(raw_counts, normalized = TRUE, metho
 #' Morabito, S., Reese, F., Rahimzadeh, N., Miyoshi, E., & Swarup, V. (2023). hdWGCNA identifies co-expression networks in high-dimensional transcriptomics data. Cell Reports Methods, 3(6), 100498. https://doi.org/10.1016/j.crmeth.2023.100498
 #'
 #'
-create_metacells = function(sc_object, labels_column, samples_column, exclude_cells = NULL, min_cells = 50, k = 15, max_shared = 15, n_workers = 4, min_meta = 10){
+create_metacells = function(sc_object, labels_column, samples_column, exclude_cells = NULL, min_cells = 50, k = 15, max_shared = 10, n_workers = 4, min_meta = 10){
 
   .pkg <- "hdWGCNA"
   if (!requireNamespace(.pkg, quietly = TRUE))
@@ -2008,7 +1729,7 @@ create_metacells = function(sc_object, labels_column, samples_column, exclude_ce
 
   metadata = metadata %>%
     dplyr::filter(!.data[[labels_column]] %in% names(low_count_cells))
-  counts_sc = counts_sc[,colnames(counts_sc) %in% rownames(metadata)]
+  counts_sc = counts_sc[,colnames(counts_sc) %in% rownames(metadata), drop = FALSE]
 
   return(list(Counts = counts_sc, Metadata = metadata))
 
@@ -2020,84 +1741,57 @@ create_metacells = function(sc_object, labels_column, samples_column, exclude_ce
 #'
 #' @param deconv_res A list containing results from the deconvolution process, including:
 #'   \itemize{
-#'     \item{\code{Deconvolution subgroups composition}: a list of subgroup feature names per iteration}
+#'     \item{\code{Deconvolution subgroups composition}: the member features of each subgroup, per cell type}
 #'     \item{\code{Deconvolution matrix}: the original deconvolution result used to determine relevant features}
 #'   }
 #' @param deconvolution_test A data.frame or matrix of deconvolution results (e.g., from another cohort)
 #'
-#' @return A data.frame with the projected subgroup features proportions
+#' @return A data.frame with the projected subgroup features proportions: the same features, in the same order, as
+#'   the "Deconvolution matrix" of `deconv_res`. Each subgroup is the median of its member features. Subgroups with
+#'   no member in `deconvolution_test`, and training features missing from it, are set to `NA` with a warning; a
+#'   warning also lists subgroups computed from only part of their members.
 #' @export
 #'
 replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
-  #deconv_subgroups <- mapply(c, deconv_res[[3]], deconv_res[[4]], SIMPLIFY = FALSE) #Join cell groups
-  deconv_subgroups = deconv_res[["Deconvolution subgroups composition"]]
-  iterations = find.maximum.iteration(deconv_subgroups)
+  # All subgroups of all cell types, in the order they were created
+  deconv_subgroups = unlist(unname(deconv_res[["Deconvolution subgroups composition"]]), recursive = FALSE)
 
-  if (!is.finite(iterations)) {
+  if (length(deconv_subgroups) == 0) {
     warning("No subgroups to replicate")
-    deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]]), drop = FALSE] # Filter for features not found in the deconv_res (low variance, zeros, etc)
-    return(data.frame(deconvolution_test, check.names = FALSE))
   }
 
-  # Create same groups composition
-  for (m in 1:iterations) {
-    base_groups = list()
-    for (i in 1:length(deconv_subgroups)){
-      if(length(deconv_subgroups[[i]])!=0){
-        idy = grep(paste0("\\.Iteration\\.", m, "$"), names(deconv_subgroups[[i]]))
-        if(length(idy)!=0){
-          base_groups = append(base_groups, deconv_subgroups[[i]][idy])
-        }
-      }
+  # Create same groups composition (one subgroup at a time, so a subgroup can also use earlier subgroups)
+  deconvolution_test = data.frame(deconvolution_test, check.names = FALSE)
+  partial = c()
+  absent = c()
+  for (sub_name in names(deconv_subgroups)) {
+    members = deconv_subgroups[[sub_name]]
+    x = as.matrix(deconvolution_test[, colnames(deconvolution_test) %in% members, drop = FALSE])
+
+    if(ncol(x) == 0){
+      med = rep(NA_real_, nrow(deconvolution_test)) #No member available: unknown (not 0)
+      absent = c(absent, sub_name)
+    } else {
+      med = matrixStats::rowMedians(x)
+      if(ncol(x) < length(members)) partial = c(partial, sub_name)
     }
 
-    if(length(base_groups) == 0) next
-
-    deconv_subgroups_values = c()
-    for (i in 1:length(base_groups)) {
-      x = as.matrix(deconvolution_test[, colnames(deconvolution_test) %in% base_groups[[i]], drop = FALSE])
-
-      if(ncol(x) == 0){
-        med = rep(0, nrow(deconvolution_test))
-      } else {
-        med = matrixStats::rowMedians(x)
-      }
-
-      deconv_subgroups_values = cbind(deconv_subgroups_values, med) #Compute median using base groups
-    }
-    colnames(deconv_subgroups_values) = names(base_groups)
-    deconvolution_test = cbind(deconv_subgroups_values, deconvolution_test) # Join cell subgroups and deconv features
-
+    deconvolution_test[[sub_name]] = med #Compute median using the subgroup members
   }
 
-  deconvolution_test = deconvolution_test[,colnames(deconvolution_test)%in%colnames(deconv_res[["Deconvolution matrix"]]), drop = FALSE]
+  # Same features, in the same order, as the training "Deconvolution matrix" (missing ones as NA)
+  train_features = colnames(deconv_res[["Deconvolution matrix"]])
+  missing_features = setdiff(train_features, colnames(deconvolution_test))
+  if(length(missing_features) > 0) deconvolution_test[missing_features] = NA_real_
+  deconvolution_test = deconvolution_test[, train_features, drop = FALSE]
+
+  show = function(x) paste0(paste(utils::head(x, 10), collapse = ", "), if (length(x) > 10) paste0(", ... (", length(x), " in total)"))
+  if(length(partial) > 0) warning("Subgroups computed from only part of their members (others missing in deconvolution_test): ", show(partial), call. = FALSE)
+  if(length(absent) > 0) warning("Subgroups with no member in deconvolution_test, set to NA: ", show(absent), call. = FALSE)
+  if(length(missing_features) > 0) warning("Features of the training matrix missing in deconvolution_test, set to NA: ", show(setdiff(missing_features, absent)), call. = FALSE)
 
   return(data.frame(deconvolution_test, check.names = FALSE))
-}
-
-#' Find maximum iteration from subgroups
-#'
-#' @param cells.groups Cell groups corresponding to a specific cell type.
-#'
-#' @return Maximum subgroupping iteration
-#'
-#' @keywords internal
-find.maximum.iteration = function(cells.groups){
-  max_iteration = c()
-  for (i in 1:length(cells.groups)){
-    if(is.null(names(cells.groups[[i]]))==F){
-      iterations <- sapply(names(cells.groups[[i]]), function(x) {
-        as.numeric(sub(".*\\.Iteration\\.(\\d+)", "\\1", x))
-      })
-      local_max = max(unlist(iterations))
-      max_iteration = c(max_iteration, local_max)
-    }
-  }
-
-  if(length(max_iteration) == 0) return(-Inf) # No subgroups at all
-
-  return(max(max_iteration))
 }
 
 #' Compute deconvolution benchmark
@@ -2113,7 +1807,10 @@ find.maximum.iteration = function(cells.groups){
 #' @param width A numeric value with the width for the returned plot.
 #' @param height A numeric value with the height for the returned plot.
 #'
-#' @return A correlation matrix between the cell type deconvolution combinations and the real cell proportions.
+#' @return A correlation matrix between the cell type deconvolution combinations and the real cell proportions, with an
+#'   "average" row (mean over cell types) used to order the combinations. When `deconvolution` contains subgroups
+#'   (e.g. `B.cells_Subgroup.1`), columns are `Subgroup.1`, `Subgroup.2`, ... (the i-th subgroup of each cell type) and
+#'   no average is computed, because a column then holds unrelated features.
 #' @export
 #'
 #' @examples
@@ -2136,7 +1833,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   }
   groundtruth = groundtruth[rownames(deconvolution), , drop = FALSE] #Order samples to match both features
 
-  # Subgroup columns are named CellType_SubgroupID (e.g. B.cells_Subgroup.1.Iteration.1).
+  # Subgroup columns are named CellType_SubgroupID (e.g. B.cells_Subgroup.1).
   # Swap to SubgroupID_CellType so the standard _CellType$ matching logic works.
   subgroup_idx <- grepl("_Subgroup\\.", colnames(deconvolution))
   if (any(subgroup_idx)) {
@@ -2194,21 +1891,18 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
       plot_df <- plot_df[stats::complete.cases(plot_df), ]
       if (nrow(plot_df) < 3) next
 
-      cor_test  <- stats::cor.test(plot_df$estimate, plot_df$ground, method = corr_method)
-      cor_value <- cor_test$estimate
-      p_value   <- cor_test$p.value
-      p_label   <- ifelse(p_value < 0.001, "p < 0.001",
-                          ifelse(p_value < 0.01, "p < 0.01",
-                                 ifelse(p_value < 0.05, "p < 0.05",
-                                        paste0("p = ", formatC(p_value, format = "f", digits = 3)))))
-      label <- paste0("r = ", formatC(cor_value, format = "f", digits = 2), "\n", p_label)
+      # One correlation per cell type: pooling cell types mostly reflects their different abundances
+      p_text <- function(p) ifelse(p < 0.001, "p < 0.001", ifelse(p < 0.01, "p < 0.01", ifelse(p < 0.05, "p < 0.05", paste0("p = ", formatC(p, format = "f", digits = 3)))))
+      ct_stats <- sapply(split(plot_df, plot_df$cell_type), function(d) {
+        if (nrow(d) < 3 || stats::sd(d$estimate) == 0 || stats::sd(d$ground) == 0) return(paste0(d$cell_type[1], ": r = NA"))
+        ct_test <- suppressWarnings(stats::cor.test(d$estimate, d$ground, method = corr_method))
+        paste0(d$cell_type[1], ": r = ", formatC(ct_test$estimate, format = "f", digits = 2), ", ", p_text(ct_test$p.value))
+      })
+      plot_df$cell_type <- factor(plot_df$cell_type, levels = names(ct_stats), labels = ct_stats)
 
       p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$ground, y = .data$estimate, colour = .data$cell_type)) +
         ggplot2::geom_point(size = 2.5, alpha = 0.85) +
-        ggplot2::geom_smooth(method = "lm", se = TRUE, colour = "navy", linewidth = 0.7,
-                             ggplot2::aes(group = 1)) +
-        ggplot2::annotate("text", x = -Inf, y = Inf, label = label,
-                          hjust = -0.1, vjust = 1.3, size = 3.2, family = "mono") +
+        ggplot2::geom_smooth(method = "lm", se = FALSE, linewidth = 0.7) + # one line per cell type
         ggplot2::scale_colour_brewer(palette = "Dark2", name = NULL) +
         ggplot2::labs(
           title = gsub("_", " ", combo),
@@ -2295,18 +1989,24 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   pval_matrix = pval_matrix %>%
     dplyr::select(dplyr::where(~ !all(is.na(.))))
 
-  corr_matrix[nrow(corr_matrix)+1,] = colMeans(corr_matrix, na.rm = T)
-  rownames(corr_matrix)[nrow(corr_matrix)] = "average"
+  n_cell_types = colSums(!is.na(corr_matrix)) #Number of cell types each average is based on
 
-  pval_matrix[nrow(pval_matrix)+1,] = 0
-  rownames(pval_matrix)[nrow(pval_matrix)] = "average"
+  # With subgroups, a column (e.g. Subgroup.1) holds the first subgroup of every cell type: these are
+  # unrelated features, so no average is computed and the columns are not ordered by it
+  if(!any(subgroup_idx)){
+    corr_matrix[nrow(corr_matrix)+1,] = colMeans(corr_matrix, na.rm = T)
+    rownames(corr_matrix)[nrow(corr_matrix)] = "average"
 
-  ##Order methods
-  corr_matrix = t(corr_matrix) %>%
-    data.frame(check.names = FALSE) %>%
-    dplyr::arrange(average) %>%
-    t() %>%
-    data.frame(check.names = FALSE)
+    pval_matrix[nrow(pval_matrix)+1,] = 0
+    rownames(pval_matrix)[nrow(pval_matrix)] = "average"
+
+    ##Order methods
+    corr_matrix = t(corr_matrix) %>%
+      data.frame(check.names = FALSE) %>%
+      dplyr::arrange(average) %>%
+      t() %>%
+      data.frame(check.names = FALSE)
+  }
 
   corr_df <- reshape2::melt(corr_matrix)
   pval_df = reshape2::melt(pval_matrix[,colnames(corr_matrix), drop = FALSE]) #Take the same order as corr_matrix
@@ -2314,6 +2014,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
   corr_df = corr_df %>%
     dplyr::mutate(Cells = rep(rownames(corr_matrix), ncol(corr_matrix)),
                   pval_value = pval_df$value)
+  levels(corr_df$variable) = paste0(levels(corr_df$variable), " (n = ", n_cell_types[levels(corr_df$variable)], ")") #Show how many cell types each average uses
 
   g <- corr_df %>%
     ggplot2::ggplot(ggplot2::aes(Cells, variable, fill=value, label=round(value,2))) +
@@ -2339,36 +2040,40 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
 
 #' Create pseudo bulk from single cell object
 #'
+#' Sums the counts of all the cells of each sample, producing one bulk-like expression profile per sample.
+#'
 #' @param sc_obj A Seurat single cell object
-#' @param cells_labels A character vector with the cell labels (need to be of the same order as in the sc_obj)
-#' @param sample_labels A character vector with the samples labels (need to be of the same order as in the sc_obj)
+#' @param cells_labels Not used (kept so existing calls keep working). The pseudobulk is aggregated per sample only.
+#' @param sample_labels Name of the metadata column with the sample labels.
 #' @param normalized Whether pseudobulk should be or not TPM normalized
 #' @param file_name A string specifying the name of the .csv pseudobulk saved in Results/
+#' @param return Whether to save or not the csv file with the pseudobulk in Results/
 #'
 #' @return A gene count matrix (genes as rows and samples as columns)
 #' @export
 #'
-create_sc_pseudobulk = function(sc_obj, cells_labels, sample_labels, normalized = TRUE, file_name){
+create_sc_pseudobulk = function(sc_obj, cells_labels = NULL, sample_labels, normalized = TRUE, file_name = "Pseudobulk", return = TRUE){
   if (!requireNamespace("Seurat", quietly = TRUE))
     stop("Package 'Seurat' is required for create_sc_pseudobulk().")
 
   #Convert to SingleCell
   sc_obj@meta.data$Patient = as.factor(sc_obj@meta.data[,sample_labels])
-  sc_obj@meta.data$new_annotation = as.factor(sc_obj@meta.data[,cells_labels])
   sce = Seurat::as.SingleCellExperiment(sc_obj)
 
-  ##Aggregating counts
-  aggr_counts <- glmGamPoi::pseudobulk(sce, group_by = glmGamPoi::vars(Patient), aggregation_functions = list(counts = "rowMeans2", .default = "rowMeans2"))
-  pseudo_counts = data.frame(aggr_counts@assays@data$counts)
+  ##Aggregating counts (sum of the counts of the cells of each sample)
+  aggr_counts <- glmGamPoi::pseudobulk(sce, group_by = glmGamPoi::vars(Patient), aggregation_functions = list(counts = "rowSums2", .default = "rowMeans2"))
+  pseudo_counts = data.frame(SummarizedExperiment::assay(aggr_counts, "counts"), check.names = FALSE)
 
   if(normalized == TRUE){
     pseudo_counts = ADImpute::NormalizeTPM(pseudo_counts, log=F) %>%
-      data.frame()
+      data.frame(check.names = FALSE)
   }
 
   #Save pseudobulk matrix
-  ensure_results_dir()
-  utils::write.table(pseudo_counts, file = paste0("Results/", file_name, ".csv"), quote = F, sep = "\t", row.names = T)
+  if(return == TRUE){
+    ensure_results_dir()
+    utils::write.csv(pseudo_counts, paste0("Results/", file_name, ".csv"))
+  }
 
   return(pseudo_counts)
 
@@ -2380,16 +2085,20 @@ create_sc_pseudobulk = function(sc_obj, cells_labels, sample_labels, normalized 
 #'
 #' @param sc_obj A matrix with the counts from scRNAseq object (genes as rows and cells as columns)
 #' @param sc_metadata Dataframe with metadata from the single cell object. The matrix should include the columns cell_label and sample_label.
-#' @param cells_labels A character vector with the cell labels (need to be of the same order as in the sc_object)
-#' @param sample_labels A character vector with the samples labels (need to be of the same order as in the sc_object)
+#' @param cells_labels Name of the `sc_metadata` column with the cell type labels. The labels become the cell type names of the
+#'   signatures, so they must follow the multideconv nomenclature (see [get_cell_type_nomenclature()] and the README);
+#'   otherwise those cell types are discarded later by [compute.deconvolution.analysis()].
+#' @param sample_labels Name of the `sc_metadata` column with the sample labels.
 #' @param credentials.mail (Optional) Credential email for running CIBERSORTx If not provided, CIBERSORTx method will not be run.
 #' @param credentials.token (Optional) Credential token for running CIBERSORTx. If not provided, CIBERSORTx method will not be run.
 #' @param bulk_rna A matrix of bulk data. Rows are genes, columns are samples. This is needed for MOMF method, if not given the method will not be run.
 #' @param cell_markers Named list with the genes markers names as Symbol per cell types to be used to create the signature using the BSeq-SC method. If NULL, the method will be ignored during the signature creation.
-#' @param name_signature A string indicating the signature name. This will be added as a suffix in each method (e.g. CBSX_name_signature, DWLS_name_signature)
-#' @param methods_sig A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx", "MOMF", and "BSeqsc". Default runs all available methods.
+#' @param name_signature A string indicating the signature name, used in the file names (e.g. `DWLS-<name_signature>-scRNAseq.txt`).
+#'   It must not contain `_` (replaced by `-`), which separates method, signature and cell type in the deconvolution column names.
+#' @param methods_sig A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx" (or "CBSX"), "MOMF", and "BSeqsc". Default runs all available methods.
 #'
-#' @return A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder, these will be used to run deconvolution.
+#' @return A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder
+#'   (an existing file with the same name is overwritten), these will be used to run deconvolution.
 #' @export
 #'
 #' @references
@@ -2413,6 +2122,26 @@ create_sc_signatures = function(sc_obj,
   signature_dir = "Results/custom_signatures/"
   dir.create(signature_dir, showWarnings = FALSE, recursive = TRUE)
   if(is.null(name_signature)) name_signature = "custom" # Avoid "DWLS--scRNAseq.txt" file names
+  if(grepl("_", name_signature)){
+    message("'_' in name_signature replaced by '-' ('_' separates method, signature and cell type in the column names).")
+    name_signature = gsub("_", "-", name_signature)
+  }
+
+  # Method names are matched ignoring case ("CBSX" = "CIBERSORTx"); unknown names are reported
+  valid_sig = c("DWLS", "CIBERSORTx", "MOMF", "BSeqsc")
+  methods_sig[toupper(methods_sig) == "CBSX"] = "CIBERSORTx"
+  matched_sig = valid_sig[match(tolower(methods_sig), tolower(valid_sig))]
+  if(anyNA(matched_sig)){
+    warning("Unknown signature methods ignored: ", paste(methods_sig[is.na(matched_sig)], collapse = ", "),
+            ". Available: ", paste(valid_sig, collapse = ", "), call. = FALSE)
+  }
+  methods_sig = matched_sig[!is.na(matched_sig)]
+
+  save_signature = function(model, prefix){
+    sig_file = paste0(signature_dir, prefix, "-", name_signature, "-scRNAseq.txt")
+    if(file.exists(sig_file)) message("Overwriting existing signature file: ", sig_file)
+    utils::write.table(model, sig_file, row.names = FALSE, quote = FALSE, sep = "\t")
+  }
 
   sc_obj = as.matrix(sc_obj)
   signatures = list()
@@ -2427,7 +2156,7 @@ create_sc_signatures = function(sc_obj,
       data.frame() %>%
       tibble::rownames_to_column("NAME")
 
-    utils::write.table(model_dwls, paste0(signature_dir, "DWLS-", name_signature,"-scRNAseq.txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+    save_signature(model_dwls, "DWLS")
     signatures[["DWLS"]] = model_dwls
   }
 
@@ -2448,7 +2177,7 @@ create_sc_signatures = function(sc_obj,
         data.frame() %>%
         tibble::rownames_to_column("NAME")
 
-      utils::write.table(model_cbsx, paste0(signature_dir, "CBSX-", name_signature,"-scRNAseq.txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+      save_signature(model_cbsx, "CBSX")
       signatures[["CBSX"]] = model_cbsx
     }
   }
@@ -2466,7 +2195,7 @@ create_sc_signatures = function(sc_obj,
         data.frame() %>%
         tibble::rownames_to_column("NAME")
 
-      utils::write.table(model_momf, paste0(signature_dir, "MOMF-", name_signature,"-scRNAseq.txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+      save_signature(model_momf, "MOMF")
       signatures[["MOMF"]] = model_momf
     }
   }
@@ -2485,7 +2214,7 @@ create_sc_signatures = function(sc_obj,
         data.frame() %>%
         tibble::rownames_to_column("NAME")
 
-      utils::write.table(model_bseq, paste0(signature_dir, "BSeqSC-", name_signature,"-scRNAseq.txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+      save_signature(model_bseq, "BSeqSC")
       signatures[["BSeqsc"]] = model_bseq
     }
   }
@@ -2493,6 +2222,13 @@ create_sc_signatures = function(sc_obj,
   return(signatures)
 }
 
+#' Reset the foreach backend to sequential
+#'
+#' Registers the sequential `foreach` backend after a parallel cluster has been stopped, so later
+#' parallel `foreach` calls do not try to use the closed cluster.
+#'
+#' @return Called for its side effect; the return value is not used.
+#' @keywords internal
 unregister_dopar <- function() {
   if (!is.null(foreach::getDoParRegistered())) {
     # switch back to sequential backend
@@ -2501,8 +2237,22 @@ unregister_dopar <- function() {
   }
 }
 
-# Function to process each group in metacells
-process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_column, samples_column) {
+#' Build metacells for one cell type and sample group
+#'
+#' Worker function of [create_metacells()]: runs hdWGCNA's `MetacellsByGroups()` on the cells of one
+#' cell type from one sample and returns the metacell counts and metadata.
+#'
+#' @param data A Seurat object with the cells of one cell type from one sample (must contain a `pca` reduction).
+#' @param min_cells Minimum number of cells required to build metacells; smaller groups are skipped.
+#' @param k Number of nearest neighbours aggregated into each metacell.
+#' @param max_shared Maximum number of cells shared between two metacells.
+#' @param labels_column Name of the metadata column with the cell type labels.
+#' @param samples_column Name of the metadata column with the sample labels.
+#'
+#' @return A list with `counts` (genes x metacells matrix of summed counts) and `metadata` (metacell metadata), or `NULL`
+#'   if the group has fewer than `min_cells` cells.
+#' @keywords internal
+process_group <- function(data, min_cells = 50, k = 15, max_shared = 10, labels_column, samples_column) {
 
   .pkg <- "hdWGCNA"
   if (!requireNamespace(.pkg, quietly = TRUE))
@@ -2520,6 +2270,7 @@ process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_
                                      reduction = 'pca',
                                      k = k,
                                      max_shared = max_shared,
+                                     mode = "sum", # metacell counts = sum of its cells' counts (integers)
                                      ident.group = labels_column)
 
   meta = .hd$GetMetacellObject(seurat_obj)
@@ -2547,6 +2298,19 @@ process_group <- function(data, min_cells = 50, k = 15, max_shared = 15, labels_
 
 }
 
+#' Subsample cells per cell type
+#'
+#' Randomly keeps at most `n_cells_per_type` cells of each cell type. Used to limit the size of the
+#' single-cell reference for CPM in [compute_sc_deconvolution_methods()].
+#'
+#' @param SCData A count matrix (genes x cells); its column names must match the row names of `SCData_metadata`.
+#' @param SCData_metadata A data frame with one row per cell (row names = cell names).
+#' @param cell_label Name of the metadata column with the cell type labels.
+#' @param n_cells_per_type Maximum number of cells kept per cell type.
+#' @param seed Random seed for the sampling.
+#'
+#' @return A list with `Counts` (subsampled count matrix) and `Metadata` (matching metadata).
+#' @keywords internal
 stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells_per_type = 500, seed = 123) {
   set.seed(seed)
 
@@ -2590,9 +2354,7 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @param corr Minimum correlation threshold passed to [compute.deconvolution.analysis()].
 #' @param corr_type Correlation type passed to [compute.deconvolution.analysis()].
 #' @param zero_thr Maximum zero fraction passed to [compute.deconvolution.analysis()].
-#' @param var_quantile Variance quantile threshold passed to [compute.deconvolution.analysis()].
-#' @param prune_thr Pruning correlation threshold passed to [compute.deconvolution.analysis()].
-#' @param seed Random seed passed to [compute.deconvolution.analysis()].
+#' @param cv_thr Minimum coefficient of variation passed to [compute.deconvolution.analysis()].
 #' @param batch Optional batch covariate passed to [compute.deconvolution.analysis()].
 #'
 #' @return
@@ -2625,9 +2387,7 @@ prepare_multideconv_folds <- function(
     corr = 0.7,
     corr_type = "spearman",
     zero_thr = 0.9,
-    var_quantile = 0.25,
-    prune_thr = 0.9,
-    seed = NULL,
+    cv_thr = 0.1,
     batch = NULL
 ) {
 
@@ -2655,9 +2415,7 @@ prepare_multideconv_folds <- function(
       corr = corr,
       corr_type = corr_type,
       zero_thr = zero_thr,
-      var_quantile = var_quantile,
-      prune_thr = prune_thr,
-      seed = seed,
+      cv_thr = cv_thr,
       batch = batch,
       cells_extra = cells_extra,
       return = FALSE,
@@ -2694,9 +2452,7 @@ prepare_multideconv_folds <- function(
       corr = corr,
       corr_type = corr_type,
       zero_thr = zero_thr,
-      var_quantile = var_quantile,
-      prune_thr = prune_thr,
-      seed = seed,
+      cv_thr = cv_thr,
       batch = if (!is.null(batch)) batch[train_idx] else NULL,
       cells_extra = cells_extra,
       return = FALSE
@@ -2732,215 +2488,25 @@ prepare_multideconv_folds <- function(
   invisible(processed_folds)
 }
 
-# -- Deprecated subgroup characterisation helpers --
-# The functions below (aggregate_genes, compute_data_driven_rank,
-# create_gsea_signature, expand_subgroup_members, compute_deconvolution_dictionary,
-# estimate_expression_profiles) are kept for reference but are no longer exported.
-# Use compute.subgroup.pathways() for pathway-based subgroup characterisation.
-# -------------------------------------------------------------------------------
-
-# aggregate_genes <- function(subgroup, default_quantiseq = "TIL10") {
-#
-#   ct <- sub(".*_", "", subgroup[1]) # Extract cell type from subgroup name
-#   sigs <- unique(na.omit(sapply(subgroup, function(x) { # Iterate over subgroup names to extract signature names
-#     p <- strsplit(x, "_")[[1]] # Extract signature name from subgroup name
-#     if(grepl("^Quantiseq$", p[1], ignore.case = TRUE)){
-#       default_quantiseq # If Quantiseq, use default signature name TIL10
-#     }else if (length(p) >= 2){
-#       p[2] # If signature name is present, use it
-#     }
-#   })))
-#
-#   sigs <- gsub("\\.", "-", sigs)  # all signature coming from "." separated files should be converted to "-" to match the file names in the directory
-#
-#   sigdir = system.file("signatures", package = "multideconv")
-#   signature_dir = "Results/custom_signatures"
-#   default_sig = list.files(sigdir, full.names = T, pattern = "\\.txt$")
-#   user_files = list.files(signature_dir, full.names = TRUE, pattern = "\\.txt$")
-#   files = c(default_sig, user_files) # Combine default and user signature files
-#
-#   sel <- files[sapply(files, function(f) stringr::str_split(basename(f), "\\.")[[1]][1] %in% sigs)] # Select files that match the signature names
-#
-#   scores <- numeric()
-#   for (f in sel) {
-#     df <- utils::read.delim(f, row.names = 1) # Read the signature file
-#     df <- standardize_celltype_colnames(df) # Standardize column names to match cell types
-#     cols <- grep(ct, colnames(df), ignore.case = TRUE) # Extract columns that match the cell type
-#     if (!length(cols)) next # If no columns match, skip to the next file
-#     s <- df[, cols, drop = FALSE] # Subset the data frame to keep only the relevant columns
-#     # Min-max normalize to [0,1] so signatures with different absolute scales contribute equally
-#     col_vals <- s[, 1]
-#     rng <- range(col_vals, na.rm = TRUE)
-#     if (rng[2] > rng[1]) {
-#       col_vals <- (col_vals - rng[1]) / (rng[2] - rng[1])
-#     } else {
-#       col_vals <- rep(0, length(col_vals))
-#     }
-#     s[, 1] <- col_vals
-#     for (g in rownames(s)) { # Fill the scores vector with the gene scores, summing if the gene is already present
-#       if(is.na(scores[g])){
-#         scores[g] <- s[rownames(s)==g, ]}
-#       else{
-#         scores[g] <- scores[g] + s[rownames(s)==g, ]}
-#     }
-#   }
-#   res <- data.frame(gene = names(scores), score = as.numeric(scores), row.names = NULL)
-#
-#   return(res)
-# }
-#
-# compute_data_driven_rank <- function(res,
-#                                      expr,        # genes x samples
-#                                      deconv,      # samples x methods
-#                                      subgroup,    # column names in deconv
-#                                      method = "spearman") {
-#
-#   if(!isTRUE(all.equal(colnames(expr), rownames(deconv)))){
-#     stop("Sample names in expr and deconv do not match")
-#   }
-#   sub_est <- deconv[, subgroup, drop = FALSE]
-#   genes_use <- intersect(res$gene, rownames(expr))
-#   expr_sub <- expr[genes_use, , drop = FALSE]
-#   cors <- apply(expr_sub, 1, function(g) {
-#     stats::cor(g, sub_est, method = method, use = "pairwise.complete.obs")
-#   })
-#   ranked <- data.frame(
-#     gene = names(cors),
-#     correlation = as.numeric(cors),
-#     stringsAsFactors = FALSE
-#   )
-#   rownames(ranked) <- ranked$gene
-#   ranked <- ranked[order(ranked$correlation, decreasing = TRUE), , drop = FALSE]
-#   ranked$gene <- NULL
-#   return(ranked)
-# }
-#
-# create_gsea_signature <- function(gene_scores,
-#                                   cell_type,
-#                                   pathways = NULL,
-#                                   plot = FALSE,
-#                                   pval = 0.05,
-#                                   BH = FALSE) {
-#
-#   stats <- gene_scores[[1]]
-#   names(stats) <- rownames(gene_scores)
-#   stats <- stats[!is.na(stats)]
-#   ranks <- sort(stats, decreasing = TRUE, na.last = NA)
-#   if (is.null(pathways)) {
-#     msig <- msigdbr::msigdbr(species = "Homo sapiens", category = "H")
-#     pathways <- split(msig$gene_symbol, msig$gs_name)
-#   }
-#   fg <- fgsea::fgseaMultilevel(pathways = pathways, stats = ranks, scoreType = "pos", nproc = 4) %>%
-#     dplyr::tibble() %>%
-#     dplyr::arrange(padj)
-#   p_col <- if (BH) "padj" else "pval"
-#   threshold <- pval
-#   pos <- fg %>%
-#     dplyr::filter(!is.na(NES) & NES > 0 & .data[[p_col]] < threshold) %>%
-#     dplyr::arrange(dplyr::desc(NES))
-#   if (nrow(pos) == 0) {
-#     message("No significant pathways (", p_col, " < ", threshold, ") with NES > 0 found for ", cell_type, ".")
-#     return(NULL)
-#   }
-#   if(plot){
-#     fg_top <- pos %>%
-#       dplyr::slice_head(n = 10) %>%
-#       dplyr::mutate(pathway = factor(pathway, levels = rev(pathway)),
-#                    sig = -log10(pval + 1e-300))
-#     grDevices::pdf(paste0("Results/", cell_type, "_FGSEA_top10.pdf"))
-#     print(ggplot2::ggplot(fg_top, ggplot2::aes(x = NES, y = pathway, size = size, color = sig)) +
-#       ggplot2::geom_point() +
-#       ggplot2::scale_color_viridis_c(name = "-log10(pval)") +
-#       ggplot2::scale_size_continuous(name = "pathway size") +
-#       ggplot2::labs(title = "FGSEA top 10 pathways", subtitle = cell_type, x = "NES", y = NULL) +
-#       ggplot2::theme_minimal(base_size = 12))
-#     grDevices::dev.off()
-#   }
-#   return(as.data.frame(pos[1:min(10, nrow(pos)), c("pathway", "pval", "padj", "ES", "NES", "size")]))
-# }
-#
-# expand_subgroup_members <- function(subgroup, subgroup_map) {
-#   cur <- subgroup
-#   while (any(cur %in% names(subgroup_map))) {
-#     cur <- unname(unlist(lapply(cur, function(x) {
-#       if (x %in% names(subgroup_map)) subgroup_map[[x]] else x
-#     }), use.names = FALSE))
-#   }
-#   return(cur)
-# }
-#
-# compute_deconvolution_dictionary <- function(subgroups, expr, pathways = NULL, plot = TRUE, pval = 0.05, BH = FALSE) {
-#
-#   subgroup_map <- subgroups[["Deconvolution subgroups composition"]]
-#   deconv_mat = subgroups[["Deconvolution matrix"]]
-#   comp = subgroups[["Deconvolution subgroups per cell types"]]
-#   enrichment_results <- list()
-#
-#   for (cell_type in names(comp)) {
-#     grp_list <- colnames(comp[[cell_type]])
-#     subgroup_map_ct = subgroup_map[[cell_type]]
-#     for (sub_name in grp_list) {
-#       if(!sub_name %in% colnames(deconv_mat)) next
-#       subgroup_vec <- subgroup_map_ct[[sub_name]]
-#       if (is.null(subgroup_vec)) subgroup_vec <- sub_name
-#       subgroup_vec = expand_subgroup_members(subgroup_vec, subgroup_map_ct)
-#       res <- aggregate_genes(subgroup_vec)
-#       if (nrow(res) == 0) next
-#       ranked = compute_data_driven_rank(res = res, expr = expr, deconv = deconv_mat, subgroup = sub_name)
-#       sig_out <- create_gsea_signature(ranked, sub_name, pathways, plot = plot, pval = pval, BH = BH)
-#       if (!is.null(sig_out)) enrichment_results[[sub_name]] <- sig_out
-#     }
-#   }
-#   return(enrichment_results)
-# }
-#
-# estimate_expression_profiles <- function(bulk_expr, cell_fracs) {
-#   if (!requireNamespace("nnls", quietly = TRUE)) {
-#     stop("Package 'nnls' is required for estimate_expression_profiles()")
-#   }
-#   genes <- rownames(bulk_expr)
-#   samples <- colnames(bulk_expr)
-#   cell_types <- colnames(cell_fracs)
-#   expr_by_celltype <- lapply(cell_types, function(ct) {
-#     matrix(0, nrow = length(samples), ncol = length(genes),
-#            dimnames = list(samples, genes))
-#   })
-#   names(expr_by_celltype) <- cell_types
-#   for (s in seq_along(samples)) {
-#     p <- cell_fracs[s, ]
-#     for (g in seq_along(genes)) {
-#       y <- bulk_expr[g, s]
-#       X <- diag(p)
-#       fit <- nnls::nnls(X, rep(y, length(p)))
-#       est_expr <- stats::coef(fit)
-#       for (c in seq_along(cell_types)) {
-#         expr_by_celltype[[c]][s, g] <- t(est_expr[c])
-#       }
-#     }
-#   }
-#   return(expr_by_celltype)
-# }
-
-
 #' Relate Deconvolution Subgroups to Pathway Activities
 #'
 #' Correlates deconvolution subgroup profiles with a pre-computed pathway
-#' activity matrix and saves one heatmap per cell type to `Results/`.
-#' Use an external tool such as
-#' [CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) to compute
-#' pathway activity scores (e.g. PROGENy) before calling this function.
+#' activity matrix, saves one heatmap per cell type to `Results/` and returns
+#' the correlations and p-values.
 #'
 #' @param subgroups Output list from [compute.deconvolution.analysis()].
 #' @param pathways A numeric matrix or data frame with samples as rows and
 #'   pathway activities as columns. Row names must match sample identifiers in
 #'   `subgroups`.
 #' @param file_name Character prefix used when naming output PDF files.
-#' @param height Plot height in inches (passed to [ggplot2::ggsave()]).
-#' @param width Plot width in inches (passed to [ggplot2::ggsave()]).
+#' @param height,width Plot height and width in inches (passed to [ggplot2::ggsave()]). If `NULL` (default), the
+#'   size is chosen from the number of subgroups and pathways.
 #' @param par_mar Ignored; kept for backwards compatibility.
 #' @param pval P-value threshold; correlations above this are not starred.
+#' @param corr_type Correlation type, "pearson" (default) or "spearman".
 #'
-#' @return Invisibly returns `NULL`; side effects are PDF files in `Results/`.
+#' @return Invisibly, a list with one element per cell type, each holding `correlations` and `pvalues`
+#'   (subgroups as rows, pathways as columns). One PDF heatmap per cell type is also saved in `Results/`.
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn
 #'   scale_x_discrete guide_colorbar labs theme_minimal theme element_text
@@ -2950,30 +2516,40 @@ prepare_multideconv_folds <- function(
 compute.subgroup.pathways <- function(subgroups,
                                       pathways  = NULL,
                                       file_name = "Test",
-                                      height    = 6,
-                                      width     = 12,
+                                      height    = NULL,
+                                      width     = NULL,
                                       par_mar   = c(4, 25, 5, 3),
-                                      pval      = 0.05) {
+                                      pval      = 0.05,
+                                      corr_type = "pearson") {
   if (!requireNamespace("WGCNA", quietly = TRUE))
     stop("Package 'WGCNA' is required for compute.subgroup.pathways()")
 
   if (is.null(pathways))
-    stop("Supply a pre-computed 'pathways' matrix (samples x pathways). ",
-         "Use e.g. CellTFusion or progeny to compute pathway activity scores.")
+    stop("Supply a pre-computed 'pathways' matrix (samples x pathways). ")
 
   sig_label <- function(p) ifelse(p < 0.001, "***", ifelse(p < 0.01, "**", ifelse(p < 0.05, "*", "")))
 
   subgroups_per_ct <- subgroups$`Deconvolution subgroups per cell types`
+
+  common_all <- intersect(rownames(subgroups[["Deconvolution matrix"]]), rownames(pathways))
+  if (length(common_all) < 5)
+    stop("Fewer than 5 samples in common between 'subgroups' and 'pathways' (", length(common_all),
+         "). Row names of 'pathways' must be the sample names used in the deconvolution.")
+
+  results <- list()
 
   multi_subgroup_cts <- Filter(function(ct) {
     m <- subgroups_per_ct[[ct]]
     !is.null(m) && (is.data.frame(m) || is.matrix(m)) && ncol(m) > 1
   }, names(subgroups_per_ct))
 
+  if (length(multi_subgroup_cts) == 0)
+    message("No cell type has more than one feature: nothing to compare.")
+
   for (ct in multi_subgroup_cts) {
 
-    cells <- data.frame(subgroups_per_ct[[ct]])
-    path  <- data.frame(pathways)
+    cells <- data.frame(subgroups_per_ct[[ct]], check.names = FALSE)
+    path  <- data.frame(pathways, check.names = FALSE)
 
     common_samples <- intersect(rownames(cells), rownames(path))
     if (length(common_samples) < 5) next
@@ -2984,12 +2560,12 @@ compute.subgroup.pathways <- function(subgroups,
     path  <- path[,  apply(path,  2, var, na.rm = TRUE) > 0, drop = FALSE]
     if (ncol(cells) == 0 || ncol(path) == 0) next
 
-    cor_mat  <- WGCNA::cor(cells, path, method = "p")
+    cor_mat  <- WGCNA::cor(cells, path, method = corr_type)
     pval_mat <- WGCNA::corPvalueStudent(cor_mat, nrow(cells))
+    results[[ct]] <- list(correlations = cor_mat, pvalues = pval_mat)
 
     clean_ct   <- gsub("\\.", " ", ct)
     clean_cols <- gsub(paste0("^", gsub("\\.", "\\\\.", ct), "_"), "", colnames(cells))
-    clean_cols <- gsub("\\.", " ", clean_cols)
 
     cor_df <- as.data.frame(cor_mat) %>%
       tibble::rownames_to_column("Subgroup") %>%
@@ -3011,8 +2587,8 @@ compute.subgroup.pathways <- function(subgroups,
 
     n_sub  <- length(levels(plot_df$Subgroup))
     n_path <- length(levels(plot_df$Pathway))
-    plot_w <- max(8, n_path * 0.55 + 3)
-    plot_h <- max(4, n_sub  * 0.7  + 3)
+    plot_w <- if (is.null(width))  max(8, n_path * 0.55 + 3) else width
+    plot_h <- if (is.null(height)) max(4, n_sub  * 0.7  + 3) else height
 
     p <- ggplot(plot_df, aes(x = Pathway, y = Subgroup, fill = Correlation)) +
       geom_tile(color = "white", linewidth = 0.4) +
@@ -3020,7 +2596,7 @@ compute.subgroup.pathways <- function(subgroups,
       scale_fill_gradientn(
         colors  = c("#2166AC", "#4393C3", "#92C5DE", "#FFFFFF", "#F4A582", "#D6604D", "#B2182B"),
         limits  = c(-1, 1),
-        name    = "Pearson r",
+        name    = paste0(tools::toTitleCase(corr_type), " r"),
         guide   = guide_colorbar(barwidth = 0.8, barheight = 6, ticks = FALSE)
       ) +
       scale_x_discrete(position = "bottom") +
@@ -3041,7 +2617,7 @@ compute.subgroup.pathways <- function(subgroups,
         plot.margin   = margin(6, 10, 4, 6)
       )
 
-    print(p)
+    if (interactive()) print(p) # Printing in a script would leave a stray Rplots.pdf
 
     safe_name <- gsub("[^A-Za-z0-9_]", "_", ct)
     ensure_results_dir()
@@ -3053,5 +2629,5 @@ compute.subgroup.pathways <- function(subgroups,
       device   = "pdf"
     )
   }
-  invisible(NULL)
+  invisible(results)
 }

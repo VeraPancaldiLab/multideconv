@@ -48,3 +48,4 @@ Bioinformatics, 35(14), i436-i445. https://doi.org/10.1093/bioinformatics/btz363
 Benchmarking second-generation methods for cell-type deconvolution of transcriptomic data. Dietrich, Alexander and Merotto, Lorenzo and Pelz, Konstantin and Eder, Bernhard and Zackl, Constantin and Reinisch, Katharina and
 Edenhofer, Frank and Marini, Federico and Sturm, Gregor and List, Markus and Finotello, Francesca. (2024) https://doi.org/10.1101/2024.06.10.598226
 }
+\keyword{internal}

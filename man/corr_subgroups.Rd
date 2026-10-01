@@ -11,7 +11,9 @@ corr_subgroups(data, corr_type = "spearman", batch = NULL)
 
 \item{corr_type}{Correlation type whether "spearman" or "pearson".}
 
-\item{batch}{Optional batch covariate used to compute partial correlations.}
+\item{batch}{Optional batch labels, one per sample in the same order as the rows. A factor or character
+is treated as categorical: correlations become partial correlations controlling for one indicator column
+per batch. A numeric vector is used as a single linear covariate.}
 }
 \value{
 Dataframe containing all significant correlations (pvalue < 0.05)
@@ -19,3 +21,4 @@ Dataframe containing all significant correlations (pvalue < 0.05)
 \description{
 Perform pairwise correlation across all features
 }
+\keyword{internal}

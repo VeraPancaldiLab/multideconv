@@ -9,9 +9,7 @@ compute.deconvolution.analysis(
   corr = 0.7,
   corr_type = "spearman",
   zero_thr = 0.9,
-  var_quantile = 0.25,
-  prune_thr = 0.9,
-  seed = NULL,
+  cv_thr = 0.1,
   batch = NULL,
   cells_extra = NULL,
   file_name = NULL,
@@ -28,13 +26,12 @@ compute.deconvolution.analysis(
 
 \item{zero_thr}{Maximum fraction of zeros allowed per feature before it is discarded.}
 
-\item{var_quantile}{Quantile threshold below which low-variance features are removed.}
+\item{cv_thr}{Minimum coefficient of variation (standard deviation / mean) across samples; features below it are removed.}
 
-\item{prune_thr}{Correlation threshold (computed with \code{corr_type}) above which highly correlated features within a cell type are pruned.}
-
-\item{seed}{A numeric value to specificy the seed. This ensures reproducibility during the choice step of high correlated features.}
-
-\item{batch}{Optional batch covariate used to compute partial correlations.}
+\item{batch}{Optional batch labels, one per sample in the same order as the rows. A factor or character
+is treated as categorical: correlations become partial correlations controlling for one indicator column
+per batch. A numeric vector is used as a single linear covariate. With only one batch, ordinary
+correlations are used.}
 
 \item{cells_extra}{A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)}
 
@@ -50,11 +47,9 @@ A list containing
 \item A matrix with the deconvolution after processing
 \item The deconvolution subgroups per cell type
 \item The deconvolution subgroups composition
-\item The deconvolution groups discarded caused they are all belonging to the same method
 \item The discarded features because they contain a high number of zeros across samples (> 90\%)
 \item Discarded features due to low variance across samples
 \item Discarded cell types because they are not supported in the pipeline
-\item High correlated deconvolution pairs (>high_corr)
 }
 }
 \description{
@@ -64,7 +59,7 @@ Compute cell type processing
 
 data("deconvolution")
 
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7)
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 

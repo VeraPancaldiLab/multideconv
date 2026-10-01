@@ -21,3 +21,4 @@ A matrix with cell abundance deconvolve with MOMF
 \description{
 Compute MOMF in parallel across multiple signatures
 }
+\keyword{internal}

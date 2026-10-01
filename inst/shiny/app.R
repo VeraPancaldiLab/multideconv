@@ -448,7 +448,7 @@ ui <- navbarPage(
               HTML('<span class="glyphicon glyphicon-stats"></span>')),
           div(class = "step-title", "Step 2 \u00b7 Analysis"),
           p(class  = "step-desc",
-            "Reduce cross-method redundancy via iterative correlation-based subgroup filtering. ",
+            "Reduce cross-method redundancy via correlation-based subgrouping. ",
             "Consolidates highly correlated estimates into robust, interpretable cell signals.")
         )
       ),
@@ -514,7 +514,7 @@ ui <- navbarPage(
                style = "max-width:100%; width:100%;"),
       p(class = "fig-caption",
         "Detailed flowchart of the subgroup computation algorithm: deconvolution matrix preprocessing, ",
-        "iterative pairwise correlation analysis, and cell subgroup identification.")
+        "pairwise correlation analysis, and cell subgroup identification.")
     ),
 
     # Citation
@@ -626,7 +626,6 @@ ui <- navbarPage(
                     min = 0.5, max = 0.95, value = 0.7, step = 0.05),
         selectInput("analysis_corr_type", "Correlation type",
                     choices = c("spearman", "pearson"), selected = "spearman"),
-        numericInput("analysis_seed", "Seed", value = 123, min = 1, step = 1),
         textInput("cells_extra", "Extra cell types (comma-separated)", value = ""),
         tags$hr(class = "sidebar-hr"),
         div(class = "sidebar-group",
@@ -933,7 +932,6 @@ server <- function(input, output, session) {
         deconvolution = deconv_mat,
         corr          = input$analysis_corr,
         corr_type     = input$analysis_corr_type,
-        seed          = as.integer(input$analysis_seed),
         cells_extra   = cells_extra,
         file_name     = input$analysis_file_name,
         return        = isTRUE(input$save_analysis_outputs),

@@ -15,13 +15,9 @@ A character vector of cell type names.
 }
 \description{
 Returns the vector of cell type names recognized by multideconv's deconvolution
-output column naming (e.g. "B.cells", "CD4.regulatory", "Plasma"). This is the
-single source of truth for the package's cell type vocabulary; other packages
-(e.g. CellTFusion) that need to parse cell type names out of deconvolution
-column names should call this function rather than hardcoding their own copy,
-so they stay in sync when the vocabulary changes here.
+output column naming (e.g. "B.cells", "CD4.regulatory", "Plasma").
 }
 \examples{
 get_cell_type_nomenclature()
-get_cell_type_nomenclature(cells_extra = "Myeloid.cells")
+get_cell_type_nomenclature(cells_extra = "mesenchymal")
 }

@@ -22,9 +22,11 @@ create_sc_signatures(
 
 \item{sc_metadata}{Dataframe with metadata from the single cell object. The matrix should include the columns cell_label and sample_label.}
 
-\item{cells_labels}{A character vector with the cell labels (need to be of the same order as in the sc_object)}
+\item{cells_labels}{Name of the \code{sc_metadata} column with the cell type labels. The labels become the cell type names of the
+signatures, so they must follow the multideconv nomenclature (see \code{\link[=get_cell_type_nomenclature]{get_cell_type_nomenclature()}} and the README);
+otherwise those cell types are discarded later by \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 
-\item{sample_labels}{A character vector with the samples labels (need to be of the same order as in the sc_object)}
+\item{sample_labels}{Name of the \code{sc_metadata} column with the sample labels.}
 
 \item{credentials.mail}{(Optional) Credential email for running CIBERSORTx If not provided, CIBERSORTx method will not be run.}
 
@@ -34,12 +36,14 @@ create_sc_signatures(
 
 \item{cell_markers}{Named list with the genes markers names as Symbol per cell types to be used to create the signature using the BSeq-SC method. If NULL, the method will be ignored during the signature creation.}
 
-\item{name_signature}{A string indicating the signature name. This will be added as a suffix in each method (e.g. CBSX_name_signature, DWLS_name_signature)}
+\item{name_signature}{A string indicating the signature name, used in the file names (e.g. \verb{DWLS-<name_signature>-scRNAseq.txt}).
+It must not contain \verb{_} (replaced by \code{-}), which separates method, signature and cell type in the deconvolution column names.}
 
-\item{methods_sig}{A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx", "MOMF", and "BSeqsc". Default runs all available methods.}
+\item{methods_sig}{A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx" (or "CBSX"), "MOMF", and "BSeqsc". Default runs all available methods.}
 }
 \value{
-A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder, these will be used to run deconvolution.
+A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder
+(an existing file with the same name is overwritten), these will be used to run deconvolution.
 }
 \description{
 Create cell type signatures from scRNAseq

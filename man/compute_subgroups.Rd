@@ -13,25 +13,29 @@ compute_subgroups(
 )
 }
 \arguments{
-\item{deconvolution}{A matrix with unprocessed cell deconvolution results}
+\item{deconvolution}{A matrix with the deconvolution features of one cell type (samples as rows)}
 
 \item{thres_corr}{A numeric value with the minimum correlation allowed to group cell deconvolution features}
 
 \item{corr_type}{Correlation type whether "spearman" or "pearson".}
 
-\item{file_name}{Base name for subgroup}
+\item{file_name}{Cell type name, used as prefix of the subgroup names (\verb{<file_name>_Subgroup.<i>})}
 
-\item{batch}{Optional batch covariate used to compute partial correlations.}
+\item{batch}{Optional batch labels, one per sample in the same order as the rows. A factor or character
+is treated as categorical: correlations become partial correlations controlling for one indicator column
+per batch. A numeric vector is used as a single linear covariate.}
 }
 \value{
 A list containing
 \itemize{
-\item A matrix with the processed deconvolution features
-\item Cell subgroups obtained by linear correlation
-\item Cell subgroups obtained by proportionality correlation
-\item Discard cell features either because of low variance or high zero number
+\item A data frame with the final features: the subgroup medians plus the features that were not grouped
+\item The subgroups composition: a named list with the members of every subgroup
 }
 }
 \description{
-Compute deconvolution subgroups
+Groups the features of one cell type by complete-linkage hierarchical clustering on their correlations:
+features end up in the same subgroup only if every pair of them correlates at least \code{thres_corr}
+(non-significant correlations, p >= 0.05, count as 0). Each subgroup is replaced by the row median of
+its members. The result does not depend on the column order.
 }
+\keyword{internal}

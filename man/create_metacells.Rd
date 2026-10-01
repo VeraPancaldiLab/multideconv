@@ -11,17 +11,17 @@ create_metacells(
   exclude_cells = NULL,
   min_cells = 50,
   k = 15,
-  max_shared = 15,
+  max_shared = 10,
   n_workers = 4,
   min_meta = 10
 )
 }
 \arguments{
-\item{sc_object}{A matrix with the counts from scRNAseq object (genes as rows and cells as columns)}
+\item{sc_object}{A Seurat object with raw counts and a PCA already computed (\code{RunPCA()}), used to find each cell's nearest neighbours.}
 
-\item{labels_column}{A character vector with the cell labels (need to be of the same order as in the sc_object)}
+\item{labels_column}{Name of the metadata column with the cell type labels.}
 
-\item{samples_column}{A character vector with the samples labels (need to be of the same order as in the sc_object)}
+\item{samples_column}{Name of the metadata column with the sample labels.}
 
 \item{exclude_cells}{Cell types to discard from metacell algorithm.}
 
@@ -29,7 +29,7 @@ create_metacells(
 
 \item{k}{Number of nearest neighbors to aggregate for KNN algorithm.}
 
-\item{max_shared}{The maximum number of cells to be shared across two metacells.}
+\item{max_shared}{The maximum number of cells to be shared across two metacells (keep it below \code{k}, otherwise metacells can overlap completely).}
 
 \item{n_workers}{Number of cores to use for paralellization.}
 
@@ -38,7 +38,7 @@ create_metacells(
 \value{
 A list with two elements:
 \itemize{
-\item The metacell count matrix (genes as rownames and cells as columns)
+\item The metacell count matrix (genes as rownames and metacells as columns): each metacell is the sum of the counts of its \code{k} cells
 \item The metadata matrix corresponding to the metacell object
 }
 }

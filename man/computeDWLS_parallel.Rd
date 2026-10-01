@@ -19,3 +19,4 @@ A matrix with cell abundance deconvolve with DWLS
 \description{
 Compute DWLS in parallel across multiple signatures
 }
+\keyword{internal}

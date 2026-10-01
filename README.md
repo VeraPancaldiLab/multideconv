@@ -101,17 +101,13 @@ For processing the deconvolution features obtained from
 `compute.deconvolution.analysis` function.
 
 ``` r
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, return = T)
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, return = T)
 ```
 
-Users can also compute second-generation deconvolution methods using
-their single cell data. For this use the function
-`compute_sc_deconvolution_methods`. Remember that this function is
-already included in `compute.deconvolution` when setting
-`sc_deconv = T`.
+Users can also run second-generation deconvolution methods using their single cell data, by setting `sc_deconv = TRUE` in `compute.deconvolution()`. `sc_matrix` is the single-cell count matrix (genes x cells), `sc_metadata` its cell metadata, and `cell_label` / `sample_label` the metadata columns with the cell type and the sample of each cell. Use `methods = character(0)` to run only the single-cell methods.
 
 ``` r
-deconv_sc = compute_sc_deconvolution_methods(raw_counts, normalized = T, sc_object = sc_object, sc_metadata = sc_metadata, cell_annotations = cell_annotations, samples_ids = samples_ids, name_object = name_object, n_cores = 4)
+deconv_sc = compute.deconvolution(raw_counts, normalized = TRUE, methods = character(0), sc_deconv = TRUE, sc_matrix = sc_object, sc_metadata = sc_metadata, methods_sc = c("BayesPrism", "MuSic", "SCDC"), cell_label = "cell_type", sample_label = "sample", name_sc_signature = "MyReference", workers = 4)
 ```
 
 ## Shiny app
@@ -175,13 +171,16 @@ the standardized column name suffix each group is mapped to.
 | CD8 T cells | `CD8.cells` |
 | T helper cells | `T.cells.helper` |
 | T gamma-delta cells | `T.cells.gamma.delta` |
+| T cells — proliferative | `T.cells.proliferative` |
 | NK cells | `NK.cells` |
 | NK cells — activated | `NK.activated` |
 | NK cells — resting | `NK.resting` |
 | NKT cells | `NKT.cells` |
+| Myeloid cells (generic) | `Myeloid.cells` |
 | Monocytes | `Monocytes` |
 | Neutrophils | `Neutrophils` |
 | Eosinophils | `Eosinophils` |
+| Basophils | `Basophils` |
 | Mast cells | `Mast.cells` |
 | Mast cells — activated | `Mast.activated.cells` |
 | Mast cells — resting | `Mast.resting.cells` |
@@ -192,13 +191,17 @@ the standardized column name suffix each group is mapped to.
 | Dendritic cells (generic) | `Dendritic.cells` |
 | Dendritic cells — activated | `Dendritic.activated.cells` |
 | Dendritic cells — resting | `Dendritic.resting.cells` |
+| Dendritic cells — plasmacytoid (pDC) | `Dendritic.plasmacytoid.cells` |
 | Cancer / malignant cells | `Cancer` |
+| Epithelial cells | `Epithelial` |
 | Endothelial cells | `Endothelial` |
 | Fibroblasts | `Fibroblasts` |
 | Cancer-associated fibroblasts (CAF) | `CAF` |
+| Pericytes | `Pericytes` |
+| Mural cells | `Mural.cells` |
 | Myocytes | `Myocytes` |
 
-Each output column is prefixed by `<method>_<signature>_` followed by the suffix above. Unrecognized cell types are kept as-is under the `extra` group and will be discarded during `compute.deconvolution.analysis()` unless passed via `cells_extra`.
+Each output column is prefixed by `<method>_<signature>_` followed by the suffix above. Unrecognized cell types are kept as-is under the `extra` group and will be discarded during `compute.deconvolution.analysis()` unless passed via `cells_extra`. The full list is also available in R with `get_cell_type_nomenclature()`.
 
 ## How to add cell types other than the ones present in the nomenclature?
 
@@ -206,10 +209,10 @@ If you want `multideconv` to consider other cells, it is pretty simple!
 Just use the argument cells_extra in the function
 `compute.deconvolution.analysis()`.
 
-Let’s say you want to add mesenchymal and basophils cells:
+Let’s say you want to add mesenchymal and adipocytes cells:
 
 ``` r
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, cells_extra = c("mesenchymal", "basophils")) 
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, cells_extra = c("mesenchymal", "adipocytes")) 
 ```
 
 And that’s it, just make sure the name you are putting in cells_extra is

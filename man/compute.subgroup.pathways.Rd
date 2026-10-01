@@ -8,10 +8,11 @@ compute.subgroup.pathways(
   subgroups,
   pathways = NULL,
   file_name = "Test",
-  height = 6,
-  width = 12,
+  height = NULL,
+  width = NULL,
   par_mar = c(4, 25, 5, 3),
-  pval = 0.05
+  pval = 0.05,
+  corr_type = "pearson"
 )
 }
 \arguments{
@@ -23,21 +24,21 @@ pathway activities as columns. Row names must match sample identifiers in
 
 \item{file_name}{Character prefix used when naming output PDF files.}
 
-\item{height}{Plot height in inches (passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}).}
-
-\item{width}{Plot width in inches (passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}).}
+\item{height, width}{Plot height and width in inches (passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}). If \code{NULL} (default), the
+size is chosen from the number of subgroups and pathways.}
 
 \item{par_mar}{Ignored; kept for backwards compatibility.}
 
 \item{pval}{P-value threshold; correlations above this are not starred.}
+
+\item{corr_type}{Correlation type, "pearson" (default) or "spearman".}
 }
 \value{
-Invisibly returns \code{NULL}; side effects are PDF files in \verb{Results/}.
+Invisibly, a list with one element per cell type, each holding \code{correlations} and \code{pvalues}
+(subgroups as rows, pathways as columns). One PDF heatmap per cell type is also saved in \verb{Results/}.
 }
 \description{
 Correlates deconvolution subgroup profiles with a pre-computed pathway
-activity matrix and saves one heatmap per cell type to \verb{Results/}.
-Use an external tool such as
-\href{https://github.com/VeraPancaldiLab/CellTFusion}{CellTFusion} to compute
-pathway activity scores (e.g. PROGENy) before calling this function.
+activity matrix, saves one heatmap per cell type to \verb{Results/} and returns
+the correlations and p-values.
 }

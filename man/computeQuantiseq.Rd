@@ -17,3 +17,4 @@ A matrix with cell abundance deconvolve with QuanTIseq
 \description{
 Computes QuanTIseq
 }
+\keyword{internal}

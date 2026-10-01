@@ -19,3 +19,4 @@ A matrix with cell abundance deconvolve with EpiDISH
 \description{
 Computes EpiDISH
 }
+\keyword{internal}

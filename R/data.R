@@ -106,9 +106,12 @@
 
 #' Cell subgroups
 #'
-#' Cell subgroups composition
+#' Example output of [compute.deconvolution.analysis()], computed on [deconv_bulk] with
+#' `compute.deconvolution.analysis(deconv_bulk, corr = 0.7)`.
 #'
-#' @format A list with the cell subgroups
+#' @format A list with 6 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
+#'   "Deconvolution subgroups composition", "Discarded features with high number of zeros",
+#'   "Discarded features with low variance" and "Discarded cell types".
 #'
 #' @examples
 #' data(subgroups)

@@ -23,3 +23,4 @@ A matrix with cell abundance deconvolve with CBSX
 \description{
 Compute CIBERSORTx (CBSX) in parallel across multiple signatures
 }
+\keyword{internal}

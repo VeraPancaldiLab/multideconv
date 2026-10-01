@@ -6,26 +6,29 @@
 \usage{
 create_sc_pseudobulk(
   sc_obj,
-  cells_labels,
+  cells_labels = NULL,
   sample_labels,
   normalized = TRUE,
-  file_name
+  file_name = "Pseudobulk",
+  return = TRUE
 )
 }
 \arguments{
 \item{sc_obj}{A Seurat single cell object}
 
-\item{cells_labels}{A character vector with the cell labels (need to be of the same order as in the sc_obj)}
+\item{cells_labels}{Not used (kept so existing calls keep working). The pseudobulk is aggregated per sample only.}
 
-\item{sample_labels}{A character vector with the samples labels (need to be of the same order as in the sc_obj)}
+\item{sample_labels}{Name of the metadata column with the sample labels.}
 
 \item{normalized}{Whether pseudobulk should be or not TPM normalized}
 
 \item{file_name}{A string specifying the name of the .csv pseudobulk saved in Results/}
+
+\item{return}{Whether to save or not the csv file with the pseudobulk in Results/}
 }
 \value{
 A gene count matrix (genes as rows and samples as columns)
 }
 \description{
-Create pseudo bulk from single cell object
+Sums the counts of all the cells of each sample, producing one bulk-like expression profile per sample.
 }

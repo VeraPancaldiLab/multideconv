@@ -5,13 +5,16 @@
 \alias{subgroups}
 \title{Cell subgroups}
 \format{
-A list with the cell subgroups
+A list with 6 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
+"Deconvolution subgroups composition", "Discarded features with high number of zeros",
+"Discarded features with low variance" and "Discarded cell types".
 }
 \usage{
 subgroups
 }
 \description{
-Cell subgroups composition
+Example output of \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}, computed on \link{deconv_bulk} with
+\code{compute.deconvolution.analysis(deconv_bulk, corr = 0.7)}.
 }
 \examples{
 data(subgroups)

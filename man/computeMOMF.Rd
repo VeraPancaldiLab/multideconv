@@ -21,3 +21,4 @@ A matrix with cell abundance deconvolve with MOMF
 \description{
 Computes MOMF
 }
+\keyword{internal}

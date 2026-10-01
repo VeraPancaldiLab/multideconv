@@ -4,12 +4,12 @@
 \alias{remove_low_variance}
 \title{Remove low variance deconvolution features}
 \usage{
-remove_low_variance(data, var_quantile = 0.25)
+remove_low_variance(data, cv_thr = 0.1)
 }
 \arguments{
 \item{data}{Deconvolution features}
 
-\item{var_quantile}{Quantile threshold below which features are discarded.}
+\item{cv_thr}{Minimum coefficient of variation; features below it are discarded.}
 }
 \value{
 A list containing
@@ -19,5 +19,8 @@ A list containing
 }
 }
 \description{
-Remove low variance deconvolution features
+Removes features that barely vary across samples: features whose coefficient of variation
+(CV = standard deviation / mean) is below \code{cv_thr}. Each feature is judged on its own, so features
+of rare cell types (small values) are kept as long as they vary relative to their size.
 }
+\keyword{internal}

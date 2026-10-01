@@ -24,3 +24,4 @@ data("deconvolution")
 deconvolution = multideconv:::compute.deconvolution.preprocessing(deconvolution)
 
 }
+\keyword{internal}

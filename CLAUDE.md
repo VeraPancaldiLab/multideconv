@@ -27,6 +27,7 @@ shiny::runApp('inst/shiny', host='127.0.0.1', port=3838)
 
 - `R-CMD-check.yaml` fails on any **WARNING**. A roxygen block without a regenerated `.Rd` (forgetting `devtools::document()`) produces "Undocumented code objects" and fails CI.
 - `pkgdown.yaml` fails if any documented topic is missing from the `reference:` index in `_pkgdown.yml`. Every new exported/documented function must be added there (sections: Main, Benchmarking, Single cell functions, Helpers = exported helpers, Internal = not exported, Package Data) or marked `@keywords internal`.
+- Exported functions (11): `compute.deconvolution`, `compute.deconvolution.analysis`, `replicate_deconvolution_subgroups`, `compute.benchmark`, `compute.subgroup.pathways`, `prepare_multideconv_folds`, `create_metacells`, `create_sc_pseudobulk`, `create_sc_signatures`, `get_cell_type_nomenclature`, `standardize_celltype_colnames`. Every other function is tagged `@keywords internal` (`.onLoad` uses `@noRd`); new internal functions must be too. Every `@param` must be documented, otherwise R CMD check warns (`devtools::check_man()` catches it quickly).
 - Non-package files at top level must be listed in `.Rbuildignore` (CLAUDE.md, Results, Rplots.pdf, launch_app.R, .vscode, .claude, pypath_log, omnipathr-log, ...). Do not ignore `vignettes/Results/`: the a4 vignette embeds `vignettes/Results/Benchmark.png`.
 
 ## Installation
@@ -45,18 +46,18 @@ All functions live in a single file: `R/cell_deconvolution.R` (~3,000 lines). Th
 
 ### Core Pipeline Flow
 
-1. **`compute.deconvolution()`** — TPM-normalizes (`normalized = TRUE` means "normalize the input"), runs Quantiseq plus the signature-based methods over every signature (bundled + `Results/custom_signatures/`), then standardizes names via `compute.deconvolution.preprocessing()`. Per-method/signature results are cached as `Results/deconv_<method>_<sig>.rds` while running (crash recovery) and deleted at the end; `Results/` is removed again if it was created only for the cache. It stops with a clear error if no method produced output.
+1. **`compute.deconvolution()`** — TPM-normalizes (`normalized = TRUE` means "normalize the input"), runs Quantiseq plus the signature-based methods over every signature (bundled + `Results/custom_signatures/`), then standardizes names via `compute.deconvolution.preprocessing()`. Per-method/signature results are cached as `Results/deconv_<method>_<sig>_<data id>.rds` while running (crash recovery; the data id is a short md5 of the TPM matrix, so a cache is only reused for the same input) and deleted at the end. Signature names are the file name without `.txt` (`tools::file_path_sans_ext()`) everywhere; `Results/` is removed again if it was created only for the cache. It stops with a clear error if no method produced output.
    - **CBSX without credentials is skipped with a warning** (it is in the default `methods`), not a hard error.
    - `doParallel = TRUE` with `workers = NULL` uses `detectCores() - 1`.
-2. **`compute.deconvolution.analysis()`** — removes zero-heavy features (`zero_thr`) and low-variance features (`var_quantile`, global quantile), splits by cell type (`compute.cell.types()`), prunes highly correlated features within a cell type (`prune_thr`, using `corr_type` — not always Pearson), then builds subgroups iteratively (`compute_subgroups()`/`corr_subgroups()`, homegrown, not WGCNA). With `batch`, correlations are partial correlations (`ppcor`) controlling for batch.
-3. **`replicate_deconvolution_subgroups()`** — applies the learned subgroups (medians of member features, iteration by iteration) to a new cohort. On the training data it reproduces the "Deconvolution matrix" exactly.
+2. **`compute.deconvolution.analysis()`** — removes zero-heavy features (`zero_thr`) and features that barely vary (`cv_thr`: coefficient of variation sd/mean below 0.1, each feature judged on its own so rare cell types are not penalised), splits by cell type (`compute.cell.types()`), then groups the features of each cell type by complete-linkage hierarchical clustering of their correlations (`compute_subgroups()`, correlations from `corr_subgroups()`): features form a subgroup only if every pair correlates >= `corr` (non-significant correlations, p >= 0.05, count as 0), and each subgroup is summarised by the row median of its members. Features are sorted by name before clustering, so ties are broken the same way and the result does not depend on column order. There is no pruning step and no `seed` (`removeCorrelatedFeatures()`, `prune_thr` and `seed` were removed). With `batch`, correlations are partial correlations (`ppcor`) controlling for batch.
+3. **`replicate_deconvolution_subgroups()`** — applies the learned subgroups (median of the member features) to a new cohort, one subgroup at a time in composition order, so compositions whose members are earlier subgroups (results saved with older versions) still work. On the training data it reproduces the "Deconvolution matrix" exactly.
 4. **`prepare_multideconv_folds()`** — fold-aware feature construction for pipeML (see below).
-5. **Single-cell workflow** — `create_metacells()` → `create_sc_pseudobulk()` / `create_sc_signatures()` → `compute_sc_deconvolution_methods()`.
+5. **Single-cell workflow** — `create_metacells()` → `create_sc_pseudobulk()` / `create_sc_signatures()` → `compute.deconvolution(sc_deconv = TRUE, ...)`, which calls the internal `compute_sc_deconvolution_methods()`.
 
 ### Method Categories
 
 - **First-generation / signature-based**: Quantiseq (`immunedeconv`, TIL10), EpiDISH, DeconRNASeq, DWLS, CIBERSORTx (CBSX, via `omnideconv`), MOMF (needs `sc_matrix`). MCP-counter and xCell were removed (helpers kept commented out).
-- **Second-generation** (`compute_sc_deconvolution_methods()`, via `omnideconv`, need a single-cell reference): AutogeneS, BayesPrism, Bisque, CPM, MuSiC, SCDC. AutogeneS and CPM are slow even on tiny inputs (tens of minutes / >5 min).
+- **Second-generation** (internal `compute_sc_deconvolution_methods()`, run via `compute.deconvolution(sc_deconv = TRUE)`, through `omnideconv`, need a single-cell reference): AutogeneS, BayesPrism, Bisque, CPM, MuSiC, SCDC. AutogeneS and CPM are slow even on tiny inputs (tens of minutes / >5 min).
 
 ### Method-specific pitfalls
 
@@ -71,6 +72,7 @@ All functions live in a single file: `R/cell_deconvolution.R` (~3,000 lines). Th
 - Group subsets are built by selecting cell names from the metadata with `which()` and calling `subset(data, cells = cells_use)`. Do **not** use `subset(subset = samples_ids == patient, ...)`: a metadata column named e.g. `patient` shadows the loop variable and silently returns empty groups. `which()` handles `NA` labels.
 - `subset()` is base R's S3 generic; it dispatches to `SeuratObject`'s `subset.Seurat`. `Seurat::subset` does not exist — do not write it.
 - The user's `future` plan is saved and restored (`on.exit`), also on error. hdWGCNA's `MetacellsByGroups()` needs a `pca` reduction already present in the input object.
+- Metacells are built with `MetacellsByGroups(mode = "sum")` (integer summed counts) and default `k = 15`, `max_shared = 10`. `max_shared` must stay below `k`: with `max_shared = k` metacells can overlap completely and you get about one metacell per cell.
 
 ### Cross-validation folds (`prepare_multideconv_folds()` ↔ pipeML)
 
@@ -78,6 +80,7 @@ All functions live in a single file: `R/cell_deconvolution.R` (~3,000 lines). Th
 - Fold mode writes `Results/fold_<fold name>.rds` (each with `train_data`, `test_data`, `obs_test`, `rowIndex`, `fold_name`) and returns the folds invisibly. pipeML reads back **every** `Results/fold_*.rds` in alphabetical order and relies on each file's own `rowIndex`, so stale `fold_*.rds` files are deleted before writing (pipeML's survival path never deletes them). Unnamed folds are named `Fold1`, `Fold2`, ...
 - `bestune` mode returns `list(features_with_target, full_analysis_output, bestune)`.
 - Workers (`doParallel`) load the **installed** multideconv, not `load_all()` code: reinstall (e.g. into a temp library via `R CMD INSTALL -l`) before testing parallel code paths.
+- Workers attach the package with `library()`, which only exposes **exported** functions. An internal function called inside a `%dopar%` body must be passed with `.export = "<name>"` (as in `computeCBSX_parallel()`, `computeDWLS_parallel()`, `computeMOMF_parallel()`), otherwise workers fail with "could not find function".
 
 ### File Layout
 
@@ -98,9 +101,15 @@ Every function that writes into `Results/` must call `ensure_results_dir()` firs
 
 Column names follow `method_signature_celltype`, with `_` as the separator. `standardize_celltype_colnames()` harmonizes cell names (it only renames the part after the last `_`, so cell labels in custom signatures must not contain `_`). `get_cell_type_nomenclature()` is the single source of truth for the vocabulary; other code, including sister packages like CellTFusion, should call it rather than hardcode a copy. All cell names in the bundled signatures map to the correct cell type.
 
+`get_cell_type_nomenclature()` is the only hardcoded list: `standardize_celltype_colnames()` (block names/order, plus a trailing `"extra"` block) and `compute.cell.types()` (one element per cell type) are both built from it, excluding `uncharacterized_cell`, which is in the vocabulary only so Quantiseq's proportions sum to 1. To add a cell type: add its name to the vocabulary and a block (search pattern + rename pattern) in `standardize_celltype_colnames()` — simple ones go in the `other` list there, placed before the final B-cell step, which renames everything left over. Block order matters: earlier blocks claim columns first (e.g. pDCs must be split out of the Dendritic block before the Plasma block runs). `cells_extra` entries that are already in the vocabulary are ignored.
+
 `compute.cell.types()` intentionally matches cell types by **unanchored substring** (`grep("Plasma", ...)`), so older/non-standard names (e.g. `T.cells.CD4.memory.activated`, `Plasma.cells` in `deconv_bulk`) are still recognized. Anchoring the patterns breaks this.
 
-Subgroup names are `<CellType>_Subgroup.<i>.Iteration.<m>`. Match iterations exactly (`"\\.Iteration\\.<m>$"`), otherwise `Iteration.1` also matches `Iteration.10`.
+Feature names must survive the analysis unchanged (users may pass names with `-`, spaces, ...): every `data.frame()` in the analysis path (`compute_subgroups()`, `corr_subgroups()`, `compute.deconvolution.analysis()`, `replicate_deconvolution_subgroups()`) uses `check.names = FALSE`. A `data.frame()` without it rewrites names, lookups by name then fail and features are silently dropped or replicated as zeros.
+
+With `batch`, `corr_subgroups()` uses partial correlations (`ppcor`) and applies the same filter as without batch (p < 0.05, no `NA`). A factor/character batch is coded as one indicator column per batch (`model.matrix(~ factor(batch))[, -1]`), so every batch's own shift is removed; a numeric batch is used as one linear covariate. With a single batch, `compute.deconvolution.analysis()` falls back to ordinary correlations.
+
+Subgroup names are `<CellType>_Subgroup.<i>`; there are no iterations (the old `.Iteration.<k>` suffix was removed). Numbering is deterministic because features are sorted by name before clustering.
 
 ### Custom Signatures
 
@@ -112,4 +121,4 @@ Users can add `.txt` signature files to `Results/custom_signatures/`; `compute.d
 
 ## Testing
 
-`tests/testthat/` (testthat edition 3, `withr` in Suggests) covers nomenclature, preprocessing, analysis + replication, correlation pruning (with/without batch), subgroup deduplication, iteration matching, benchmark, fold construction and CBSX skipping. Tests use the built-in datasets (`deconvolution`, `cells_groundtruth`, `raw_counts`) and run in a temporary directory; `compute.deconvolution()` tests are `skip_on_cran()`.
+`tests/testthat/` (testthat edition 3, `withr` in Suggests) covers nomenclature, preprocessing, analysis + replication, subgroup grouping (every pair in a subgroup >= `corr`, same result for any column order; same-method features are grouped like any others), replication (including subgroups built from earlier subgroups), benchmark, fold construction and CBSX skipping. Tests use the built-in datasets (`deconvolution`, `cells_groundtruth`, `raw_counts`) and run in a temporary directory; `compute.deconvolution()` tests are `skip_on_cran()`.

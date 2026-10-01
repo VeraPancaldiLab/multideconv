@@ -35,3 +35,4 @@ cells_types <- multideconv:::compute.cell.types(
 )
 
 }
+\keyword{internal}

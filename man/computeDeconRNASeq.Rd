@@ -19,3 +19,4 @@ A matrix with cell abundance deconvolve with DeconRNASeq
 \description{
 Computes DeconRNASeq
 }
+\keyword{internal}

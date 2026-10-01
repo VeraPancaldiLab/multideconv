@@ -39,7 +39,10 @@ compute.benchmark(
 \item{height}{A numeric value with the height for the returned plot.}
 }
 \value{
-A correlation matrix between the cell type deconvolution combinations and the real cell proportions.
+A correlation matrix between the cell type deconvolution combinations and the real cell proportions, with an
+"average" row (mean over cell types) used to order the combinations. When \code{deconvolution} contains subgroups
+(e.g. \code{B.cells_Subgroup.1}), columns are \code{Subgroup.1}, \code{Subgroup.2}, ... (the i-th subgroup of each cell type) and
+no average is computed, because a column then holds unrelated features.
 }
 \description{
 Compute deconvolution benchmark

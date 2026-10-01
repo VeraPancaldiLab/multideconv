@@ -26,11 +26,12 @@ library(multideconv)
 
 Deconvolution analysis reduces the dimensionality and heterogeneity of the deconvolution results. It uses the cell type processing algorithm described in the paper [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info). It returns the cell type subgroups composition and the reduced deconvolution matrix, saved in the `Results/` directory.
 
+Within each cell type, features (method-signature estimates) are grouped by complete-linkage hierarchical clustering of their correlations: features form a subgroup only if **every pair** of them correlates at least `corr` (non-significant correlations count as 0). Each subgroup is summarised by the median of its members. The result does not depend on the order of the columns.
+
 Key parameters:
 
 - **deconvolution**: Matrix of raw deconvolution results (output of `compute.deconvolution()`)
 - **corr**: Minimum correlation threshold to group features
-- **seed**: Random seed for reproducibility
 - **return**: Whether to return results and save output files to the `Results/` directory
 - **batch**: Optional factor vector of cohort/batch labels (see section below on batch correction)
 
@@ -38,12 +39,11 @@ Key parameters:
 deconv_bulk = multideconv::deconv_bulk
 deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
                                                   corr = 0.7,
-                                                  seed = 123,
                                                   file_name = "Tutorial",
                                                   return = TRUE)
 ```
 
-The result is a named list with eight elements:
+The result is a named list with six elements:
 
 ```{r}
 names(deconv_subgroups)
@@ -68,7 +68,6 @@ If your deconvolution matrix contains non-standard cell types (see README), spec
 ```{r, eval = FALSE}
 deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
                                                   corr = 0.7,
-                                                  seed = 123,
                                                   return = TRUE,
                                                   cells_extra = c("Mural.cells", "Myeloid.cells"),
                                                   file_name = "Tutorial")
@@ -76,19 +75,17 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
 
 ## **Handling batch effects (multiple cohorts)**
 
-When your samples come from multiple cohorts or batches, simple Pearson/Spearman correlations can be confounded by cohort structure. `compute.deconvolution.analysis()` accepts a `batch` argument that switches the internal correlation to **partial correlation**, controlling for cohort membership at every pairwise pruning and subgrouping step.
+When your samples come from multiple cohorts or batches, simple Pearson/Spearman correlations can be confounded by cohort structure. `compute.deconvolution.analysis()` accepts a `batch` argument that switches the internal correlation to **partial correlation**, controlling for cohort membership in the correlations used to build the subgroups.
 
-The `batch` vector must be a named factor or character vector whose names match the row names of the deconvolution matrix.
+The `batch` vector must be a factor or character vector with one label per sample, in the same order as the rows of the deconvolution matrix (names are not used).
 
 ```{r, eval = FALSE}
-# Example: 'cohort' is a named character vector with values "CohortA" / "CohortB"
+# Example: 'cohort' has one label per sample ("CohortA" / "CohortB"), in the same order as rownames(deconv_bulk)
 cohort <- c(rep("CohortA", 96), rep("CohortB", 96))
-names(cohort) <- rownames(deconv_bulk)
 
 deconv_subgroups_batch = compute.deconvolution.analysis(
   deconvolution = deconv_bulk,
   corr          = 0.7,
-  seed          = 123,
   batch         = cohort,
   file_name     = "Tutorial_batch",
   return        = TRUE
@@ -97,8 +94,8 @@ deconv_subgroups_batch = compute.deconvolution.analysis(
 
 When `batch` is supplied:
 
-- Pairwise correlation pruning uses **partial correlation** (residuals after regressing out batch) via `ppcor::pcor()`.
-- The same partial-correlation matrix is used at every subgrouping step so that inter-cohort differences do not inflate feature similarity.
+- Correlations between features are **partial correlations** that remove the batch effect (via `ppcor::pcor.test()`, with one indicator per batch).
+- Subgroups are built from these partial correlations, so inter-cohort differences do not inflate feature similarity.
 
 This approach is recommended whenever samples originate from distinct studies, sequencing runs, or processing pipelines, as it prevents cohort-specific signals from being mistaken for biologically meaningful co-variation.
 
@@ -131,7 +128,7 @@ compute.subgroup.pathways(
 
 Any other sample × pathway matrix (e.g. from GSVA, ssGSEA, or decoupleR) can be passed as `pathways` in the same way.
 
-One PDF heatmap per cell type is saved to `Results/`. Below is an example output for CD4 T cells (12 subgroups × 14 PROGENy pathways), where stars indicate significance levels (* p<0.05, ** p<0.01, *** p<0.001):
+One PDF heatmap per cell type is saved to `Results/`. The function also returns (invisibly) a list with the correlations and p-values of each cell type, and `corr_type` selects Pearson (default) or Spearman correlations. Below is an example output for CD4 T cells (12 subgroups × 14 PROGENy pathways), where stars indicate significance levels (* p<0.05, ** p<0.01, *** p<0.001):
 
 ```{r pathway-example, echo=FALSE, fig.align='center', out.width='90%', eval=file.exists("../man/figures/subgroup_pathways_example.png")}
 knitr::include_graphics("../man/figures/subgroup_pathways_example.png")
@@ -149,7 +146,6 @@ deconv_2 = deconv_bulk[101:192,]
 
 deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_1,
                                                   corr = 0.7,
-                                                  seed = 123,
                                                   file_name = "Tutorial",
                                                   return = FALSE)
 deconv_subgroups_replicate = replicate_deconvolution_subgroups(deconv_subgroups,

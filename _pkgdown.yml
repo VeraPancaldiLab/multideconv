@@ -60,13 +60,10 @@ reference:
   - create_sc_signatures
 - title: Helpers
   desc: >
-    Exported helper functions (cell type nomenclature and single-method deconvolution)
+    Exported helper functions for the cell type nomenclature
   contents:
   - get_cell_type_nomenclature
   - standardize_celltype_colnames
-  - computeCBSX
-  - computeDWLS
-  - computeMOMF
 - title: Internal
   desc: >
     Internal use (not exported functions)
@@ -74,19 +71,23 @@ reference:
   - compute.deconvolution.preprocessing
   - compute_methods_variable_signature
   - compute_sc_deconvolution_methods
+  - computeCBSX
   - computeCBSX_parallel
+  - computeDWLS
   - computeDWLS_parallel
   - computeDeconRNASeq
   - computeEpiDISH
+  - computeMOMF
   - computeMOMF_parallel
   - computeQuantiseq
   - compute_subgroups
   - compute.cell.types
   - corr_subgroups
-  - remove_subgroups
   - remove_low_variance
-  - find.maximum.iteration
-  - removeCorrelatedFeatures
+  - process_group
+  - stratified_sample_cells
+  - unregister_dopar
+  - ensure_results_dir
 - title: Package Data
   desc: >
     Example data
