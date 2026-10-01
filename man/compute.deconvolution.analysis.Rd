@@ -14,7 +14,8 @@ compute.deconvolution.analysis(
   cells_extra = NULL,
   file_name = NULL,
   return = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  cell_groups = NULL
 )
 }
 \arguments{
@@ -40,6 +41,11 @@ correlations are used.}
 \item{return}{Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.}
 
 \item{verbose}{Boolen value to whether print or no the function messages}
+
+\item{cell_groups}{Optional named list of cell types to aggregate into groups before the analysis (see
+\code{\link[=aggregate_cell_groups]{aggregate_cell_groups()}}), e.g. \code{list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes"))}.
+The group features are added to the deconvolution and analysed as any other cell type (group names are added
+to \code{cells_extra}).}
 }
 \value{
 A list containing
@@ -50,6 +56,7 @@ A list containing
 \item The discarded features because they contain a high number of zeros across samples (> 90\%)
 \item Discarded features due to low variance across samples
 \item Discarded cell types because they are not supported in the pipeline
+\item The cell groups given in \code{cell_groups} (\code{NULL} if none), used by \code{\link[=replicate_deconvolution_subgroups]{replicate_deconvolution_subgroups()}}
 }
 }
 \description{
@@ -62,5 +69,8 @@ data("deconvolution")
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7)
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
+
+groups = list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, cell_groups = groups)
 
 }

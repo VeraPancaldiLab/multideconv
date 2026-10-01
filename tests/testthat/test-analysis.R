@@ -70,6 +70,39 @@ test_that("replicate_deconvolution_subgroups computes subgroup medians, also fro
   expect_equal(out$B.cells_Subgroup.2, c(6, 7, 8))
 })
 
+test_that("aggregate_cell_groups sums cell types within each method-signature combination", {
+  d <- data.frame(M1_S_Macrophages.M1 = c(0.1, 0.2), M1_S_Monocytes = c(0.3, 0.1), M1_S_B.cells = c(0.6, 0.7),
+                  M2_S_Myeloid.cells = c(0.4, 0.3), M2_S_Monocytes = c(0.2, 0.1), M2_S_Macrophages.M1 = c(0.1, 0.1),
+                  M3_S_Monocytes = c(0.5, 0.4), M3_S_B.cells = c(0.5, 0.6))
+  groups <- list(Myeloid.cells = c("Macrophages.M1", "Monocytes"))
+  utils::capture.output(out <- aggregate_cell_groups(d, groups))
+  expect_equal(out$M1_S_Myeloid.cells, c(0.4, 0.3))   # sum of its two members
+  expect_equal(out$M2_S_Myeloid.cells, c(0.4, 0.3))   # already estimated: kept as it is
+  expect_false("M3_S_Myeloid.cells" %in% colnames(out)) # a single member: skipped
+  expect_equal(out[, colnames(d)], d)                 # original features are kept
+  expect_equal(aggregate_cell_groups(out, groups, verbose = FALSE), out)
+  expect_true("M3_S_Myeloid.cells" %in% colnames(aggregate_cell_groups(d, groups, min_types = 1, verbose = FALSE)))
+
+  expect_warning(aggregate_cell_groups(d, list(Myeloid.cells = c("Monocytes", "Macrophages.M1", "Monocyte")), verbose = FALSE), "Monocyte$")
+  expect_error(aggregate_cell_groups(d, list(c("Monocytes", "B.cells"))), "named list")
+  expect_error(aggregate_cell_groups(d, list(All.B.cells = c("Monocytes", "B.cells"))), "Group names")
+})
+
+test_that("cell groups are analysed as a cell type and replicated in new data", {
+  data("deconvolution", package = "multideconv", envir = environment())
+  groups <- list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
+  res <- compute.deconvolution.analysis(deconvolution[1:10, ], cell_groups = groups)
+  expect_equal(res[["Cell groups"]], groups)
+  expect_true(any(grepl("Lymphocytes", colnames(res[["Deconvolution matrix"]]))))
+  expect_false(any(duplicated(colnames(res[["Deconvolution matrix"]]))))
+  expect_null(compute.deconvolution.analysis(deconvolution[1:10, ])[["Cell groups"]])
+
+  # Raw deconvolution of new samples: the groups are aggregated before replicating the subgroups
+  rep <- expect_no_warning(replicate_deconvolution_subgroups(res, deconvolution[11:15, ]))
+  expect_equal(colnames(rep), colnames(res[["Deconvolution matrix"]]))
+  expect_false(anyNA(rep))
+})
+
 test_that("compute.benchmark works with one or many ground-truth cell types", {
   data("deconvolution", package = "multideconv", envir = environment())
   data("cells_groundtruth", package = "multideconv", envir = environment())
@@ -87,6 +120,12 @@ test_that("prepare_multideconv_folds returns and saves the processed folds", {
   expect_named(folds, c("F1", "F2"))
   expect_true(all(file.exists(file.path("Results", c("fold_F1.rds", "fold_F2.rds")))))
   expect_equal(nrow(folds$F1$test_data), 5)
+
+  groups <- list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
+  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10), ncores = 1, cell_groups = groups)
+  expect_true(any(grepl("Lymphocytes", colnames(folds$F1$train_data))))
+  expect_setequal(colnames(folds$F1$test_data), setdiff(colnames(folds$F1$train_data), "target"))
+  expect_false(anyNA(folds$F1$test_data))
 })
 
 test_that("prepare_multideconv_folds handles survival outcomes given as time and event columns", {

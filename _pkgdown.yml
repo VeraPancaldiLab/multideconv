@@ -43,6 +43,7 @@ reference:
   contents:
   - compute.deconvolution
   - compute.deconvolution.analysis
+  - aggregate_cell_groups
   - replicate_deconvolution_subgroups
   - compute.subgroup.pathways
   - prepare_multideconv_folds

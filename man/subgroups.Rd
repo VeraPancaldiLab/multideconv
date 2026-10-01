@@ -5,9 +5,10 @@
 \alias{subgroups}
 \title{Cell subgroups}
 \format{
-A list with 6 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
+A list with 7 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
 "Deconvolution subgroups composition", "Discarded features with high number of zeros",
-"Discarded features with low variance" and "Discarded cell types".
+"Discarded features with low variance", "Discarded cell types" and "Cell groups" (\code{NULL} here: no
+\code{cell_groups} were given).
 }
 \usage{
 subgroups

@@ -26,7 +26,7 @@ library(multideconv)
 
 Deconvolution analysis reduces the dimensionality and heterogeneity of the deconvolution results. It uses the cell type processing algorithm described in the paper [Hurtado et al., 2025](https://www.biorxiv.org/content/10.1101/2025.04.29.651220v2.article-info). It returns the cell type subgroups composition and the reduced deconvolution matrix, saved in the `Results/` directory.
 
-Within each cell type, features (method-signature estimates) are grouped by complete-linkage hierarchical clustering of their correlations: features form a subgroup only if **every pair** of them correlates at least `corr` (non-significant correlations count as 0). Each subgroup is summarised by the median of its members. The result does not depend on the order of the columns.
+Within each cell type, features (method-signature estimates) are grouped by complete-linkage hierarchical clustering of their correlations: features form a subgroup only if **every pair** of them correlates at least `corr` (non-significant correlations count as 0). Each subgroup is summarised by the median of its members. 
 
 Key parameters:
 
@@ -43,7 +43,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
                                                   return = TRUE)
 ```
 
-The result is a named list with six elements:
+The result is a named list with seven elements:
 
 ```{r}
 names(deconv_subgroups)
@@ -73,11 +73,52 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
                                                   file_name = "Tutorial")
 ```
 
+## **Aggregating cell types into groups**
+
+Signatures do not describe cell types with the same level of detail: one reports `Macrophages.M1`, `Macrophages.M2` and `Monocytes`, another one only `Myeloid.cells`. To compare them at the same level, or to match a coarser ground truth (e.g. H&E or flow cytometry), you can sum cell types into groups with `aggregate_cell_groups()`.
+
+`cell_groups` is a named list: each name is a group and each element contains the cell types to sum, written as in `get_cell_type_nomenclature()`. For every method-signature combination, the function adds a new feature `<method>_<signature>_<group>`:
+
+- Cell types are summed only **within the same method-signature combination**, where the estimates are proportions of the same sample.
+- The original features are kept.
+- A combination that already estimates the group (e.g. a signature with its own `Myeloid.cells`) is left as it is.
+- A combination needs at least `min_types = 2` cell types of the group, otherwise it is skipped (the group would be a copy of a single cell type).
+
+The function prints which cell types were summed in each combination:
+
+```{r}
+myeloid = list(Myeloid.cells = c("Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2",
+                                 "Monocytes", "Dendritic.cells", "Dendritic.activated.cells",
+                                 "Dendritic.resting.cells"))
+
+deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = myeloid)
+```
+
+To use the groups in the subgroup analysis, give them directly to `compute.deconvolution.analysis()` with the `cell_groups` argument. The groups are aggregated first and then analysed as any other cell type. A group name can be a cell type of the nomenclature (`Myeloid.cells`) or a new name (`Lymphocytes`); new names must not contain `_` nor the name of an existing cell type.
+
+```{r, message=FALSE}
+groups = list(Myeloid.cells = myeloid$Myeloid.cells,
+              Lymphocytes = c("B.cells", "B.naive.cells", "B.memory.cells", "Plasma",
+                              "CD4.cells", "CD4.memory.activated", "CD4.memory.resting", "CD4.naive",
+                              "CD4.regulatory", "CD4.non.regulatory", "CD8.cells",
+                              "NK.cells", "NK.activated", "NK.resting"))
+
+deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
+                                                         corr = 0.7,
+                                                         cell_groups = groups)
+
+deconv_subgroups_groups[["Deconvolution subgroups composition"]]$Myeloid.cells
+```
+
+The groups are stored in the output (`deconv_subgroups_groups[["Cell groups"]]`), so `replicate_deconvolution_subgroups()` aggregates the same groups in a new cohort before rebuilding the subgroups: give it the deconvolution as returned by `compute.deconvolution()`.
+
+**NOTE:** A group can list cell types of different levels of detail, because each signature reports its own. Check the printed lines: within one method-signature combination the summed cell types must not overlap (a cell type together with its own subtypes would be counted twice).
+
 ## **Handling batch effects (multiple cohorts)**
 
 When your samples come from multiple cohorts or batches, simple Pearson/Spearman correlations can be confounded by cohort structure. `compute.deconvolution.analysis()` accepts a `batch` argument that switches the internal correlation to **partial correlation**, controlling for cohort membership in the correlations used to build the subgroups.
 
-The `batch` vector must be a factor or character vector with one label per sample, in the same order as the rows of the deconvolution matrix (names are not used).
+The `batch` vector must be a factor or character vector with one label per sample, in the same order as the rows of the deconvolution matrix.
 
 ```{r, eval = FALSE}
 # Example: 'cohort' has one label per sample ("CohortA" / "CohortB"), in the same order as rownames(deconv_bulk)

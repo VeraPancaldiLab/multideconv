@@ -14,7 +14,8 @@ prepare_multideconv_folds(
   corr_type = "spearman",
   zero_thr = 0.9,
   cv_thr = 0.1,
-  batch = NULL
+  batch = NULL,
+  cell_groups = NULL
 )
 }
 \arguments{
@@ -39,6 +40,9 @@ to compute the subgroups; they are added back to the returned data.}
 \item{cv_thr}{Minimum coefficient of variation passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
 
 \item{batch}{Optional batch covariate passed to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}.}
+
+\item{cell_groups}{Optional named list of cell types to aggregate into groups, passed to
+\code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}. The same groups are applied to the test samples of each fold.}
 }
 \value{
 \itemize{

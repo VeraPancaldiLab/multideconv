@@ -109,9 +109,10 @@
 #' Example output of [compute.deconvolution.analysis()], computed on [deconv_bulk] with
 #' `compute.deconvolution.analysis(deconv_bulk, corr = 0.7)`.
 #'
-#' @format A list with 6 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
+#' @format A list with 7 elements: "Deconvolution matrix", "Deconvolution subgroups per cell types",
 #'   "Deconvolution subgroups composition", "Discarded features with high number of zeros",
-#'   "Discarded features with low variance" and "Discarded cell types".
+#'   "Discarded features with low variance", "Discarded cell types" and "Cell groups" (`NULL` here: no
+#'   `cell_groups` were given).
 #'
 #' @examples
 #' data(subgroups)
