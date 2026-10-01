@@ -83,7 +83,8 @@ aggregated. Combinations with fewer are skipped (with 1, the group would be a co
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Boolean value to whether print the cell types summed in each method-signature combination</p></dd>
+<dd><p>Boolean value to whether print the cell types summed in each method-signature combination and
+the reminder of how to use the groups in the other functions</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -92,10 +93,15 @@ aggregated. Combinations with fewer are skipped (with 1, the group would be a co
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Group names that are not in the nomenclature (e.g. <code>Lymphocytes</code>) need to be given in <code>cells_extra</code> to
-<code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> and <code><a href="compute.benchmark.html">compute.benchmark()</a></code>. The <code>cell_groups</code> argument of
-<code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> does both steps at once.</p>
-    </div>
+    <p>It is an optional step after <code><a href="compute.deconvolution.html">compute.deconvolution()</a></code>: the returned matrix can be used in the other
+functions as any other deconvolution matrix. Two things are needed for the groups to be used there (the
+function prints them as a reminder):</p><ul><li><p><strong><code>cells_extra</code></strong>: group names that are not in the nomenclature (e.g. <code>Lymphocytes</code>) must be given in
+<code>cells_extra</code> to <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>, <code><a href="compute.benchmark.html">compute.benchmark()</a></code> and <code><a href="prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>,
+otherwise these groups are discarded. Listing all the group names in <code>cells_extra</code> is always safe: names
+that are already in the nomenclature (e.g. <code>Myeloid.cells</code>) are ignored there.</p></li>
+<li><p><strong>New cohorts</strong>: before <code><a href="replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code>, aggregate the same groups in the new
+deconvolution matrix. Otherwise the group features are missing in it and are set to <code>NA</code>.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -229,6 +235,10 @@ aggregated. Combinations with fewer are skipped (with 1, the group would be a co
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Epidish_LM22: skipped (1 member: CD8.cells)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   CBSX_LM22: skipped (1 member: CD8.cells)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   DWLS_LM22: skipped (1 member: CD8.cells)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> To use the aggregated matrix in other functions:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   - compute.deconvolution.analysis(), compute.benchmark(), prepare_multideconv_folds(): add cells_extra = "Lymphocytes", otherwise these groups are discarded</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   - replicate_deconvolution_subgroups(): aggregate the same groups in the new cohort first, otherwise their features are set to NA</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

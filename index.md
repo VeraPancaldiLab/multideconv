@@ -238,24 +238,39 @@ exactly the name of your cells in your deconvolution matrix!
 Signatures do not describe cell types with the same level of detail
 (e.g. `Macrophages.M1`, `Macrophages.M2` and `Monocytes` in one
 signature, `Myeloid.cells` in another). To compare them at the same
-level, use the argument cell_groups in the function
-[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md):
+level, you can optionally run
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+on the output of
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md):
 
 ``` r
 
 groups = list(Myeloid.cells = c("Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Monocytes", "Dendritic.cells"),
               Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, cell_groups = groups)
+deconvolution_groups = aggregate_cell_groups(deconvolution, cell_groups = groups)
 ```
 
 For every method-signature combination with at least two cell types of
 the group, a new feature `<method>_<signature>_<group>` with their sum
-is added and analysed as any other cell type. The original features are
-kept, and combinations that already estimate the group are left as they
-are.
-[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
-does only the aggregation and prints which cell types were summed in
-each combination.
+is added, and the function prints which cell types were summed in each
+combination. The original features are kept, and combinations that
+already estimate the group are left as they are.
+
+The result is a deconvolution matrix as any other, but remember two
+things when you use it afterwards:
+
+- In
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md),
+  [`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md)
+  and
+  [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md),
+  pass the group names that are not in the nomenclature (here
+  `Lymphocytes`) via `cells_extra`, otherwise these groups are
+  discarded.
+- Before
+  [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md),
+  aggregate the same groups in the new cohort, otherwise their features
+  are set to `NA`.
 
 ## How to add other signatures?
 

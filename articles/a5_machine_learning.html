@@ -151,10 +151,14 @@ fold and in the final model:</p>
 <span>                                            fold_construction_args_fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ncores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>To also use aggregated cell groups as features (see
 <code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> in the <em>Cell type subgroup
-analysis</em> article), add them to the same list,
-e.g. <code>fold_construction_args_fixed = list(ncores = 3, cell_groups = list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes")))</code>.
-The groups are summed per sample, so they do not leak information
-between training and test samples.</p>
+analysis</em> article), aggregate the same groups in
+<strong>both</strong> <code>deconv_train</code> and
+<code>deconv_test</code> before training, and list group names that are
+not in the nomenclature in <code>cells_extra</code>,
+e.g. <code>fold_construction_args_fixed = list(ncores = 3, cells_extra = "Lymphocytes")</code>.
+The groups are summed per sample, so aggregating all the samples before
+the cross-validation does not leak information between training and test
+samples.</p>
 <ul>
 <li>
 <code>res$Model</code> is the selected model, trained on the

@@ -113,7 +113,7 @@ labels (see section below on batch correction)</li>
 <span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
 <span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>,</span>
 <span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>The result is a named list with seven elements:</p>
+<p>The result is a named list with six elements:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Deconvolution matrix"                        </span></span>
@@ -121,8 +121,7 @@ labels (see section below on batch correction)</li>
 <span><span class="co">#&gt; [3] "Deconvolution subgroups composition"         </span></span>
 <span><span class="co">#&gt; [4] "Discarded features with high number of zeros"</span></span>
 <span><span class="co">#&gt; [5] "Discarded features with low variance"        </span></span>
-<span><span class="co">#&gt; [6] "Discarded cell types"                        </span></span>
-<span><span class="co">#&gt; [7] "Cell groups"</span></span></code></pre></div>
+<span><span class="co">#&gt; [6] "Discarded cell types"</span></span></code></pre></div>
 <p>Access the reduced deconvolution matrix (samples × subgroups):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution matrix"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution matrix"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -240,7 +239,10 @@ one reports <code>Macrophages.M1</code>, <code>Macrophages.M2</code> and
 <code>Monocytes</code>, another one only <code>Myeloid.cells</code>. To
 compare them at the same level, or to match a coarser ground truth
 (e.g. H&amp;E or flow cytometry), you can sum cell types into groups
-with <code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code>.</p>
+with <code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code>. It is an optional step after
+<code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code>, independent of the subgroup
+analysis: it takes a deconvolution matrix and returns it with the group
+features added.</p>
 <p><code>cell_groups</code> is a named list: each name is a group and
 each element contains the cell types to sum, written as in
 <code><a href="../reference/get_cell_type_nomenclature.html">get_cell_type_nomenclature()</a></code>. For every method-signature
@@ -303,14 +305,28 @@ combination:</p>
 <span><span class="co">#&gt;   DeconRNASeq_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells</span></span>
 <span><span class="co">#&gt;   Epidish_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells</span></span>
 <span><span class="co">#&gt;   DWLS_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells</span></span>
-<span><span class="co">#&gt;   CBSX_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells</span></span></code></pre></div>
-<p>To use the groups in the subgroup analysis, give them directly to
-<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> with the
-<code>cell_groups</code> argument. The groups are aggregated first and
-then analysed as any other cell type. A group name can be a cell type of
-the nomenclature (<code>Myeloid.cells</code>) or a new name
-(<code>Lymphocytes</code>); new names must not contain <code>_</code>
-nor the name of an existing cell type.</p>
+<span><span class="co">#&gt;   CBSX_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; To use the aggregated matrix in other functions:</span></span>
+<span><span class="co">#&gt;   - replicate_deconvolution_subgroups(): aggregate the same groups in the new cohort first, otherwise their features are set to NA</span></span></code></pre></div>
+<p>A group name can be a cell type of the nomenclature
+(<code>Myeloid.cells</code>) or a new name (<code>Lymphocytes</code>);
+new names must not contain <code>_</code> nor the name of an existing
+cell type.</p>
+<p>The returned matrix is a deconvolution matrix as any other, so it can
+be given to <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> if you want
+the groups to be analysed too. They are then treated as one more cell
+type.</p>
+<p><strong>IMPORTANT:</strong> group names that are not in the
+nomenclature (here <code>Lymphocytes</code>) must be listed in
+<code>cells_extra</code>, otherwise these groups are
+<strong>discarded</strong> by
+<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> (and by
+<code><a href="../reference/compute.benchmark.html">compute.benchmark()</a></code> and
+<code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>). If in doubt, list all your
+group names: the ones already in the nomenclature are simply ignored.
+<code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> prints this reminder after the
+summed cell types.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">groups</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Myeloid.cells <span class="op">=</span> <span class="va">myeloid</span><span class="op">$</span><span class="va">Myeloid.cells</span>,</span>
 <span>              Lymphocytes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B.cells"</span>, <span class="st">"B.naive.cells"</span>, <span class="st">"B.memory.cells"</span>, <span class="st">"Plasma"</span>,</span>
@@ -318,9 +334,11 @@ nor the name of an existing cell type.</p>
 <span>                              <span class="st">"CD4.regulatory"</span>, <span class="st">"CD4.non.regulatory"</span>, <span class="st">"CD8.cells"</span>,</span>
 <span>                              <span class="st">"NK.cells"</span>, <span class="st">"NK.activated"</span>, <span class="st">"NK.resting"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">deconv_subgroups_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_bulk</span>,</span>
+<span><span class="va">deconv_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups</a></span><span class="op">(</span><span class="va">deconv_bulk</span>, cell_groups <span class="op">=</span> <span class="va">groups</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">deconv_subgroups_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_groups</span>,</span>
 <span>                                                         corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>                                                         cell_groups <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
+<span>                                                         cells_extra <span class="op">=</span> <span class="st">"Lymphocytes"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">deconv_subgroups_groups</span><span class="op">[[</span><span class="st">"Deconvolution subgroups composition"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Myeloid.cells</span></span>
 <span><span class="co">#&gt; $Myeloid.cells_Subgroup.1</span></span>
@@ -354,11 +372,15 @@ nor the name of an existing cell type.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $Myeloid.cells_Subgroup.7</span></span>
 <span><span class="co">#&gt; [1] "DWLS_TIL10_Myeloid.cells"    "Epidish_TIL10_Myeloid.cells"</span></span></code></pre></div>
-<p>The groups are stored in the output
-(<code>deconv_subgroups_groups[["Cell groups"]]</code>), so
-<code><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code> aggregates the same
-groups in a new cohort before rebuilding the subgroups: give it the
-deconvolution as returned by <code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code>.</p>
+<p><strong>IMPORTANT:</strong> if you later replicate these subgroups in
+a new cohort with <code><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code> (see
+below), run <code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> with the same
+<code>cell_groups</code> on the new deconvolution matrix first.
+Otherwise the group features do not exist in the new cohort and are
+returned as <code>NA</code> (with a warning).</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">deconv_new_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups</a></span><span class="op">(</span><span class="va">deconv_new</span>, cell_groups <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
+<span><span class="va">deconv_new_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">deconv_subgroups_groups</span>, <span class="va">deconv_new_groups</span><span class="op">)</span></span></code></pre></div>
 <p><strong>NOTE:</strong> A group can list cell types of different
 levels of detail, because each signature reports its own. Check the
 printed lines: within one method-signature combination the summed cell
@@ -378,7 +400,7 @@ in the correlations used to build the subgroups.</p>
 <p>The <code>batch</code> vector must be a factor or character vector
 with one label per sample, in the same order as the rows of the
 deconvolution matrix.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Example: 'cohort' has one label per sample ("CohortA" / "CohortB"), in the same order as rownames(deconv_bulk)</span></span>
 <span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"CohortA"</span>, <span class="fl">96</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"CohortB"</span>, <span class="fl">96</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -425,7 +447,7 @@ Sauer, S., Garnett, M. J., Blüthgen, N., &amp; Saez-Rodriguez, J.
 (2018). Perturbation-response genes reveal signaling footprints in
 cancer gene expression. <em>Nature Communications</em>, 9(1), 20. <a href="https://doi.org/10.1038/s41467-017-02391-6" class="external-link uri">https://doi.org/10.1038/s41467-017-02391-6</a></p>
 </blockquote>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install CellTFusion if needed (once):</span></span>
 <span><span class="co"># pak::pkg_install("VeraPancaldiLab/CellTFusion")</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">CellTFusion</span><span class="op">)</span></span>
@@ -467,7 +489,7 @@ following function.</p>
 derived from a previous deconvolution, making it especially useful when
 transferring learned patterns across datasets — such as when training
 and evaluating machine learning models.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv_1</span> <span class="op">=</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>,<span class="op">]</span></span>
 <span><span class="va">deconv_2</span> <span class="op">=</span> <span class="va">deconv_bulk</span><span class="op">[</span><span class="fl">101</span><span class="op">:</span><span class="fl">192</span>,<span class="op">]</span></span>
 <span></span>

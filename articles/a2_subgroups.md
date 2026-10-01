@@ -39,7 +39,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
                                                   return = TRUE)
 ```
 
-The result is a named list with seven elements:
+The result is a named list with six elements:
 
 ``` r
 
@@ -49,8 +49,7 @@ names(deconv_subgroups)
 #> [3] "Deconvolution subgroups composition"         
 #> [4] "Discarded features with high number of zeros"
 #> [5] "Discarded features with low variance"        
-#> [6] "Discarded cell types"                        
-#> [7] "Cell groups"
+#> [6] "Discarded cell types"
 ```
 
 Access the reduced deconvolution matrix (samples × subgroups):
@@ -180,6 +179,10 @@ only `Myeloid.cells`. To compare them at the same level, or to match a
 coarser ground truth (e.g. H&E or flow cytometry), you can sum cell
 types into groups with
 [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md).
+It is an optional step after
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md),
+independent of the subgroup analysis: it takes a deconvolution matrix
+and returns it with the group features added.
 
 `cell_groups` is a named list: each name is a group and each element
 contains the cell types to sum, written as in
@@ -244,14 +247,33 @@ deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = myeloid)
 #>   Epidish_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
 #>   DWLS_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
 #>   CBSX_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
+#> 
+#> To use the aggregated matrix in other functions:
+#>   - replicate_deconvolution_subgroups(): aggregate the same groups in the new cohort first, otherwise their features are set to NA
 ```
 
-To use the groups in the subgroup analysis, give them directly to
+A group name can be a cell type of the nomenclature (`Myeloid.cells`) or
+a new name (`Lymphocytes`); new names must not contain `_` nor the name
+of an existing cell type.
+
+The returned matrix is a deconvolution matrix as any other, so it can be
+given to
 [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-with the `cell_groups` argument. The groups are aggregated first and
-then analysed as any other cell type. A group name can be a cell type of
-the nomenclature (`Myeloid.cells`) or a new name (`Lymphocytes`); new
-names must not contain `_` nor the name of an existing cell type.
+if you want the groups to be analysed too. They are then treated as one
+more cell type.
+
+**IMPORTANT:** group names that are not in the nomenclature (here
+`Lymphocytes`) must be listed in `cells_extra`, otherwise these groups
+are **discarded** by
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+(and by
+[`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md)
+and
+[`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)).
+If in doubt, list all your group names: the ones already in the
+nomenclature are simply ignored.
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+prints this reminder after the summed cell types.
 
 ``` r
 
@@ -261,9 +283,11 @@ groups = list(Myeloid.cells = myeloid$Myeloid.cells,
                               "CD4.regulatory", "CD4.non.regulatory", "CD8.cells",
                               "NK.cells", "NK.activated", "NK.resting"))
 
-deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
+deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = groups, verbose = FALSE)
+
+deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_groups,
                                                          corr = 0.7,
-                                                         cell_groups = groups)
+                                                         cells_extra = "Lymphocytes")
 
 deconv_subgroups_groups[["Deconvolution subgroups composition"]]$Myeloid.cells
 #> $Myeloid.cells_Subgroup.1
@@ -299,12 +323,20 @@ deconv_subgroups_groups[["Deconvolution subgroups composition"]]$Myeloid.cells
 #> [1] "DWLS_TIL10_Myeloid.cells"    "Epidish_TIL10_Myeloid.cells"
 ```
 
-The groups are stored in the output
-(`deconv_subgroups_groups[["Cell groups"]]`), so
+**IMPORTANT:** if you later replicate these subgroups in a new cohort
+with
 [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
-aggregates the same groups in a new cohort before rebuilding the
-subgroups: give it the deconvolution as returned by
-[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md).
+(see below), run
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+with the same `cell_groups` on the new deconvolution matrix first.
+Otherwise the group features do not exist in the new cohort and are
+returned as `NA` (with a warning).
+
+``` r
+
+deconv_new_groups = aggregate_cell_groups(deconv_new, cell_groups = groups)
+deconv_new_subgroups = replicate_deconvolution_subgroups(deconv_subgroups_groups, deconv_new_groups)
+```
 
 **NOTE:** A group can list cell types of different levels of detail,
 because each signature reports its own. Check the printed lines: within

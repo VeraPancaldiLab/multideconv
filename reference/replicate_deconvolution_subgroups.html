@@ -61,9 +61,9 @@
 
 
 <dt id="arg-deconvolution-test">deconvolution_test<a class="anchor" aria-label="anchor" href="#arg-deconvolution-test"></a></dt>
-<dd><p>A data.frame or matrix of deconvolution results (e.g., from another cohort). If
-<code>deconv_res</code> was computed with <code>cell_groups</code>, the same cell groups are aggregated here first
-(see <code><a href="aggregate_cell_groups.html">aggregate_cell_groups()</a></code>), so give the deconvolution as returned by <code><a href="compute.deconvolution.html">compute.deconvolution()</a></code>.</p></dd>
+<dd><p>A data.frame or matrix of deconvolution results (e.g., from another cohort). If cell
+groups were aggregated with <code><a href="aggregate_cell_groups.html">aggregate_cell_groups()</a></code> before computing <code>deconv_res</code>, aggregate the same groups
+here first; otherwise their features are missing and are set to <code>NA</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

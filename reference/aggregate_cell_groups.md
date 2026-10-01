@@ -45,7 +45,8 @@ aggregate_cell_groups(
 - verbose:
 
   Boolean value to whether print the cell types summed in each
-  method-signature combination
+  method-signature combination and the reminder of how to use the groups
+  in the other functions
 
 ## Value
 
@@ -53,14 +54,26 @@ The deconvolution matrix with the group features added as new columns.
 
 ## Details
 
-Group names that are not in the nomenclature (e.g. `Lymphocytes`) need
-to be given in `cells_extra` to
-[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-and
-[`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md).
-The `cell_groups` argument of
-[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-does both steps at once.
+It is an optional step after
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md):
+the returned matrix can be used in the other functions as any other
+deconvolution matrix. Two things are needed for the groups to be used
+there (the function prints them as a reminder):
+
+- **`cells_extra`**: group names that are not in the nomenclature (e.g.
+  `Lymphocytes`) must be given in `cells_extra` to
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md),
+  [`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md)
+  and
+  [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md),
+  otherwise these groups are discarded. Listing all the group names in
+  `cells_extra` is always safe: names that are already in the
+  nomenclature (e.g. `Myeloid.cells`) are ignored there.
+
+- **New cohorts**: before
+  [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md),
+  aggregate the same groups in the new deconvolution matrix. Otherwise
+  the group features are missing in it and are set to `NA`.
 
 ## Examples
 
@@ -195,4 +208,8 @@ deconvolution_groups = aggregate_cell_groups(deconvolution, cell_groups = groups
 #>   Epidish_LM22: skipped (1 member: CD8.cells)
 #>   CBSX_LM22: skipped (1 member: CD8.cells)
 #>   DWLS_LM22: skipped (1 member: CD8.cells)
+#> 
+#> To use the aggregated matrix in other functions:
+#>   - compute.deconvolution.analysis(), compute.benchmark(), prepare_multideconv_folds(): add cells_extra = "Lymphocytes", otherwise these groups are discarded
+#>   - replicate_deconvolution_subgroups(): aggregate the same groups in the new cohort first, otherwise their features are set to NA
 ```

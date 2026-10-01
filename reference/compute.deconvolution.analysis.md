@@ -15,8 +15,7 @@ compute.deconvolution.analysis(
   cells_extra = NULL,
   file_name = NULL,
   return = FALSE,
-  verbose = FALSE,
-  cell_groups = NULL
+  verbose = FALSE
 )
 ```
 
@@ -57,7 +56,11 @@ compute.deconvolution.analysis(
 - cells_extra:
 
   A string specifying the cells names to consider and that are not
-  including in the nomenclature of multideconv (see Readme)
+  including in the nomenclature of multideconv (see Readme). This
+  includes groups created with
+  [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+  under a new name (e.g. `Lymphocytes`): if they are not listed here
+  they are discarded.
 
 - file_name:
 
@@ -72,16 +75,6 @@ compute.deconvolution.analysis(
 - verbose:
 
   Boolen value to whether print or no the function messages
-
-- cell_groups:
-
-  Optional named list of cell types to aggregate into groups before the
-  analysis (see
-  [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)),
-  e.g.
-  `list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes"))`.
-  The group features are added to the deconvolution and analysed as any
-  other cell type (group names are added to `cells_extra`).
 
 ## Value
 
@@ -100,9 +93,6 @@ A list containing
 
 - Discarded cell types because they are not supported in the pipeline
 
-- The cell groups given in `cell_groups` (`NULL` if none), used by
-  [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
-
 ## Examples
 
 ``` r
@@ -112,7 +102,4 @@ data("deconvolution")
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7)
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
-
-groups = list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, cell_groups = groups)
 ```

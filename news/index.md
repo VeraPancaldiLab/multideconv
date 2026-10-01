@@ -14,15 +14,17 @@
   combinations with fewer than `min_types` (default 2) cell types of the
   group are skipped. It prints which cell types were summed in each
   combination.
-- [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-  and
-  [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
-  have a `cell_groups` argument that aggregates the groups before the
-  analysis and analyses them as any other cell type. The output of
+- [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+  is an optional step after
+  [`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md),
+  independent of
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
+  Its output is a deconvolution matrix as any other; group names that
+  are not in the nomenclature (e.g. `Lymphocytes`) are given in
+  `cells_extra` to
   [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-  has a new last element, “Cell groups”, and
-  [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
-  uses it to aggregate the same groups in a new cohort.
+  and
+  [`compute.benchmark()`](https://verapancaldilab.github.io/multideconv/reference/compute.benchmark.md).
 
 ## multideconv 0.2.0
 
