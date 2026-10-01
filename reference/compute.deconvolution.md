@@ -258,6 +258,13 @@ deconv = compute.deconvolution(raw_counts, normalized = TRUE,
 #> Mast.activated.cells
 #> Mast.resting.cells
 #> CAF
+#> Dendritic.plasmacytoid.cells
+#> Myeloid.cells
+#> Basophils
+#> Epithelial
+#> Pericytes
+#> Mural.cells
+#> T.cells.proliferative
 #> uncharacterized_cell 
 #> 
 #> If you want to consider other cell types (e.g. from a custom signature) which are not included in the package by default (see README), please provide them in the cells_extra argument.

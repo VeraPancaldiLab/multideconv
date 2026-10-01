@@ -1,10 +1,8 @@
 # Relate Deconvolution Subgroups to Pathway Activities
 
 Correlates deconvolution subgroup profiles with a pre-computed pathway
-activity matrix and saves one heatmap per cell type to `Results/`. Use
-an external tool such as
-[CellTFusion](https://github.com/VeraPancaldiLab/CellTFusion) to compute
-pathway activity scores (e.g. PROGENy) before calling this function.
+activity matrix, saves one heatmap per cell type to `Results/` and
+returns the correlations and p-values.
 
 ## Usage
 
@@ -13,10 +11,11 @@ compute.subgroup.pathways(
   subgroups,
   pathways = NULL,
   file_name = "Test",
-  height = 6,
-  width = 12,
+  height = NULL,
+  width = NULL,
   par_mar = c(4, 25, 5, 3),
-  pval = 0.05
+  pval = 0.05,
+  corr_type = "pearson"
 )
 ```
 
@@ -37,15 +36,12 @@ compute.subgroup.pathways(
 
   Character prefix used when naming output PDF files.
 
-- height:
+- height, width:
 
-  Plot height in inches (passed to
+  Plot height and width in inches (passed to
   [`ggplot2::ggsave()`](https://ggplot2.tidyverse.org/reference/ggsave.html)).
-
-- width:
-
-  Plot width in inches (passed to
-  [`ggplot2::ggsave()`](https://ggplot2.tidyverse.org/reference/ggsave.html)).
+  If `NULL` (default), the size is chosen from the number of subgroups
+  and pathways.
 
 - par_mar:
 
@@ -55,6 +51,12 @@ compute.subgroup.pathways(
 
   P-value threshold; correlations above this are not starred.
 
+- corr_type:
+
+  Correlation type, "pearson" (default) or "spearman".
+
 ## Value
 
-Invisibly returns `NULL`; side effects are PDF files in `Results/`.
+Invisibly, a list with one element per cell type, each holding
+`correlations` and `pvalues` (subgroups as rows, pathways as columns).
+One PDF heatmap per cell type is also saved in `Results/`.

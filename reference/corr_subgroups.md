@@ -20,7 +20,10 @@ corr_subgroups(data, corr_type = "spearman", batch = NULL)
 
 - batch:
 
-  Optional batch covariate used to compute partial correlations.
+  Optional batch labels, one per sample in the same order as the rows. A
+  factor or character is treated as categorical: correlations become
+  partial correlations controlling for one indicator column per batch. A
+  numeric vector is used as a single linear covariate.
 
 ## Value
 

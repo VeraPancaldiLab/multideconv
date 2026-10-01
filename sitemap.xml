@@ -39,21 +39,22 @@
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/create_sc_signatures.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/deconv_bulk.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/deconvolution.html</loc></url>
-<url><loc>https://verapancaldilab.github.io/multideconv/reference/find.maximum.iteration.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/ensure_results_dir.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/index.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/metacells_data.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/metacells_metadata.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/multideconv-package.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/process_group.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/pseudobulk.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/raw_counts.html</loc></url>
-<url><loc>https://verapancaldilab.github.io/multideconv/reference/removeCorrelatedFeatures.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/remove_low_variance.html</loc></url>
-<url><loc>https://verapancaldilab.github.io/multideconv/reference/remove_subgroups.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/sample_labels.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/stratified_sample_cells.html</loc></url>
 <url><loc>https://verapancaldilab.github.io/multideconv/reference/subgroups.html</loc></url>
+<url><loc>https://verapancaldilab.github.io/multideconv/reference/unregister_dopar.html</loc></url>
 </urlset>
 

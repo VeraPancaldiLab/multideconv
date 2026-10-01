@@ -10,9 +10,7 @@ compute.deconvolution.analysis(
   corr = 0.7,
   corr_type = "spearman",
   zero_thr = 0.9,
-  var_quantile = 0.25,
-  prune_thr = 0.9,
-  seed = NULL,
+  cv_thr = 0.1,
   batch = NULL,
   cells_extra = NULL,
   file_name = NULL,
@@ -42,23 +40,18 @@ compute.deconvolution.analysis(
 
   Maximum fraction of zeros allowed per feature before it is discarded.
 
-- var_quantile:
+- cv_thr:
 
-  Quantile threshold below which low-variance features are removed.
-
-- prune_thr:
-
-  Correlation threshold (computed with `corr_type`) above which highly
-  correlated features within a cell type are pruned.
-
-- seed:
-
-  A numeric value to specificy the seed. This ensures reproducibility
-  during the choice step of high correlated features.
+  Minimum coefficient of variation (standard deviation / mean) across
+  samples; features below it are removed.
 
 - batch:
 
-  Optional batch covariate used to compute partial correlations.
+  Optional batch labels, one per sample in the same order as the rows. A
+  factor or character is treated as categorical: correlations become
+  partial correlations controlling for one indicator column per batch. A
+  numeric vector is used as a single linear covariate. With only one
+  batch, ordinary correlations are used.
 
 - cells_extra:
 
@@ -89,9 +82,6 @@ A list containing
 
 - The deconvolution subgroups composition
 
-- The deconvolution groups discarded caused they are all belonging to
-  the same method
-
 - The discarded features because they contain a high number of zeros
   across samples (\> 90%)
 
@@ -99,15 +89,13 @@ A list containing
 
 - Discarded cell types because they are not supported in the pipeline
 
-- High correlated deconvolution pairs (\>high_corr)
-
 ## Examples
 
 ``` r
 
 data("deconvolution")
 
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123)
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7)
 
 processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 ```

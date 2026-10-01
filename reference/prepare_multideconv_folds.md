@@ -18,9 +18,7 @@ prepare_multideconv_folds(
   corr = 0.7,
   corr_type = "spearman",
   zero_thr = 0.9,
-  var_quantile = 0.25,
-  prune_thr = 0.9,
-  seed = NULL,
+  cv_thr = 0.1,
   batch = NULL
 )
 ```
@@ -68,19 +66,9 @@ prepare_multideconv_folds(
   Maximum zero fraction passed to
   [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
 
-- var_quantile:
+- cv_thr:
 
-  Variance quantile threshold passed to
-  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
-
-- prune_thr:
-
-  Pruning correlation threshold passed to
-  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
-
-- seed:
-
-  Random seed passed to
+  Minimum coefficient of variation passed to
   [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
 
 - batch:

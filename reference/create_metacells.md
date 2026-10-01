@@ -14,7 +14,7 @@ create_metacells(
   exclude_cells = NULL,
   min_cells = 50,
   k = 15,
-  max_shared = 15,
+  max_shared = 10,
   n_workers = 4,
   min_meta = 10
 )
@@ -24,18 +24,16 @@ create_metacells(
 
 - sc_object:
 
-  A matrix with the counts from scRNAseq object (genes as rows and cells
-  as columns)
+  A Seurat object with raw counts and a PCA already computed
+  (`RunPCA()`), used to find each cell's nearest neighbours.
 
 - labels_column:
 
-  A character vector with the cell labels (need to be of the same order
-  as in the sc_object)
+  Name of the metadata column with the cell type labels.
 
 - samples_column:
 
-  A character vector with the samples labels (need to be of the same
-  order as in the sc_object)
+  Name of the metadata column with the sample labels.
 
 - exclude_cells:
 
@@ -52,7 +50,8 @@ create_metacells(
 
 - max_shared:
 
-  The maximum number of cells to be shared across two metacells.
+  The maximum number of cells to be shared across two metacells (keep it
+  below `k`, otherwise metacells can overlap completely).
 
 - n_workers:
 
@@ -67,7 +66,8 @@ create_metacells(
 
 A list with two elements:
 
-- The metacell count matrix (genes as rownames and cells as columns)
+- The metacell count matrix (genes as rownames and metacells as
+  columns): each metacell is the sum of the counts of its `k` cells
 
 - The metadata matrix corresponding to the metacell object
 

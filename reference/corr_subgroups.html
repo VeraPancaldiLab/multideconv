@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,9 @@
 
 
 <dt id="arg-batch">batch<a class="anchor" aria-label="anchor" href="#arg-batch"></a></dt>
-<dd><p>Optional batch covariate used to compute partial correlations.</p></dd>
+<dd><p>Optional batch labels, one per sample in the same order as the rows. A factor or character
+is treated as categorical: correlations become partial correlations controlling for one indicator column
+per batch. A numeric vector is used as a single linear covariate.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,6 +86,13 @@ described in the paper <a href="https://www.biorxiv.org/content/10.1101/2025.04.
 et al., 2025</a>. It returns the cell type subgroups composition and the
 reduced deconvolution matrix, saved in the <code>Results/</code>
 directory.</p>
+<p>Within each cell type, features (method-signature estimates) are
+grouped by complete-linkage hierarchical clustering of their
+correlations: features form a subgroup only if <strong>every
+pair</strong> of them correlates at least <code>corr</code>
+(non-significant correlations count as 0). Each subgroup is summarised
+by the median of its members. The result does not depend on the order of
+the columns.</p>
 <p>Key parameters:</p>
 <ul>
 <li>
@@ -94,8 +101,6 @@ directory.</p>
 <li>
 <strong>corr</strong>: Minimum correlation threshold to group
 features</li>
-<li>
-<strong>seed</strong>: Random seed for reproducibility</li>
 <li>
 <strong>return</strong>: Whether to return results and save output
 files to the <code>Results/</code> directory</li>
@@ -107,129 +112,121 @@ labels (see section below on batch correction)</li>
 <code class="sourceCode R"><span><span class="va">deconv_bulk</span> <span class="op">=</span> <span class="fu">multideconv</span><span class="fu">::</span><span class="va"><a href="../reference/deconv_bulk.html">deconv_bulk</a></span></span>
 <span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_bulk</span>,</span>
 <span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>,</span>
 <span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>The result is a named list with eight elements:</p>
+<p>The result is a named list with six elements:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Deconvolution matrix"                                     </span></span>
-<span><span class="co">#&gt; [2] "Deconvolution subgroups per cell types"                   </span></span>
-<span><span class="co">#&gt; [3] "Deconvolution subgroups composition"                      </span></span>
-<span><span class="co">#&gt; [4] "Discarded groups with equal method"                       </span></span>
-<span><span class="co">#&gt; [5] "Discarded features with high number of zeros"             </span></span>
-<span><span class="co">#&gt; [6] "Discarded features with low variance"                     </span></span>
-<span><span class="co">#&gt; [7] "Discarded cell types"                                     </span></span>
-<span><span class="co">#&gt; [8] "High correlated deconvolution groups (&gt;0.9) per cell type"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "Deconvolution matrix"                        </span></span>
+<span><span class="co">#&gt; [2] "Deconvolution subgroups per cell types"      </span></span>
+<span><span class="co">#&gt; [3] "Deconvolution subgroups composition"         </span></span>
+<span><span class="co">#&gt; [4] "Discarded features with high number of zeros"</span></span>
+<span><span class="co">#&gt; [5] "Discarded features with low variance"        </span></span>
+<span><span class="co">#&gt; [6] "Discarded cell types"</span></span></code></pre></div>
 <p>Access the reduced deconvolution matrix (samples × subgroups):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution matrix"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution matrix"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_CBSX.Melanoma.scRNAseq_Macrophages.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                           0.09054257</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                           0.13016251</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                           0.13702906</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                           0.09526639</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                           0.07679836</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                           0.04918923</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_CD4.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                                      0.05621776</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                                      0.02891655</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                                      0.02692121</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                                      0.04720163</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                                      0.03983019</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                      0.01179213</span></span>
-<span><span class="co">#&gt;                 Monocytes_Subgroup.2.Iteration.2</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                       0.05028174</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                       0.07298462</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                       0.04603382</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                       0.16868135</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                       0.05774385</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                       0.08055252</span></span>
-<span><span class="co">#&gt;                 Neutrophils_Subgroup.1.Iteration.2</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                          0.1467583</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                          0.1535664</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                          0.1548537</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                          0.1272576</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                          0.1506810</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                          0.2872494</span></span>
-<span><span class="co">#&gt;                 DeconRNASeq_LM22_Plasma.cells</span></span>
-<span><span class="co">#&gt; SAM7f0d9cc7f001                    0.00000000</span></span>
-<span><span class="co">#&gt; SAM4305ab968b90                    0.14134690</span></span>
-<span><span class="co">#&gt; SAMcf018fee2acd                    0.08097855</span></span>
-<span><span class="co">#&gt; SAMcc4675f394a1                    0.08027983</span></span>
-<span><span class="co">#&gt; SAM49f9b2e57aa5                    0.06970544</span></span>
-<span><span class="co">#&gt; SAM2e7aa8fa0ab3                    0.09440011</span></span></code></pre></div>
+<span><span class="co">#&gt;                 DeconRNASeq_CBSX.Melanoma.scRNAseq_Endothelial</span></span>
+<span><span class="co">#&gt; SAM7f0d9cc7f001                                      0.1247419</span></span>
+<span><span class="co">#&gt; SAM4305ab968b90                                      0.1847182</span></span>
+<span><span class="co">#&gt; SAMcf018fee2acd                                      0.1672997</span></span>
+<span><span class="co">#&gt; SAMcc4675f394a1                                      0.2070710</span></span>
+<span><span class="co">#&gt; SAM49f9b2e57aa5                                      0.1639431</span></span>
+<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                      0.1168617</span></span>
+<span><span class="co">#&gt;                 DeconRNASeq_LM22_T.cells.helper CBSX_BPRNACanProMet_Neutrophils</span></span>
+<span><span class="co">#&gt; SAM7f0d9cc7f001                      0.00000000                    0.0034759832</span></span>
+<span><span class="co">#&gt; SAM4305ab968b90                      0.08389950                    0.0000000000</span></span>
+<span><span class="co">#&gt; SAMcf018fee2acd                      0.00000000                    0.0029090514</span></span>
+<span><span class="co">#&gt; SAMcc4675f394a1                      0.00000000                    0.0000000000</span></span>
+<span><span class="co">#&gt; SAM49f9b2e57aa5                      0.06256773                    0.0000000000</span></span>
+<span><span class="co">#&gt; SAM2e7aa8fa0ab3                      0.01772861                    0.0004672195</span></span>
+<span><span class="co">#&gt;                 DeconRNASeq_CBSX.Melanoma.scRNAseq_CD4.cells</span></span>
+<span><span class="co">#&gt; SAM7f0d9cc7f001                                   0.07161836</span></span>
+<span><span class="co">#&gt; SAM4305ab968b90                                   0.07890048</span></span>
+<span><span class="co">#&gt; SAMcf018fee2acd                                   0.07567607</span></span>
+<span><span class="co">#&gt; SAMcc4675f394a1                                   0.07173726</span></span>
+<span><span class="co">#&gt; SAM49f9b2e57aa5                                   0.07369131</span></span>
+<span><span class="co">#&gt; SAM2e7aa8fa0ab3                                   0.05237417</span></span>
+<span><span class="co">#&gt;                 CD4.cells_Subgroup.2</span></span>
+<span><span class="co">#&gt; SAM7f0d9cc7f001           0.18051700</span></span>
+<span><span class="co">#&gt; SAM4305ab968b90           0.00000000</span></span>
+<span><span class="co">#&gt; SAMcf018fee2acd           0.19511491</span></span>
+<span><span class="co">#&gt; SAMcc4675f394a1           0.06190600</span></span>
+<span><span class="co">#&gt; SAM49f9b2e57aa5           0.15741680</span></span>
+<span><span class="co">#&gt; SAM2e7aa8fa0ab3           0.07050168</span></span></code></pre></div>
 <p>Inspect subgroup composition (which methods/signatures were merged
 into each subgroup):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution subgroups composition"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">B.cells</span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.1</span></span>
+<span><span class="co">#&gt; [1] "CBSX_BPRNACan_B.cells"            "CBSX_BPRNACan3DProMet_B.cells"   </span></span>
+<span><span class="co">#&gt; [3] "CBSX_BPRNACanProMet_B.cells"      "DWLS_BPRNACan_B.cells"           </span></span>
+<span><span class="co">#&gt; [5] "DWLS_BPRNACan3DProMet_B.cells"    "DWLS_BPRNACanProMet_B.cells"     </span></span>
+<span><span class="co">#&gt; [7] "Epidish_BPRNACan_B.cells"         "Epidish_BPRNACan3DProMet_B.cells"</span></span>
+<span><span class="co">#&gt; [9] "Epidish_BPRNACanProMet_B.cells"  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
-<span><span class="co">#&gt; [3] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.2</span></span>
+<span><span class="co">#&gt; [1] "CBSX_CBSX.HNSCC.scRNAseq_B.cells"       </span></span>
+<span><span class="co">#&gt; [2] "DeconRNASeq_CBSX.HNSCC.scRNAseq_B.cells"</span></span>
+<span><span class="co">#&gt; [3] "DWLS_CBSX.HNSCC.scRNAseq_B.cells"       </span></span>
+<span><span class="co">#&gt; [4] "Epidish_CBSX.HNSCC.scRNAseq_B.cells"    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "CBSX_BPRNACan_B.cells"                        </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.3</span></span>
+<span><span class="co">#&gt; [1] "CBSX_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; [2] "DWLS_CBSX.Melanoma.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; [3] "Epidish_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.4</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_BPRNACan_B.cells"        </span></span>
+<span><span class="co">#&gt; [2] "DeconRNASeq_BPRNACan3DProMet_B.cells"</span></span>
+<span><span class="co">#&gt; [3] "DeconRNASeq_BPRNACanProMet_B.cells"  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_BPRNACan_B.cells"       "DeconRNASeq_BPRNACanProMet_B.cells"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.2.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DeconRNASeq_CBSX.Melanoma.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "B.cells_Subgroup.2.Iteration.1"            </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.3.Iteration.2</span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.5</span></span>
 <span><span class="co">#&gt; [1] "DeconRNASeq_CCLE.TIL10_B.cells" "DeconRNASeq_TIL10_B.cells"     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.4.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "CBSX_BPRNACan3DProMet_B.cells"  "B.cells_Subgroup.4.Iteration.1"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.5.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "CBSX_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
-<span><span class="co">#&gt; [2] "B.cells_Subgroup.5.Iteration.1"        </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.3</span></span>
-<span><span class="co">#&gt; [1] "B.cells_Subgroup.2.Iteration.2" "B.cells_Subgroup.4.Iteration.2"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $B.cells_Subgroup.1.Iteration.4</span></span>
-<span><span class="co">#&gt; [1] "B.cells_Subgroup.3.Iteration.1" "B.cells_Subgroup.1.Iteration.3"</span></span>
+<span><span class="co">#&gt; $B.cells_Subgroup.6</span></span>
+<span><span class="co">#&gt; [1] "DWLS_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"   </span></span>
+<span><span class="co">#&gt; [2] "Epidish_CBSX.NSCLC.PBMCs.scRNAseq_B.cells"</span></span>
 <span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution subgroups composition"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Macrophages.M2</span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CCLE.TIL10_Macrophages.M2" "DWLS_CCLE.TIL10_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CCLE.TIL10_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1</span></span>
+<span><span class="co">#&gt; [1] "CBSX_BPRNACan_Macrophages.M2"           </span></span>
+<span><span class="co">#&gt; [2] "CBSX_BPRNACanProMet_Macrophages.M2"     </span></span>
+<span><span class="co">#&gt; [3] "DWLS_BPRNACan_Macrophages.M2"           </span></span>
+<span><span class="co">#&gt; [4] "DWLS_BPRNACan3DProMet_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; [5] "DWLS_BPRNACanProMet_Macrophages.M2"     </span></span>
+<span><span class="co">#&gt; [6] "Epidish_BPRNACan_Macrophages.M2"        </span></span>
+<span><span class="co">#&gt; [7] "Epidish_BPRNACan3DProMet_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; [8] "Epidish_BPRNACanProMet_Macrophages.M2"  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.2.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_TIL10_Macrophages.M2" "DWLS_TIL10_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.2</span></span>
+<span><span class="co">#&gt; [1] "CBSX_LM22_Macrophages.M2"    "DWLS_LM22_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; [3] "Epidish_LM22_Macrophages.M2"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.4.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_LM22_Macrophages.M2" "DWLS_LM22_Macrophages.M2"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_LM22_Macrophages.M2"   </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.3</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_BPRNACan_Macrophages.M2"        </span></span>
+<span><span class="co">#&gt; [2] "DeconRNASeq_BPRNACan3DProMet_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; [3] "DeconRNASeq_BPRNACanProMet_Macrophages.M2"  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Macrophages.M2_Subgroup.1.Iteration.2</span></span>
-<span><span class="co">#&gt; [1] "DWLS_BPRNACan_Macrophages.M2"        </span></span>
-<span><span class="co">#&gt; [2] "DWLS_BPRNACan3DProMet_Macrophages.M2"</span></span>
-<span><span class="co">#&gt; [3] "DWLS_BPRNACanProMet_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.4</span></span>
+<span><span class="co">#&gt; [1] "DeconRNASeq_CCLE.TIL10_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; [2] "DeconRNASeq_TIL10_Macrophages.M2"     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.5</span></span>
+<span><span class="co">#&gt; [1] "DWLS_CCLE.TIL10_Macrophages.M2"    "Epidish_CCLE.TIL10_Macrophages.M2"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Macrophages.M2_Subgroup.6</span></span>
+<span><span class="co">#&gt; [1] "DWLS_TIL10_Macrophages.M2"    "Epidish_TIL10_Macrophages.M2"</span></span>
 <span><span class="va">deconv_subgroups</span><span class="op">[[</span><span class="st">"Deconvolution subgroups composition"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">Dendritic.cells</span></span>
-<span><span class="co">#&gt; $Dendritic.cells_Subgroup.1.Iteration.1</span></span>
-<span><span class="co">#&gt; [1] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span>
+<span><span class="co">#&gt; $Dendritic.cells_Subgroup.1</span></span>
+<span><span class="co">#&gt; [1] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"   </span></span>
 <span><span class="co">#&gt; [2] "DWLS_CBSX.HNSCC.scRNAseq_Dendritic.cells"   </span></span>
-<span><span class="co">#&gt; [3] "CBSX_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span></code></pre></div>
+<span><span class="co">#&gt; [3] "Epidish_CBSX.HNSCC.scRNAseq_Dendritic.cells"</span></span></code></pre></div>
 <p>If your deconvolution matrix contains non-standard cell types (see
 README), specify them using <code>cells_extra</code> to ensure proper
 subgrouping. If not specified, they will be discarded automatically.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_pseudo</span>,</span>
 <span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>                                                  return <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                                                  cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mural.cells"</span>, <span class="st">"Myeloid.cells"</span><span class="op">)</span>,</span>
 <span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span><span class="op">)</span></span></code></pre></div>
@@ -243,30 +240,28 @@ Pearson/Spearman correlations can be confounded by cohort structure.
 <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> accepts a
 <code>batch</code> argument that switches the internal correlation to
 <strong>partial correlation</strong>, controlling for cohort membership
-at every pairwise pruning and subgrouping step.</p>
-<p>The <code>batch</code> vector must be a named factor or character
-vector whose names match the row names of the deconvolution matrix.</p>
+in the correlations used to build the subgroups.</p>
+<p>The <code>batch</code> vector must be a factor or character vector
+with one label per sample, in the same order as the rows of the
+deconvolution matrix (names are not used).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example: 'cohort' is a named character vector with values "CohortA" / "CohortB"</span></span>
+<code class="sourceCode R"><span><span class="co"># Example: 'cohort' has one label per sample ("CohortA" / "CohortB"), in the same order as rownames(deconv_bulk)</span></span>
 <span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"CohortA"</span>, <span class="fl">96</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"CohortB"</span>, <span class="fl">96</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cohort</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">deconv_bulk</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">deconv_subgroups_batch</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span></span>
 <span>  deconvolution <span class="op">=</span> <span class="va">deconv_bulk</span>,</span>
 <span>  corr          <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  seed          <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>  batch         <span class="op">=</span> <span class="va">cohort</span>,</span>
 <span>  file_name     <span class="op">=</span> <span class="st">"Tutorial_batch"</span>,</span>
 <span>  return        <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>When <code>batch</code> is supplied:</p>
 <ul>
-<li>Pairwise correlation pruning uses <strong>partial
-correlation</strong> (residuals after regressing out batch) via
-<code><a href="https://rdrr.io/pkg/ppcor/man/pcor.html" class="external-link">ppcor::pcor()</a></code>.</li>
-<li>The same partial-correlation matrix is used at every subgrouping
-step so that inter-cohort differences do not inflate feature
-similarity.</li>
+<li>Correlations between features are <strong>partial
+correlations</strong> that remove the batch effect (via
+<code><a href="https://rdrr.io/pkg/ppcor/man/pcor.test.html" class="external-link">ppcor::pcor.test()</a></code>, with one indicator per batch).</li>
+<li>Subgroups are built from these partial correlations, so inter-cohort
+differences do not inflate feature similarity.</li>
 </ul>
 <p>This approach is recommended whenever samples originate from distinct
 studies, sequencing runs, or processing pipelines, as it prevents
@@ -315,10 +310,12 @@ cancer gene expression. <em>Nature Communications</em>, 9(1), 20. <a href="https
 <span><span class="op">)</span></span></code></pre></div>
 <p>Any other sample × pathway matrix (e.g. from GSVA, ssGSEA, or
 decoupleR) can be passed as <code>pathways</code> in the same way.</p>
-<p>One PDF heatmap per cell type is saved to <code>Results/</code>.
-Below is an example output for CD4 T cells (12 subgroups × 14 PROGENy
-pathways), where stars indicate significance levels (* p&lt;0.05, **
-p&lt;0.01, *** p&lt;0.001):</p>
+<p>One PDF heatmap per cell type is saved to <code>Results/</code>. The
+function also returns (invisibly) a list with the correlations and
+p-values of each cell type, and <code>corr_type</code> selects Pearson
+(default) or Spearman correlations. Below is an example output for CD4 T
+cells (12 subgroups × 14 PROGENy pathways), where stars indicate
+significance levels (* p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001):</p>
 <p><img src="../reference/figures/subgroup_pathways_example.png" class="r-plt" alt="" width="90%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -342,7 +339,6 @@ and evaluating machine learning models.</p>
 <span></span>
 <span><span class="va">deconv_subgroups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span>deconvolution <span class="op">=</span> <span class="va">deconv_1</span>,</span>
 <span>                                                  corr <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>                                                  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>                                                  file_name <span class="op">=</span> <span class="st">"Tutorial"</span>,</span>
 <span>                                                  return <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">deconv_subgroups_replicate</span> <span class="op">=</span> <span class="fu"><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups</a></span><span class="op">(</span><span class="va">deconv_subgroups</span>,</span>

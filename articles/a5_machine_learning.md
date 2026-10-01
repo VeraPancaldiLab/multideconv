@@ -56,9 +56,9 @@ calls
 [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
 to compute the deconvolution subgroups of each fold. Arguments of
 [`prepare_multideconv_folds()`](https://verapancaldilab.github.io/multideconv/reference/prepare_multideconv_folds.md)
-(e.g. `ncores`, `corr`, `corr_type`, `zero_thr`, `var_quantile`,
-`prune_thr`) can be set with `fold_construction_args_fixed`; they are
-applied in every fold and in the final model:
+(e.g. `ncores`, `corr`, `corr_type`, `zero_thr`, `cv_thr`) can be set
+with `fold_construction_args_fixed`; they are applied in every fold and
+in the final model:
 
 ``` r
 

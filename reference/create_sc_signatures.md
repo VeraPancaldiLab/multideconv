@@ -33,13 +33,16 @@ create_sc_signatures(
 
 - cells_labels:
 
-  A character vector with the cell labels (need to be of the same order
-  as in the sc_object)
+  Name of the `sc_metadata` column with the cell type labels. The labels
+  become the cell type names of the signatures, so they must follow the
+  multideconv nomenclature (see
+  [`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
+  and the README); otherwise those cell types are discarded later by
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
 
 - sample_labels:
 
-  A character vector with the samples labels (need to be of the same
-  order as in the sc_object)
+  Name of the `sc_metadata` column with the sample labels.
 
 - credentials.mail:
 
@@ -64,20 +67,23 @@ create_sc_signatures(
 
 - name_signature:
 
-  A string indicating the signature name. This will be added as a suffix
-  in each method (e.g. CBSX_name_signature, DWLS_name_signature)
+  A string indicating the signature name, used in the file names (e.g.
+  `DWLS-<name_signature>-scRNAseq.txt`). It must not contain `_`
+  (replaced by `-`), which separates method, signature and cell type in
+  the deconvolution column names.
 
 - methods_sig:
 
   A character vector specifying which methods to run. Options are
-  "DWLS", "CIBERSORTx", "MOMF", and "BSeqsc". Default runs all available
-  methods.
+  "DWLS", "CIBERSORTx" (or "CBSX"), "MOMF", and "BSeqsc". Default runs
+  all available methods.
 
 ## Value
 
 A list containing the cell signatures per method. Signatures are
-directly saved in Results/custom_signatures folder, these will be used
-to run deconvolution.
+directly saved in Results/custom_signatures folder (an existing file
+with the same name is overwritten), these will be used to run
+deconvolution.
 
 ## References
 

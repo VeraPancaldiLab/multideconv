@@ -1614,13 +1614,13 @@ head(deconvolution)
 #> Sample_14428                      0                   0                   0
 #> Sample_11817                      0                   0                   0
 #> Sample_14958                      0                   0                   0
-#>              Quantiseq_T.cells.non.regulatory Quantiseq_CD8.cells
-#> Sample_12929                        0.0000000          0.08984339
-#> Sample_15467                        0.3843607          0.14412745
-#> Sample_13634                        0.0000000          0.30918408
-#> Sample_14428                        0.0000000          0.30545815
-#> Sample_11817                        0.0000000          0.37370976
-#> Sample_14958                        0.2424611          0.12109299
+#>              Quantiseq_CD4.non.regulatory Quantiseq_CD8.cells
+#> Sample_12929                    0.0000000          0.08984339
+#> Sample_15467                    0.3843607          0.14412745
+#> Sample_13634                    0.0000000          0.30918408
+#> Sample_14428                    0.0000000          0.30545815
+#> Sample_11817                    0.0000000          0.37370976
+#> Sample_14958                    0.2424611          0.12109299
 #>              DeconRNASeq_BPRNACan_CD8.cells Epidish_BPRNACan_CD8.cells
 #> Sample_12929                      0.2509110                  0.1689579
 #> Sample_15467                      0.2912114                  0.2223026
@@ -1929,76 +1929,55 @@ head(deconvolution)
 #> Sample_14428                 0.17045511                0.13334842
 #> Sample_11817                 0.11213087                0.12202635
 #> Sample_14958                 0.04437062                0.02446209
-#>              Quantiseq_T.cells.regulatory
-#> Sample_12929                    0.5789390
-#> Sample_15467                    0.1432490
-#> Sample_13634                    0.4125916
-#> Sample_14428                    0.3210357
-#> Sample_11817                    0.4306358
-#> Sample_14958                    0.2737911
-#>              DeconRNASeq_CCLE.TIL10_T.cells.regulatory
-#> Sample_12929                                0.21286314
-#> Sample_15467                                0.04343187
-#> Sample_13634                                0.17631845
-#> Sample_14428                                0.12996646
-#> Sample_11817                                0.32238169
-#> Sample_14958                                0.12105951
-#>              Epidish_CCLE.TIL10_T.cells.regulatory
-#> Sample_12929                             0.2360112
-#> Sample_15467                             0.1920821
-#> Sample_13634                             0.1984112
-#> Sample_14428                             0.1239913
-#> Sample_11817                             0.1409075
-#> Sample_14958                             0.1988827
-#>              CBSX_CCLE.TIL10_T.cells.regulatory
-#> Sample_12929                          0.2434852
-#> Sample_15467                          0.2036352
-#> Sample_13634                          0.1627566
-#> Sample_14428                          0.1110229
-#> Sample_11817                          0.1579997
-#> Sample_14958                          0.2042822
-#>              DWLS_CCLE.TIL10_T.cells.regulatory
-#> Sample_12929                         0.15766665
-#> Sample_15467                         0.13544257
-#> Sample_13634                         0.16209873
-#> Sample_14428                         0.07495728
-#> Sample_11817                         0.09444267
-#> Sample_14958                         0.15258180
-#>              DeconRNASeq_LM22_T.cells.regulatory
-#> Sample_12929                                   0
-#> Sample_15467                                   0
-#> Sample_13634                                   0
-#> Sample_14428                                   0
-#> Sample_11817                                   0
-#> Sample_14958                                   0
-#>              Epidish_LM22_T.cells.regulatory CBSX_LM22_T.cells.regulatory
-#> Sample_12929                      0.02394958                   0.01568465
-#> Sample_15467                      0.00000000                   0.00000000
-#> Sample_13634                      0.00000000                   0.00000000
-#> Sample_14428                      0.00000000                   0.00000000
-#> Sample_11817                      0.01321094                   0.01752975
-#> Sample_14958                      0.00000000                   0.00000000
-#>              DWLS_LM22_T.cells.regulatory DeconRNASeq_TIL10_T.cells.regulatory
-#> Sample_12929                   0.01873639                           0.18288530
-#> Sample_15467                   0.00000000                           0.00000000
-#> Sample_13634                   0.00000000                           0.13005992
-#> Sample_14428                   0.00000000                           0.09932707
-#> Sample_11817                   0.01709326                           0.32797507
-#> Sample_14958                   0.00000000                           0.10615630
-#>              Epidish_TIL10_T.cells.regulatory CBSX_TIL10_T.cells.regulatory
-#> Sample_12929                        0.2619935                     0.2761295
-#> Sample_15467                        0.1317711                     0.1640561
-#> Sample_13634                        0.1670335                     0.1178741
-#> Sample_14428                        0.1124922                     0.0747640
-#> Sample_11817                        0.1234425                     0.1378757
-#> Sample_14958                        0.2099720                     0.1493627
-#>              DWLS_TIL10_T.cells.regulatory
-#> Sample_12929                    0.22700697
-#> Sample_15467                    0.13160828
-#> Sample_13634                    0.12517469
-#> Sample_14428                    0.07961486
-#> Sample_11817                    0.07319723
-#> Sample_14958                    0.13857893
+#>              Quantiseq_CD4.regulatory DeconRNASeq_CCLE.TIL10_CD4.regulatory
+#> Sample_12929                0.5789390                            0.21286314
+#> Sample_15467                0.1432490                            0.04343187
+#> Sample_13634                0.4125916                            0.17631845
+#> Sample_14428                0.3210357                            0.12996646
+#> Sample_11817                0.4306358                            0.32238169
+#> Sample_14958                0.2737911                            0.12105951
+#>              Epidish_CCLE.TIL10_CD4.regulatory CBSX_CCLE.TIL10_CD4.regulatory
+#> Sample_12929                         0.2360112                      0.2434852
+#> Sample_15467                         0.1920821                      0.2036352
+#> Sample_13634                         0.1984112                      0.1627566
+#> Sample_14428                         0.1239913                      0.1110229
+#> Sample_11817                         0.1409075                      0.1579997
+#> Sample_14958                         0.1988827                      0.2042822
+#>              DWLS_CCLE.TIL10_CD4.regulatory DeconRNASeq_LM22_CD4.regulatory
+#> Sample_12929                     0.15766665                               0
+#> Sample_15467                     0.13544257                               0
+#> Sample_13634                     0.16209873                               0
+#> Sample_14428                     0.07495728                               0
+#> Sample_11817                     0.09444267                               0
+#> Sample_14958                     0.15258180                               0
+#>              Epidish_LM22_CD4.regulatory CBSX_LM22_CD4.regulatory
+#> Sample_12929                  0.02394958               0.01568465
+#> Sample_15467                  0.00000000               0.00000000
+#> Sample_13634                  0.00000000               0.00000000
+#> Sample_14428                  0.00000000               0.00000000
+#> Sample_11817                  0.01321094               0.01752975
+#> Sample_14958                  0.00000000               0.00000000
+#>              DWLS_LM22_CD4.regulatory DeconRNASeq_TIL10_CD4.regulatory
+#> Sample_12929               0.01873639                       0.18288530
+#> Sample_15467               0.00000000                       0.00000000
+#> Sample_13634               0.00000000                       0.13005992
+#> Sample_14428               0.00000000                       0.09932707
+#> Sample_11817               0.01709326                       0.32797507
+#> Sample_14958               0.00000000                       0.10615630
+#>              Epidish_TIL10_CD4.regulatory CBSX_TIL10_CD4.regulatory
+#> Sample_12929                    0.2619935                 0.2761295
+#> Sample_15467                    0.1317711                 0.1640561
+#> Sample_13634                    0.1670335                 0.1178741
+#> Sample_14428                    0.1124922                 0.0747640
+#> Sample_11817                    0.1234425                 0.1378757
+#> Sample_14958                    0.2099720                 0.1493627
+#>              DWLS_TIL10_CD4.regulatory
+#> Sample_12929                0.22700697
+#> Sample_15467                0.13160828
+#> Sample_13634                0.12517469
+#> Sample_14428                0.07961486
+#> Sample_11817                0.07319723
+#> Sample_14958                0.13857893
 #>              DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq_T.cells.helper
 #> Sample_12929                                            0.09467411
 #> Sample_15467                                            0.09204363
@@ -3133,13 +3112,13 @@ head(deconvolution)
 #> Sample_14428                     0.125389444                   0.000000e+00
 #> Sample_11817                     0.004135128                   4.440892e-16
 #> Sample_14958                     0.263542872                   2.220446e-16
-#>              DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                                 0.1643852
-#> Sample_15467                                                 0.1299620
-#> Sample_13634                                                 0.1058887
-#> Sample_14428                                                 0.1537091
-#> Sample_11817                                                 0.0000000
-#> Sample_14958                                                 0.1806885
+#>              DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                             0.1643852
+#> Sample_15467                                             0.1299620
+#> Sample_13634                                             0.1058887
+#> Sample_14428                                             0.1537091
+#> Sample_11817                                             0.0000000
+#> Sample_14958                                             0.1806885
 #>              DeconRNASeq_BSeqSC.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                           0.07147301
 #> Sample_15467                                           0.00000000
@@ -3161,13 +3140,13 @@ head(deconvolution)
 #> Sample_14428                                                 0.0000000000
 #> Sample_11817                                                 0.1117063799
 #> Sample_14958                                                 0.0000000000
-#>              Epidish_BSeqSC.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                            0.23655033
-#> Sample_15467                                            0.06745026
-#> Sample_13634                                            0.14306431
-#> Sample_14428                                            0.14351883
-#> Sample_11817                                            0.07195701
-#> Sample_14958                                            0.18423374
+#>              Epidish_BSeqSC.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                        0.23655033
+#> Sample_15467                                        0.06745026
+#> Sample_13634                                        0.14306431
+#> Sample_14428                                        0.14351883
+#> Sample_11817                                        0.07195701
+#> Sample_14958                                        0.18423374
 #>              Epidish_BSeqSC.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                       0.15413730
 #> Sample_15467                                       0.02472302
@@ -3189,13 +3168,13 @@ head(deconvolution)
 #> Sample_14428                                              0.000000000
 #> Sample_11817                                              0.346973660
 #> Sample_14958                                              0.086771647
-#>              CBSX_BSeqSC.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                         0.26100587
-#> Sample_15467                                         0.13564229
-#> Sample_13634                                         0.17458900
-#> Sample_14428                                         0.17005771
-#> Sample_11817                                         0.05697393
-#> Sample_14958                                         0.16766781
+#>              CBSX_BSeqSC.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                     0.26100587
+#> Sample_15467                                     0.13564229
+#> Sample_13634                                     0.17458900
+#> Sample_14428                                     0.17005771
+#> Sample_11817                                     0.05697393
+#> Sample_14958                                     0.16766781
 #>              CBSX_BSeqSC.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                   0.131498000
 #> Sample_15467                                   0.025747397
@@ -3217,13 +3196,13 @@ head(deconvolution)
 #> Sample_14428                                           0.003812569
 #> Sample_11817                                           0.305265958
 #> Sample_14958                                           0.098720118
-#>              DWLS_BSeqSC.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                         0.22635509
-#> Sample_15467                                         0.10839286
-#> Sample_13634                                         0.13047938
-#> Sample_14428                                         0.14147382
-#> Sample_11817                                         0.06332203
-#> Sample_14958                                         0.16572155
+#>              DWLS_BSeqSC.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                     0.22635509
+#> Sample_15467                                     0.10839286
+#> Sample_13634                                     0.13047938
+#> Sample_14428                                     0.14147382
+#> Sample_11817                                     0.06332203
+#> Sample_14958                                     0.16572155
 #>              DWLS_BSeqSC.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                    0.16486022
 #> Sample_15467                                    0.03235867
@@ -3245,13 +3224,13 @@ head(deconvolution)
 #> Sample_14428                                            0.00000000
 #> Sample_11817                                            0.32650484
 #> Sample_14958                                            0.09583602
-#>              DeconRNASeq_CBSX.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                               0.2468613
-#> Sample_15467                                               0.1749222
-#> Sample_13634                                               0.1958159
-#> Sample_14428                                               0.1695693
-#> Sample_11817                                               0.2688569
-#> Sample_14958                                               0.1720885
+#>              DeconRNASeq_CBSX.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                           0.2468613
+#> Sample_15467                                           0.1749222
+#> Sample_13634                                           0.1958159
+#> Sample_14428                                           0.1695693
+#> Sample_11817                                           0.2688569
+#> Sample_14958                                           0.1720885
 #>              DeconRNASeq_CBSX.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                         0.19617617
 #> Sample_15467                                         0.01964446
@@ -3273,13 +3252,13 @@ head(deconvolution)
 #> Sample_14428                                                 0.05722428
 #> Sample_11817                                                 0.20319516
 #> Sample_14958                                                 0.00000000
-#>              Epidish_CBSX.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                           0.3158893
-#> Sample_15467                                           0.1350057
-#> Sample_13634                                           0.1560551
-#> Sample_14428                                           0.1521637
-#> Sample_11817                                           0.3104752
-#> Sample_14958                                           0.1601471
+#>              Epidish_CBSX.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                       0.3158893
+#> Sample_15467                                       0.1350057
+#> Sample_13634                                       0.1560551
+#> Sample_14428                                       0.1521637
+#> Sample_11817                                       0.3104752
+#> Sample_14958                                       0.1601471
 #>              Epidish_CBSX.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                     0.13233340
 #> Sample_15467                                     0.03039942
@@ -3301,13 +3280,13 @@ head(deconvolution)
 #> Sample_14428                                             0.01230539
 #> Sample_11817                                             0.12855488
 #> Sample_14958                                             0.02128868
-#>              CBSX_CBSX.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                        0.3029336
-#> Sample_15467                                        0.1331767
-#> Sample_13634                                        0.1659131
-#> Sample_14428                                        0.1435287
-#> Sample_11817                                        0.3002211
-#> Sample_14958                                        0.1619405
+#>              CBSX_CBSX.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                    0.3029336
+#> Sample_15467                                    0.1331767
+#> Sample_13634                                    0.1659131
+#> Sample_14428                                    0.1435287
+#> Sample_11817                                    0.3002211
+#> Sample_14958                                    0.1619405
 #>              CBSX_CBSX.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.12944581
 #> Sample_15467                                  0.03317239
@@ -3329,13 +3308,13 @@ head(deconvolution)
 #> Sample_14428                                          0.01034595
 #> Sample_11817                                          0.10357944
 #> Sample_14958                                          0.01912456
-#>              DWLS_CBSX.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                       0.20947209
-#> Sample_15467                                       0.08623451
-#> Sample_13634                                       0.12351326
-#> Sample_14428                                       0.10091835
-#> Sample_11817                                       0.23283294
-#> Sample_14958                                       0.11146950
+#>              DWLS_CBSX.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                   0.20947209
+#> Sample_15467                                   0.08623451
+#> Sample_13634                                   0.12351326
+#> Sample_14428                                   0.10091835
+#> Sample_11817                                   0.23283294
+#> Sample_14958                                   0.11146950
 #>              DWLS_CBSX.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.25480757
 #> Sample_15467                                  0.05568283
@@ -3357,13 +3336,13 @@ head(deconvolution)
 #> Sample_14428                                         0.008219412
 #> Sample_11817                                         0.098326395
 #> Sample_14958                                         0.016138494
-#>              DeconRNASeq_DWLS.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                              0.11016684
-#> Sample_15467                                              0.00000000
-#> Sample_13634                                              0.01548874
-#> Sample_14428                                              0.00000000
-#> Sample_11817                                              0.06297299
-#> Sample_14958                                              0.00000000
+#>              DeconRNASeq_DWLS.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                          0.11016684
+#> Sample_15467                                          0.00000000
+#> Sample_13634                                          0.01548874
+#> Sample_14428                                          0.00000000
+#> Sample_11817                                          0.06297299
+#> Sample_14958                                          0.00000000
 #>              DeconRNASeq_DWLS.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                         0.23512149
 #> Sample_15467                                         0.02876263
@@ -3385,13 +3364,13 @@ head(deconvolution)
 #> Sample_14428                                                  0.0000000
 #> Sample_11817                                                  0.1216792
 #> Sample_14958                                                  0.0000000
-#>              Epidish_DWLS.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                          0.18814707
-#> Sample_15467                                          0.03788838
-#> Sample_13634                                          0.05281828
-#> Sample_14428                                          0.07719813
-#> Sample_11817                                          0.10321936
-#> Sample_14958                                          0.13718759
+#>              Epidish_DWLS.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                      0.18814707
+#> Sample_15467                                      0.03788838
+#> Sample_13634                                      0.05281828
+#> Sample_14428                                      0.07719813
+#> Sample_11817                                      0.10321936
+#> Sample_14958                                      0.13718759
 #>              Epidish_DWLS.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                     0.14862598
 #> Sample_15467                                     0.03903983
@@ -3413,13 +3392,13 @@ head(deconvolution)
 #> Sample_14428                                            0.000000000
 #> Sample_11817                                            0.072673568
 #> Sample_14958                                            0.004257860
-#>              CBSX_DWLS.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                       0.19544270
-#> Sample_15467                                       0.03432485
-#> Sample_13634                                       0.05629804
-#> Sample_14428                                       0.05918596
-#> Sample_11817                                       0.09501829
-#> Sample_14958                                       0.10826621
+#>              CBSX_DWLS.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                   0.19544270
+#> Sample_15467                                   0.03432485
+#> Sample_13634                                   0.05629804
+#> Sample_14428                                   0.05918596
+#> Sample_11817                                   0.09501829
+#> Sample_14958                                   0.10826621
 #>              CBSX_DWLS.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.15800640
 #> Sample_15467                                  0.04240817
@@ -3441,13 +3420,13 @@ head(deconvolution)
 #> Sample_14428                                         0.000000000
 #> Sample_11817                                         0.079393770
 #> Sample_14958                                         0.001628136
-#>              DWLS_DWLS.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                       0.14495264
-#> Sample_15467                                       0.02888326
-#> Sample_13634                                       0.04839802
-#> Sample_14428                                       0.06205411
-#> Sample_11817                                       0.09289221
-#> Sample_14958                                       0.10557436
+#>              DWLS_DWLS.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                   0.14495264
+#> Sample_15467                                   0.02888326
+#> Sample_13634                                   0.04839802
+#> Sample_14428                                   0.06205411
+#> Sample_11817                                   0.09289221
+#> Sample_14958                                   0.10557436
 #>              DWLS_DWLS.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.20199813
 #> Sample_15467                                  0.05805515
@@ -3469,13 +3448,13 @@ head(deconvolution)
 #> Sample_14428                                         0.000000000
 #> Sample_11817                                         0.071675328
 #> Sample_14958                                         0.007855032
-#>              DeconRNASeq_MOMF.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                                       0
-#> Sample_15467                                                       0
-#> Sample_13634                                                       0
-#> Sample_14428                                                       0
-#> Sample_11817                                                       0
-#> Sample_14958                                                       0
+#>              DeconRNASeq_MOMF.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                                   0
+#> Sample_15467                                                   0
+#> Sample_13634                                                   0
+#> Sample_14428                                                   0
+#> Sample_11817                                                   0
+#> Sample_14958                                                   0
 #>              DeconRNASeq_MOMF.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                         0.11663363
 #> Sample_15467                                         0.00000000
@@ -3497,13 +3476,13 @@ head(deconvolution)
 #> Sample_14428                                                          0
 #> Sample_11817                                                          0
 #> Sample_14958                                                          0
-#>              Epidish_MOMF.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                         0.038463193
-#> Sample_15467                                         0.000000000
-#> Sample_13634                                         0.000000000
-#> Sample_14428                                         0.002708607
-#> Sample_11817                                         0.012810349
-#> Sample_14958                                         0.014023188
+#>              Epidish_MOMF.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                     0.038463193
+#> Sample_15467                                     0.000000000
+#> Sample_13634                                     0.000000000
+#> Sample_14428                                     0.002708607
+#> Sample_11817                                     0.012810349
+#> Sample_14958                                     0.014023188
 #>              Epidish_MOMF.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                     0.25380510
 #> Sample_15467                                     0.05239886
@@ -3525,13 +3504,13 @@ head(deconvolution)
 #> Sample_14428                                              0.0000000
 #> Sample_11817                                              0.2190744
 #> Sample_14958                                              0.0000000
-#>              CBSX_MOMF.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                      0.057307829
-#> Sample_15467                                      0.000000000
-#> Sample_13634                                      0.000000000
-#> Sample_14428                                      0.005947311
-#> Sample_11817                                      0.028377643
-#> Sample_14958                                      0.021487335
+#>              CBSX_MOMF.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                  0.057307829
+#> Sample_15467                                  0.000000000
+#> Sample_13634                                  0.000000000
+#> Sample_14428                                  0.005947311
+#> Sample_11817                                  0.028377643
+#> Sample_14958                                  0.021487335
 #>              CBSX_MOMF.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.38402152
 #> Sample_15467                                  0.09986228
@@ -3553,13 +3532,13 @@ head(deconvolution)
 #> Sample_14428                                         0.000000000
 #> Sample_11817                                         0.267185831
 #> Sample_14958                                         0.000180479
-#>              DWLS_MOMF.Vanderbilt.scRNAseq_T.cells.regulatory
-#> Sample_12929                                       0.05753030
-#> Sample_15467                                       0.00000000
-#> Sample_13634                                       0.00000000
-#> Sample_14428                                       0.01138085
-#> Sample_11817                                       0.03787712
-#> Sample_14958                                       0.04561199
+#>              DWLS_MOMF.Vanderbilt.scRNAseq_CD4.regulatory
+#> Sample_12929                                   0.05753030
+#> Sample_15467                                   0.00000000
+#> Sample_13634                                   0.00000000
+#> Sample_14428                                   0.01138085
+#> Sample_11817                                   0.03787712
+#> Sample_14958                                   0.04561199
 #>              DWLS_MOMF.Vanderbilt.scRNAseq_Myeloid.cells
 #> Sample_12929                                  0.15913515
 #> Sample_15467                                  0.02934817
@@ -3602,20 +3581,20 @@ head(deconvolution)
 #> Sample_14428                                 0.08796909
 #> Sample_11817                                 0.12954745
 #> Sample_14958                                 0.07902115
-#>              AutogeneS_Vanderbilt_T.cells.regulatory
-#> Sample_12929                              0.08973076
-#> Sample_15467                              0.09340894
-#> Sample_13634                              0.10248124
-#> Sample_14428                              0.07836314
-#> Sample_11817                              0.10509620
-#> Sample_14958                              0.07788381
-#>              BayesPrism_Vanderbilt_T.cells.regulatory
-#> Sample_12929                              0.107786347
-#> Sample_15467                              0.000823808
-#> Sample_13634                              0.001068608
-#> Sample_14428                              0.036614660
-#> Sample_11817                              0.035802318
-#> Sample_14958                              0.096350176
+#>              AutogeneS_Vanderbilt_CD4.regulatory
+#> Sample_12929                          0.08973076
+#> Sample_15467                          0.09340894
+#> Sample_13634                          0.10248124
+#> Sample_14428                          0.07836314
+#> Sample_11817                          0.10509620
+#> Sample_14958                          0.07788381
+#>              BayesPrism_Vanderbilt_CD4.regulatory
+#> Sample_12929                          0.107786347
+#> Sample_15467                          0.000823808
+#> Sample_13634                          0.001068608
+#> Sample_14428                          0.036614660
+#> Sample_11817                          0.035802318
+#> Sample_14958                          0.096350176
 #>              BayesPrism_Vanderbilt_Myeloid.cells
 #> Sample_12929                          0.17660669
 #> Sample_15467                          0.02955375
@@ -3651,34 +3630,34 @@ head(deconvolution)
 #> Sample_14428                              0.00000000
 #> Sample_11817                              0.01999624
 #> Sample_14958                              0.00000000
-#>              Bisque_Vanderbilt_T.cells.regulatory
-#> Sample_12929                          0.066731902
-#> Sample_15467                          0.000000000
-#> Sample_13634                          0.000000000
-#> Sample_14428                          0.000000000
-#> Sample_11817                          0.020079493
-#> Sample_14958                          0.009008387
-#>              CPM_Vanderbilt_T.cells.regulatory CPM_Vanderbilt_Myeloid.cells
-#> Sample_12929                        0.07864900                   0.07756185
-#> Sample_15467                        0.07759760                   0.07369460
-#> Sample_13634                        0.07872309                   0.07311986
-#> Sample_14428                        0.07784863                   0.07464952
-#> Sample_11817                        0.07895454                   0.07546384
-#> Sample_14958                        0.07778900                   0.07847636
-#>              CPM_Vanderbilt_Mural.cells CPM_Vanderbilt_T.cells.proliferative
-#> Sample_12929                 0.06871054                           0.07023260
-#> Sample_15467                 0.06791843                           0.06984449
-#> Sample_13634                 0.06731927                           0.07027139
-#> Sample_14428                 0.06931281                           0.06977977
-#> Sample_11817                 0.06747253                           0.07410587
-#> Sample_14958                 0.07328334                           0.06952174
-#>              MuSic_Vanderbilt_T.cells.regulatory MuSic_Vanderbilt_Myeloid.cells
-#> Sample_12929                          0.04814685                     0.13792689
-#> Sample_15467                          0.00000000                     0.01892938
-#> Sample_13634                          0.00000000                     0.01254660
-#> Sample_14428                          0.00000000                     0.04694916
-#> Sample_11817                          0.00000000                     0.04662957
-#> Sample_14958                          0.02061328                     0.16663367
+#>              Bisque_Vanderbilt_CD4.regulatory CPM_Vanderbilt_CD4.regulatory
+#> Sample_12929                      0.066731902                    0.07864900
+#> Sample_15467                      0.000000000                    0.07759760
+#> Sample_13634                      0.000000000                    0.07872309
+#> Sample_14428                      0.000000000                    0.07784863
+#> Sample_11817                      0.020079493                    0.07895454
+#> Sample_14958                      0.009008387                    0.07778900
+#>              CPM_Vanderbilt_Myeloid.cells CPM_Vanderbilt_Mural.cells
+#> Sample_12929                   0.07756185                 0.06871054
+#> Sample_15467                   0.07369460                 0.06791843
+#> Sample_13634                   0.07311986                 0.06731927
+#> Sample_14428                   0.07464952                 0.06931281
+#> Sample_11817                   0.07546384                 0.06747253
+#> Sample_14958                   0.07847636                 0.07328334
+#>              CPM_Vanderbilt_T.cells.proliferative
+#> Sample_12929                           0.07023260
+#> Sample_15467                           0.06984449
+#> Sample_13634                           0.07027139
+#> Sample_14428                           0.06977977
+#> Sample_11817                           0.07410587
+#> Sample_14958                           0.06952174
+#>              MuSic_Vanderbilt_CD4.regulatory MuSic_Vanderbilt_Myeloid.cells
+#> Sample_12929                      0.04814685                     0.13792689
+#> Sample_15467                      0.00000000                     0.01892938
+#> Sample_13634                      0.00000000                     0.01254660
+#> Sample_14428                      0.00000000                     0.04694916
+#> Sample_11817                      0.00000000                     0.04662957
+#> Sample_14958                      0.02061328                     0.16663367
 #>              MuSic_Vanderbilt_Mural.cells
 #> Sample_12929                    0.0000000
 #> Sample_15467                    0.0000000
@@ -3693,13 +3672,13 @@ head(deconvolution)
 #> Sample_14428                             0.00000000
 #> Sample_11817                             0.09055202
 #> Sample_14958                             0.00000000
-#>              SCDC_Vanderbilt_T.cells.regulatory SCDC_Vanderbilt_Myeloid.cells
-#> Sample_12929                                  0                    0.16760410
-#> Sample_15467                                  0                    0.02714360
-#> Sample_13634                                  0                    0.01706799
-#> Sample_14428                                  0                    0.05527960
-#> Sample_11817                                  0                    0.03442641
-#> Sample_14958                                  0                    0.12956352
+#>              SCDC_Vanderbilt_CD4.regulatory SCDC_Vanderbilt_Myeloid.cells
+#> Sample_12929                              0                    0.16760410
+#> Sample_15467                              0                    0.02714360
+#> Sample_13634                              0                    0.01706799
+#> Sample_14428                              0                    0.05527960
+#> Sample_11817                              0                    0.03442641
+#> Sample_14958                              0                    0.12956352
 #>              SCDC_Vanderbilt_Mural.cells SCDC_Vanderbilt_T.cells.proliferative
 #> Sample_12929                  0.00000000                             0.0000000
 #> Sample_15467                  0.00000000                             0.0000000

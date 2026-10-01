@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,10 +116,10 @@
 <p>Now, you should be able to run deconvolution using CIBERSORTx without any problems :)</p>
 <p>For processing the deconvolution features obtained from <code>compute.deconvolution</code>, you can use the <code>compute.deconvolution.analysis</code> function.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, seed <span class="op">=</span> <span class="fl">123</span>, return <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<p>Users can also compute second-generation deconvolution methods using their single cell data. For this use the function <code>compute_sc_deconvolution_methods</code>. Remember that this function is already included in <code>compute.deconvolution</code> when setting <code>sc_deconv = T</code>.</p>
+<code class="sourceCode R"><span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, return <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<p>Users can also run second-generation deconvolution methods using their single cell data, by setting <code>sc_deconv = TRUE</code> in <code><a href="reference/compute.deconvolution.html">compute.deconvolution()</a></code>. <code>sc_matrix</code> is the single-cell count matrix (genes x cells), <code>sc_metadata</code> its cell metadata, and <code>cell_label</code> / <code>sample_label</code> the metadata columns with the cell type and the sample of each cell. Use <code>methods = character(0)</code> to run only the single-cell methods.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="reference/compute_sc_deconvolution_methods.html">compute_sc_deconvolution_methods</a></span><span class="op">(</span><span class="va">raw_counts</span>, normalized <span class="op">=</span> <span class="cn">T</span>, sc_object <span class="op">=</span> <span class="va">sc_object</span>, sc_metadata <span class="op">=</span> <span class="va">sc_metadata</span>, cell_annotations <span class="op">=</span> <span class="va">cell_annotations</span>, samples_ids <span class="op">=</span> <span class="va">samples_ids</span>, name_object <span class="op">=</span> <span class="va">name_object</span>, n_cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">deconv_sc</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.html">compute.deconvolution</a></span><span class="op">(</span><span class="va">raw_counts</span>, normalized <span class="op">=</span> <span class="cn">TRUE</span>, methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, sc_deconv <span class="op">=</span> <span class="cn">TRUE</span>, sc_matrix <span class="op">=</span> <span class="va">sc_object</span>, sc_metadata <span class="op">=</span> <span class="va">sc_metadata</span>, methods_sc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BayesPrism"</span>, <span class="st">"MuSic"</span>, <span class="st">"SCDC"</span><span class="op">)</span>, cell_label <span class="op">=</span> <span class="st">"cell_type"</span>, sample_label <span class="op">=</span> <span class="st">"sample"</span>, name_sc_signature <span class="op">=</span> <span class="st">"MyReference"</span>, workers <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="shiny-app">Shiny app<a class="anchor" aria-label="anchor" href="#shiny-app"></a>
@@ -156,6 +156,10 @@
 </h2>
 <p><code>multideconv</code> works based on established cell naming conventions to simplify analysis and processing. Thus, if you would like to use your own deconvolution results or signatures, please make sure to follow these formats. The table below lists all recognized cell type groups and the standardized column name suffix each group is mapped to.</p>
 <table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
 <thead><tr>
 <th>Cell type group</th>
 <th>Standardized name suffix</th>
@@ -214,6 +218,10 @@
 <td><code>T.cells.gamma.delta</code></td>
 </tr>
 <tr>
+<td>T cells — proliferative</td>
+<td><code>T.cells.proliferative</code></td>
+</tr>
+<tr>
 <td>NK cells</td>
 <td><code>NK.cells</code></td>
 </tr>
@@ -230,6 +238,10 @@
 <td><code>NKT.cells</code></td>
 </tr>
 <tr>
+<td>Myeloid cells (generic)</td>
+<td><code>Myeloid.cells</code></td>
+</tr>
+<tr>
 <td>Monocytes</td>
 <td><code>Monocytes</code></td>
 </tr>
@@ -240,6 +252,10 @@
 <tr>
 <td>Eosinophils</td>
 <td><code>Eosinophils</code></td>
+</tr>
+<tr>
+<td>Basophils</td>
+<td><code>Basophils</code></td>
 </tr>
 <tr>
 <td>Mast cells</td>
@@ -282,8 +298,16 @@
 <td><code>Dendritic.resting.cells</code></td>
 </tr>
 <tr>
+<td>Dendritic cells — plasmacytoid (pDC)</td>
+<td><code>Dendritic.plasmacytoid.cells</code></td>
+</tr>
+<tr>
 <td>Cancer / malignant cells</td>
 <td><code>Cancer</code></td>
+</tr>
+<tr>
+<td>Epithelial cells</td>
+<td><code>Epithelial</code></td>
 </tr>
 <tr>
 <td>Endothelial cells</td>
@@ -298,20 +322,28 @@
 <td><code>CAF</code></td>
 </tr>
 <tr>
+<td>Pericytes</td>
+<td><code>Pericytes</code></td>
+</tr>
+<tr>
+<td>Mural cells</td>
+<td><code>Mural.cells</code></td>
+</tr>
+<tr>
 <td>Myocytes</td>
 <td><code>Myocytes</code></td>
 </tr>
 </tbody>
 </table>
-<p>Each output column is prefixed by <code>&lt;method&gt;_&lt;signature&gt;_</code> followed by the suffix above. Unrecognized cell types are kept as-is under the <code>extra</code> group and will be discarded during <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> unless passed via <code>cells_extra</code>.</p>
+<p>Each output column is prefixed by <code>&lt;method&gt;_&lt;signature&gt;_</code> followed by the suffix above. Unrecognized cell types are kept as-is under the <code>extra</code> group and will be discarded during <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> unless passed via <code>cells_extra</code>. The full list is also available in R with <code><a href="reference/get_cell_type_nomenclature.html">get_cell_type_nomenclature()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="how-to-add-cell-types-other-than-the-ones-present-in-the-nomenclature">How to add cell types other than the ones present in the nomenclature?<a class="anchor" aria-label="anchor" href="#how-to-add-cell-types-other-than-the-ones-present-in-the-nomenclature"></a>
 </h2>
 <p>If you want <code>multideconv</code> to consider other cells, it is pretty simple! Just use the argument cells_extra in the function <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p>
-<p>Let’s say you want to add mesenchymal and basophils cells:</p>
+<p>Let’s say you want to add mesenchymal and adipocytes cells:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, seed <span class="op">=</span> <span class="fl">123</span>, cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mesenchymal"</span>, <span class="st">"basophils"</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, cells_extra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mesenchymal"</span>, <span class="st">"adipocytes"</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
 <p>And that’s it, just make sure the name you are putting in cells_extra is exactly the name of your cells in your deconvolution matrix!</p>
 </div>
 <div class="section level2">

@@ -70,7 +70,11 @@ compute.benchmark(
 ## Value
 
 A correlation matrix between the cell type deconvolution combinations
-and the real cell proportions.
+and the real cell proportions, with an "average" row (mean over cell
+types) used to order the combinations. When `deconvolution` contains
+subgroups (e.g. `B.cells_Subgroup.1`), columns are `Subgroup.1`,
+`Subgroup.2`, ... (the i-th subgroup of each cell type) and no average
+is computed, because a column then holds unrelated features.
 
 ## Examples
 

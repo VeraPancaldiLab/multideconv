@@ -1244,62 +1244,48 @@ head(deconv_bulk)
 #> SAMcc4675f394a1              0.0243766783           0.00000000
 #> SAM49f9b2e57aa5              0.0011199587           0.00000000
 #> SAM2e7aa8fa0ab3              0.0000000000           0.00000000
-#>                 DeconRNASeq_LM22_T.cells.CD4.memory.activated
-#> SAM7f0d9cc7f001                                   0.003638885
-#> SAM4305ab968b90                                   0.022400879
-#> SAMcf018fee2acd                                   0.031123098
-#> SAMcc4675f394a1                                   0.032888149
-#> SAM49f9b2e57aa5                                   0.045319678
-#> SAM2e7aa8fa0ab3                                   0.042038973
-#>                 Epidish_LM22_T.cells.CD4.memory.activated
-#> SAM7f0d9cc7f001                               0.061159306
-#> SAM4305ab968b90                               0.000000000
-#> SAMcf018fee2acd                               0.015159780
-#> SAMcc4675f394a1                               0.001494555
-#> SAM49f9b2e57aa5                               0.033500669
-#> SAM2e7aa8fa0ab3                               0.012756696
-#>                 DWLS_LM22_T.cells.CD4.memory.activated
-#> SAM7f0d9cc7f001                            0.049708667
-#> SAM4305ab968b90                            0.000000000
-#> SAMcf018fee2acd                            0.000000000
-#> SAMcc4675f394a1                            0.001914541
-#> SAM49f9b2e57aa5                            0.026067301
-#> SAM2e7aa8fa0ab3                            0.000000000
-#>                 CBSX_LM22_T.cells.CD4.memory.activated
-#> SAM7f0d9cc7f001                             0.03321858
-#> SAM4305ab968b90                             0.00000000
-#> SAMcf018fee2acd                             0.01108448
-#> SAMcc4675f394a1                             0.00257027
-#> SAM49f9b2e57aa5                             0.03585677
-#> SAM2e7aa8fa0ab3                             0.00000000
-#>                 DeconRNASeq_LM22_T.cells.CD4.memory.resting
-#> SAM7f0d9cc7f001                                  0.19901562
-#> SAM4305ab968b90                                  0.00000000
-#> SAMcf018fee2acd                                  0.13048023
-#> SAMcc4675f394a1                                  0.03667965
-#> SAM49f9b2e57aa5                                  0.00000000
-#> SAM2e7aa8fa0ab3                                  0.04238739
-#>                 Epidish_LM22_T.cells.CD4.memory.resting
-#> SAM7f0d9cc7f001                               0.3817369
-#> SAM4305ab968b90                               0.3364124
-#> SAMcf018fee2acd                               0.5144529
-#> SAMcc4675f394a1                               0.3787908
-#> SAM49f9b2e57aa5                               0.2697398
-#> SAM2e7aa8fa0ab3                               0.4639731
-#>                 DWLS_LM22_T.cells.CD4.memory.resting
-#> SAM7f0d9cc7f001                            0.3429360
-#> SAM4305ab968b90                            0.2940950
-#> SAMcf018fee2acd                            0.4908357
-#> SAMcc4675f394a1                            0.2729609
-#> SAM49f9b2e57aa5                            0.2497449
-#> SAM2e7aa8fa0ab3                            0.3464909
-#>                 CBSX_LM22_T.cells.CD4.memory.resting DeconRNASeq_LM22_CD4.naive
-#> SAM7f0d9cc7f001                            0.3301782                 0.14123191
-#> SAM4305ab968b90                            0.3712513                 0.01951152
-#> SAMcf018fee2acd                            0.4472554                 0.08789033
-#> SAMcc4675f394a1                            0.3222343                 0.12080160
-#> SAM49f9b2e57aa5                            0.2277957                 0.15906024
-#> SAM2e7aa8fa0ab3                            0.4196218                 0.06201114
+#>                 DeconRNASeq_LM22_CD4.memory.activated
+#> SAM7f0d9cc7f001                           0.003638885
+#> SAM4305ab968b90                           0.022400879
+#> SAMcf018fee2acd                           0.031123098
+#> SAMcc4675f394a1                           0.032888149
+#> SAM49f9b2e57aa5                           0.045319678
+#> SAM2e7aa8fa0ab3                           0.042038973
+#>                 Epidish_LM22_CD4.memory.activated
+#> SAM7f0d9cc7f001                       0.061159306
+#> SAM4305ab968b90                       0.000000000
+#> SAMcf018fee2acd                       0.015159780
+#> SAMcc4675f394a1                       0.001494555
+#> SAM49f9b2e57aa5                       0.033500669
+#> SAM2e7aa8fa0ab3                       0.012756696
+#>                 DWLS_LM22_CD4.memory.activated CBSX_LM22_CD4.memory.activated
+#> SAM7f0d9cc7f001                    0.049708667                     0.03321858
+#> SAM4305ab968b90                    0.000000000                     0.00000000
+#> SAMcf018fee2acd                    0.000000000                     0.01108448
+#> SAMcc4675f394a1                    0.001914541                     0.00257027
+#> SAM49f9b2e57aa5                    0.026067301                     0.03585677
+#> SAM2e7aa8fa0ab3                    0.000000000                     0.00000000
+#>                 DeconRNASeq_LM22_CD4.memory.resting
+#> SAM7f0d9cc7f001                          0.19901562
+#> SAM4305ab968b90                          0.00000000
+#> SAMcf018fee2acd                          0.13048023
+#> SAMcc4675f394a1                          0.03667965
+#> SAM49f9b2e57aa5                          0.00000000
+#> SAM2e7aa8fa0ab3                          0.04238739
+#>                 Epidish_LM22_CD4.memory.resting DWLS_LM22_CD4.memory.resting
+#> SAM7f0d9cc7f001                       0.3817369                    0.3429360
+#> SAM4305ab968b90                       0.3364124                    0.2940950
+#> SAMcf018fee2acd                       0.5144529                    0.4908357
+#> SAMcc4675f394a1                       0.3787908                    0.2729609
+#> SAM49f9b2e57aa5                       0.2697398                    0.2497449
+#> SAM2e7aa8fa0ab3                       0.4639731                    0.3464909
+#>                 CBSX_LM22_CD4.memory.resting DeconRNASeq_LM22_CD4.naive
+#> SAM7f0d9cc7f001                    0.3301782                 0.14123191
+#> SAM4305ab968b90                    0.3712513                 0.01951152
+#> SAMcf018fee2acd                    0.4472554                 0.08789033
+#> SAMcc4675f394a1                    0.3222343                 0.12080160
+#> SAM49f9b2e57aa5                    0.2277957                 0.15906024
+#> SAM2e7aa8fa0ab3                    0.4196218                 0.06201114
 #>                 Epidish_LM22_CD4.naive DWLS_LM22_CD4.naive CBSX_LM22_CD4.naive
 #> SAM7f0d9cc7f001             0.08164175          0.05377599          0.07321164
 #> SAM4305ab968b90             0.12645151          0.01549952          0.00000000
@@ -1307,13 +1293,13 @@ head(deconv_bulk)
 #> SAMcc4675f394a1             0.09828073          0.11124875          0.12248357
 #> SAM49f9b2e57aa5             0.29919921          0.28307714          0.28897170
 #> SAM2e7aa8fa0ab3             0.00000000          0.00000000          0.13066508
-#>                 Quantiseq_T.cells.non.regulatory Quantiseq_CD8.cells
-#> SAM7f0d9cc7f001                       0.01070804        0.0045958589
-#> SAM4305ab968b90                       0.00000000        0.0000000000
-#> SAMcf018fee2acd                       0.00000000        0.0004544755
-#> SAMcc4675f394a1                       0.00000000        0.0000000000
-#> SAM49f9b2e57aa5                       0.00000000        0.0000000000
-#> SAM2e7aa8fa0ab3                       0.00000000        0.0006722600
+#>                 Quantiseq_CD4.non.regulatory Quantiseq_CD8.cells
+#> SAM7f0d9cc7f001                   0.01070804        0.0045958589
+#> SAM4305ab968b90                   0.00000000        0.0000000000
+#> SAMcf018fee2acd                   0.00000000        0.0004544755
+#> SAMcc4675f394a1                   0.00000000        0.0000000000
+#> SAM49f9b2e57aa5                   0.00000000        0.0000000000
+#> SAM2e7aa8fa0ab3                   0.00000000        0.0006722600
 #>                 DeconRNASeq_BPRNACan_CD8.cells Epidish_BPRNACan_CD8.cells
 #> SAM7f0d9cc7f001                     0.08209232                0.000895226
 #> SAM4305ab968b90                     0.06343498                0.000000000
@@ -1496,97 +1482,83 @@ head(deconv_bulk)
 #> SAMcc4675f394a1               0.000000000         0.000000000
 #> SAM49f9b2e57aa5               0.005044944         0.000000000
 #> SAM2e7aa8fa0ab3               0.014647198         0.000000000
-#>                 CBSX_TIL10_CD8.cells Quantiseq_T.cells.regulatory
-#> SAM7f0d9cc7f001          0.000000000                 0.0306341266
-#> SAM4305ab968b90          0.000000000                 0.0005524799
-#> SAMcf018fee2acd          0.005414829                 0.0207888231
-#> SAMcc4675f394a1          0.013444783                 0.0031793914
-#> SAM49f9b2e57aa5          0.000000000                 0.0069047073
-#> SAM2e7aa8fa0ab3          0.013248499                 0.0035831130
-#>                 DeconRNASeq_CCLE.TIL10_T.cells.regulatory
-#> SAM7f0d9cc7f001                                0.07432659
-#> SAM4305ab968b90                                0.13539643
-#> SAMcf018fee2acd                                0.08093144
-#> SAMcc4675f394a1                                0.09234658
-#> SAM49f9b2e57aa5                                0.13745610
-#> SAM2e7aa8fa0ab3                                0.06349765
-#>                 Epidish_CCLE.TIL10_T.cells.regulatory
-#> SAM7f0d9cc7f001                            0.11787406
-#> SAM4305ab968b90                            0.00000000
-#> SAMcf018fee2acd                            0.03816677
-#> SAMcc4675f394a1                            0.00000000
-#> SAM49f9b2e57aa5                            0.00000000
-#> SAM2e7aa8fa0ab3                            0.00000000
-#>                 DeconRNASeq_LM22_T.cells.regulatory
-#> SAM7f0d9cc7f001                          0.00000000
-#> SAM4305ab968b90                          0.01965499
-#> SAMcf018fee2acd                          0.00000000
-#> SAMcc4675f394a1                          0.00000000
-#> SAM49f9b2e57aa5                          0.00000000
-#> SAM2e7aa8fa0ab3                          0.03093711
-#>                 Epidish_LM22_T.cells.regulatory
-#> SAM7f0d9cc7f001                               0
-#> SAM4305ab968b90                               0
-#> SAMcf018fee2acd                               0
-#> SAMcc4675f394a1                               0
-#> SAM49f9b2e57aa5                               0
-#> SAM2e7aa8fa0ab3                               0
-#>                 DeconRNASeq_TIL10_T.cells.regulatory
-#> SAM7f0d9cc7f001                           0.09543620
-#> SAM4305ab968b90                           0.22004605
-#> SAMcf018fee2acd                           0.10192160
-#> SAMcc4675f394a1                           0.12277655
-#> SAM49f9b2e57aa5                           0.22437386
-#> SAM2e7aa8fa0ab3                           0.09710142
-#>                 Epidish_TIL10_T.cells.regulatory
-#> SAM7f0d9cc7f001                       0.18435922
-#> SAM4305ab968b90                       0.00000000
-#> SAMcf018fee2acd                       0.05413665
-#> SAMcc4675f394a1                       0.00000000
-#> SAM49f9b2e57aa5                       0.00000000
-#> SAM2e7aa8fa0ab3                       0.00000000
-#>                 DWLS_CCLE.TIL10_T.cells.regulatory DWLS_LM22_T.cells.regulatory
-#> SAM7f0d9cc7f001                        0.076107348                            0
-#> SAM4305ab968b90                        0.004083009                            0
-#> SAMcf018fee2acd                        0.011114057                            0
-#> SAMcc4675f394a1                        0.000000000                            0
-#> SAM49f9b2e57aa5                        0.002709457                            0
-#> SAM2e7aa8fa0ab3                        0.009790098                            0
-#>                 DWLS_TIL10_T.cells.regulatory
-#> SAM7f0d9cc7f001                   0.197452686
-#> SAM4305ab968b90                   0.005405410
-#> SAMcf018fee2acd                   0.000000000
-#> SAMcc4675f394a1                   0.000000000
-#> SAM49f9b2e57aa5                   0.003129678
-#> SAM2e7aa8fa0ab3                   0.026857389
-#>                 CBSX_CCLE.TIL10_T.cells.regulatory CBSX_LM22_T.cells.regulatory
-#> SAM7f0d9cc7f001                         0.11621395                  0.007856236
-#> SAM4305ab968b90                         0.02223830                  0.000000000
-#> SAMcf018fee2acd                         0.02008606                  0.000000000
-#> SAMcc4675f394a1                         0.00000000                  0.000000000
-#> SAM49f9b2e57aa5                         0.01823494                  0.000000000
-#> SAM2e7aa8fa0ab3                         0.05007006                  0.000000000
-#>                 CBSX_TIL10_T.cells.regulatory DeconRNASeq_LM22_T.cells.helper
-#> SAM7f0d9cc7f001                    0.29676592                      0.00000000
-#> SAM4305ab968b90                    0.01941780                      0.08389950
-#> SAMcf018fee2acd                    0.15566100                      0.00000000
-#> SAMcc4675f394a1                    0.09570463                      0.00000000
-#> SAM49f9b2e57aa5                    0.23503255                      0.06256773
-#> SAM2e7aa8fa0ab3                    0.12162845                      0.01772861
-#>                 Epidish_LM22_T.cells.helper DWLS_LM22_T.cells.helper
-#> SAM7f0d9cc7f001                 0.000000000               0.04044449
-#> SAM4305ab968b90                 0.000000000               0.00000000
-#> SAMcf018fee2acd                 0.004625797               0.00000000
-#> SAMcc4675f394a1                 0.000000000               0.00000000
-#> SAM49f9b2e57aa5                 0.000000000               0.00000000
-#> SAM2e7aa8fa0ab3                 0.000000000               0.00000000
-#>                 CBSX_LM22_T.cells.helper DeconRNASeq_LM22_T.cells.gamma.delta
-#> SAM7f0d9cc7f001             0.0257797309                           0.00000000
-#> SAM4305ab968b90             0.0000000000                           0.00000000
-#> SAMcf018fee2acd             0.0055103787                           0.00000000
-#> SAMcc4675f394a1             0.0000000000                           0.00000000
-#> SAM49f9b2e57aa5             0.0000000000                           0.02220682
-#> SAM2e7aa8fa0ab3             0.0009856267                           0.00000000
+#>                 CBSX_TIL10_CD8.cells Quantiseq_CD4.regulatory
+#> SAM7f0d9cc7f001          0.000000000             0.0306341266
+#> SAM4305ab968b90          0.000000000             0.0005524799
+#> SAMcf018fee2acd          0.005414829             0.0207888231
+#> SAMcc4675f394a1          0.013444783             0.0031793914
+#> SAM49f9b2e57aa5          0.000000000             0.0069047073
+#> SAM2e7aa8fa0ab3          0.013248499             0.0035831130
+#>                 DeconRNASeq_CCLE.TIL10_CD4.regulatory
+#> SAM7f0d9cc7f001                            0.07432659
+#> SAM4305ab968b90                            0.13539643
+#> SAMcf018fee2acd                            0.08093144
+#> SAMcc4675f394a1                            0.09234658
+#> SAM49f9b2e57aa5                            0.13745610
+#> SAM2e7aa8fa0ab3                            0.06349765
+#>                 Epidish_CCLE.TIL10_CD4.regulatory
+#> SAM7f0d9cc7f001                        0.11787406
+#> SAM4305ab968b90                        0.00000000
+#> SAMcf018fee2acd                        0.03816677
+#> SAMcc4675f394a1                        0.00000000
+#> SAM49f9b2e57aa5                        0.00000000
+#> SAM2e7aa8fa0ab3                        0.00000000
+#>                 DeconRNASeq_LM22_CD4.regulatory Epidish_LM22_CD4.regulatory
+#> SAM7f0d9cc7f001                      0.00000000                           0
+#> SAM4305ab968b90                      0.01965499                           0
+#> SAMcf018fee2acd                      0.00000000                           0
+#> SAMcc4675f394a1                      0.00000000                           0
+#> SAM49f9b2e57aa5                      0.00000000                           0
+#> SAM2e7aa8fa0ab3                      0.03093711                           0
+#>                 DeconRNASeq_TIL10_CD4.regulatory Epidish_TIL10_CD4.regulatory
+#> SAM7f0d9cc7f001                       0.09543620                   0.18435922
+#> SAM4305ab968b90                       0.22004605                   0.00000000
+#> SAMcf018fee2acd                       0.10192160                   0.05413665
+#> SAMcc4675f394a1                       0.12277655                   0.00000000
+#> SAM49f9b2e57aa5                       0.22437386                   0.00000000
+#> SAM2e7aa8fa0ab3                       0.09710142                   0.00000000
+#>                 DWLS_CCLE.TIL10_CD4.regulatory DWLS_LM22_CD4.regulatory
+#> SAM7f0d9cc7f001                    0.076107348                        0
+#> SAM4305ab968b90                    0.004083009                        0
+#> SAMcf018fee2acd                    0.011114057                        0
+#> SAMcc4675f394a1                    0.000000000                        0
+#> SAM49f9b2e57aa5                    0.002709457                        0
+#> SAM2e7aa8fa0ab3                    0.009790098                        0
+#>                 DWLS_TIL10_CD4.regulatory CBSX_CCLE.TIL10_CD4.regulatory
+#> SAM7f0d9cc7f001               0.197452686                     0.11621395
+#> SAM4305ab968b90               0.005405410                     0.02223830
+#> SAMcf018fee2acd               0.000000000                     0.02008606
+#> SAMcc4675f394a1               0.000000000                     0.00000000
+#> SAM49f9b2e57aa5               0.003129678                     0.01823494
+#> SAM2e7aa8fa0ab3               0.026857389                     0.05007006
+#>                 CBSX_LM22_CD4.regulatory CBSX_TIL10_CD4.regulatory
+#> SAM7f0d9cc7f001              0.007856236                0.29676592
+#> SAM4305ab968b90              0.000000000                0.01941780
+#> SAMcf018fee2acd              0.000000000                0.15566100
+#> SAMcc4675f394a1              0.000000000                0.09570463
+#> SAM49f9b2e57aa5              0.000000000                0.23503255
+#> SAM2e7aa8fa0ab3              0.000000000                0.12162845
+#>                 DeconRNASeq_LM22_T.cells.helper Epidish_LM22_T.cells.helper
+#> SAM7f0d9cc7f001                      0.00000000                 0.000000000
+#> SAM4305ab968b90                      0.08389950                 0.000000000
+#> SAMcf018fee2acd                      0.00000000                 0.004625797
+#> SAMcc4675f394a1                      0.00000000                 0.000000000
+#> SAM49f9b2e57aa5                      0.06256773                 0.000000000
+#> SAM2e7aa8fa0ab3                      0.01772861                 0.000000000
+#>                 DWLS_LM22_T.cells.helper CBSX_LM22_T.cells.helper
+#> SAM7f0d9cc7f001               0.04044449             0.0257797309
+#> SAM4305ab968b90               0.00000000             0.0000000000
+#> SAMcf018fee2acd               0.00000000             0.0055103787
+#> SAMcc4675f394a1               0.00000000             0.0000000000
+#> SAM49f9b2e57aa5               0.00000000             0.0000000000
+#> SAM2e7aa8fa0ab3               0.00000000             0.0009856267
+#>                 DeconRNASeq_LM22_T.cells.gamma.delta
+#> SAM7f0d9cc7f001                           0.00000000
+#> SAM4305ab968b90                           0.00000000
+#> SAMcf018fee2acd                           0.00000000
+#> SAMcc4675f394a1                           0.00000000
+#> SAM49f9b2e57aa5                           0.02220682
+#> SAM2e7aa8fa0ab3                           0.00000000
 #>                 Epidish_LM22_T.cells.gamma.delta DWLS_LM22_T.cells.gamma.delta
 #> SAM7f0d9cc7f001                                0                             0
 #> SAM4305ab968b90                                0                             0
@@ -1902,27 +1874,20 @@ head(deconv_bulk)
 #> SAMcc4675f394a1           0.000000000            0.00000000
 #> SAM49f9b2e57aa5           0.000000000            0.00000000
 #> SAM2e7aa8fa0ab3           0.000000000            0.01835881
-#>                 DeconRNASeq_LM22_Plasma.cells Epidish_LM22_Plasma.cells
-#> SAM7f0d9cc7f001                    0.00000000               0.000000000
-#> SAM4305ab968b90                    0.14134690               0.019221425
-#> SAMcf018fee2acd                    0.08097855               0.000000000
-#> SAMcc4675f394a1                    0.08027983               0.006529829
-#> SAM49f9b2e57aa5                    0.06970544               0.000000000
-#> SAM2e7aa8fa0ab3                    0.09440011               0.024790468
-#>                 DWLS_LM22_Plasma.cells CBSX_LM22_Plasma.cells
-#> SAM7f0d9cc7f001             0.00000000            0.000000000
-#> SAM4305ab968b90             0.01920268            0.015268182
-#> SAMcf018fee2acd             0.00000000            0.000000000
-#> SAMcc4675f394a1             0.01028627            0.007459067
-#> SAM49f9b2e57aa5             0.00000000            0.024239223
-#> SAM2e7aa8fa0ab3             0.03428100            0.014991613
-#>                 DeconRNASeq_CBSX.HNSCC.scRNAseq_Myocytes
-#> SAM7f0d9cc7f001                               0.11642166
-#> SAM4305ab968b90                               0.11759367
-#> SAMcf018fee2acd                               0.09656803
-#> SAMcc4675f394a1                               0.12970883
-#> SAM49f9b2e57aa5                               0.09762623
-#> SAM2e7aa8fa0ab3                               0.10932117
+#>                 DeconRNASeq_LM22_Plasma Epidish_LM22_Plasma DWLS_LM22_Plasma
+#> SAM7f0d9cc7f001              0.00000000         0.000000000       0.00000000
+#> SAM4305ab968b90              0.14134690         0.019221425       0.01920268
+#> SAMcf018fee2acd              0.08097855         0.000000000       0.00000000
+#> SAMcc4675f394a1              0.08027983         0.006529829       0.01028627
+#> SAM49f9b2e57aa5              0.06970544         0.000000000       0.00000000
+#> SAM2e7aa8fa0ab3              0.09440011         0.024790468       0.03428100
+#>                 CBSX_LM22_Plasma DeconRNASeq_CBSX.HNSCC.scRNAseq_Myocytes
+#> SAM7f0d9cc7f001      0.000000000                               0.11642166
+#> SAM4305ab968b90      0.015268182                               0.11759367
+#> SAMcf018fee2acd      0.000000000                               0.09656803
+#> SAMcc4675f394a1      0.007459067                               0.12970883
+#> SAM49f9b2e57aa5      0.024239223                               0.09762623
+#> SAM2e7aa8fa0ab3      0.014991613                               0.10932117
 #>                 Epidish_CBSX.HNSCC.scRNAseq_Myocytes
 #> SAM7f0d9cc7f001                                    0
 #> SAM4305ab968b90                                    0

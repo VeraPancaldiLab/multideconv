@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,11 +74,13 @@
 
 
 <dt id="arg-cells-labels">cells_labels<a class="anchor" aria-label="anchor" href="#arg-cells-labels"></a></dt>
-<dd><p>A character vector with the cell labels (need to be of the same order as in the sc_object)</p></dd>
+<dd><p>Name of the <code>sc_metadata</code> column with the cell type labels. The labels become the cell type names of the
+signatures, so they must follow the multideconv nomenclature (see <code><a href="get_cell_type_nomenclature.html">get_cell_type_nomenclature()</a></code> and the README);
+otherwise those cell types are discarded later by <code><a href="compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>.</p></dd>
 
 
 <dt id="arg-sample-labels">sample_labels<a class="anchor" aria-label="anchor" href="#arg-sample-labels"></a></dt>
-<dd><p>A character vector with the samples labels (need to be of the same order as in the sc_object)</p></dd>
+<dd><p>Name of the <code>sc_metadata</code> column with the sample labels.</p></dd>
 
 
 <dt id="arg-credentials-mail">credentials.mail<a class="anchor" aria-label="anchor" href="#arg-credentials-mail"></a></dt>
@@ -98,16 +100,18 @@
 
 
 <dt id="arg-name-signature">name_signature<a class="anchor" aria-label="anchor" href="#arg-name-signature"></a></dt>
-<dd><p>A string indicating the signature name. This will be added as a suffix in each method (e.g. CBSX_name_signature, DWLS_name_signature)</p></dd>
+<dd><p>A string indicating the signature name, used in the file names (e.g. <code>DWLS-&lt;name_signature&gt;-scRNAseq.txt</code>).
+It must not contain <code>_</code> (replaced by <code>-</code>), which separates method, signature and cell type in the deconvolution column names.</p></dd>
 
 
 <dt id="arg-methods-sig">methods_sig<a class="anchor" aria-label="anchor" href="#arg-methods-sig"></a></dt>
-<dd><p>A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx", "MOMF", and "BSeqsc". Default runs all available methods.</p></dd>
+<dd><p>A character vector specifying which methods to run. Options are "DWLS", "CIBERSORTx" (or "CBSX"), "MOMF", and "BSeqsc". Default runs all available methods.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder, these will be used to run deconvolution.</p>
+    <p>A list containing the cell signatures per method. Signatures are directly saved in Results/custom_signatures folder
+(an existing file with the same name is overwritten), these will be used to run deconvolution.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

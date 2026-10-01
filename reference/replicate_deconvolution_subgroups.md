@@ -15,8 +15,8 @@ replicate_deconvolution_subgroups(deconv_res, deconvolution_test)
 
   A list containing results from the deconvolution process, including:
 
-  - `Deconvolution subgroups composition`: a list of subgroup feature
-    names per iteration
+  - `Deconvolution subgroups composition`: the member features of each
+    subgroup, per cell type
 
   - `Deconvolution matrix`: the original deconvolution result used to
     determine relevant features
@@ -28,4 +28,9 @@ replicate_deconvolution_subgroups(deconv_res, deconvolution_test)
 
 ## Value
 
-A data.frame with the projected subgroup features proportions
+A data.frame with the projected subgroup features proportions: the same
+features, in the same order, as the "Deconvolution matrix" of
+`deconv_res`. Each subgroup is the median of its member features.
+Subgroups with no member in `deconvolution_test`, and training features
+missing from it, are set to `NA` with a warning; a warning also lists
+subgroups computed from only part of their members.

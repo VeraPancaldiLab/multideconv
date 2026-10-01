@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,47 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="multideconv-020">multideconv 0.2.0<a class="anchor" aria-label="anchor" href="#multideconv-020"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-2-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> now builds cell subgroups with complete-linkage hierarchical clustering of the feature correlations: features form a subgroup only if every pair of them correlates at least <code>corr</code>. Results no longer depend on the order of the columns.</li>
+<li>Subgroups are named <code>&lt;CellType&gt;_Subgroup.&lt;i&gt;</code>: the <code>.Iteration.&lt;k&gt;</code> suffix was removed.</li>
+<li>The pruning step was removed together with <code>removeCorrelatedFeatures()</code>: <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> and <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> no longer have the <code>prune_thr</code> and <code>seed</code> arguments.</li>
+<li>The output of <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> no longer contains “Discarded groups with equal method” (same-method subgroups are kept) nor “High correlated deconvolution groups (&gt;0.9) per cell type”.</li>
+<li>The low-variance filter now removes features whose coefficient of variation (sd / mean) is below <code>cv_thr</code> (default 0.1) instead of the 25% least variable features: <code>var_quantile</code> was replaced by <code>cv_thr</code> in <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> and <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code>. Rare cell types are no longer removed only because their values are small.</li>
+<li>
+<code><a href="../reference/computeCBSX.html">computeCBSX()</a></code>, <code><a href="../reference/computeDWLS.html">computeDWLS()</a></code> and <code><a href="../reference/computeMOMF.html">computeMOMF()</a></code> are no longer exported. Second-generation methods are run with <code>compute.deconvolution(sc_deconv = TRUE)</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-and-improvements-0-2-0">New features and improvements<a class="anchor" aria-label="anchor" href="#new-features-and-improvements-0-2-0"></a></h3>
+<ul><li>New cell types: <code>Dendritic.plasmacytoid.cells</code>, <code>Myeloid.cells</code>, <code>Basophils</code>, <code>Epithelial</code>, <code>Pericytes</code>, <code>Mural.cells</code> and <code>T.cells.proliferative</code>. <code><a href="../reference/get_cell_type_nomenclature.html">get_cell_type_nomenclature()</a></code> is the single source of the cell type vocabulary.</li>
+<li>A factor/character <code>batch</code> is adjusted with one indicator per batch, which is correct for 3 or more batches.</li>
+<li>
+<code><a href="../reference/create_metacells.html">create_metacells()</a></code> works with Seurat 4 and Seurat 5 objects and with a default assay other than “RNA”.</li>
+<li>
+<code><a href="../reference/create_sc_pseudobulk.html">create_sc_pseudobulk()</a></code> now sums the counts of each sample’s cells (previously the mean; identical after TPM normalisation), keeps sample names unchanged, saves a comma-separated CSV (previously tab-separated) and has a <code>return</code> argument to skip saving. <code>cells_labels</code> is no longer needed.</li>
+<li>
+<code><a href="../reference/create_metacells.html">create_metacells()</a></code> metacells are now the <strong>sum</strong> of the counts of their cells (integer counts; previously the average), and <code>max_shared</code> defaults to 10 (previously 15, which with <code>k = 15</code> allowed metacells to overlap completely).</li>
+<li>CIBERSORTx is retried with fixed input/output folders when the container fails with error code 139.</li>
+<li>
+<code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code> skips CIBERSORTx with a warning when no credentials are given.</li>
+<li>
+<code><a href="../reference/compute.subgroup.pathways.html">compute.subgroup.pathways()</a></code> returns the correlations and p-values per cell type (in addition to the PDFs), has a <code>corr_type</code> argument (“pearson” or “spearman”), uses <code>width</code>/<code>height</code> when given, keeps pathway and feature names unchanged and stops with a clear error when sample names do not match.</li>
+<li>
+<code><a href="../reference/create_sc_signatures.html">create_sc_signatures()</a></code> accepts method names in any case (and “CBSX” for “CIBERSORTx”), warns about unknown ones, replaces <code>_</code> in <code>name_signature</code> and reports overwritten signature files.</li>
+<li>
+<code><a href="../reference/compute.benchmark.html">compute.benchmark()</a></code>: the scatter plots report one correlation per cell type instead of a single pooled correlation, and the heatmap labels show how many cell types each average is based on. For subgrouped input no “average” row is computed (a column such as <code>Subgroup.1</code> holds unrelated features).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-2-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-2-0"></a></h3>
+<ul><li>Bisque results were silently dropped from the second-generation deconvolution.</li>
+<li>Feature names with characters such as <code>-</code> are kept unchanged throughout the analysis and replication.</li>
+<li>
+<code><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code>, <code><a href="../reference/compute.benchmark.html">compute.benchmark()</a></code> and <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> now handle edge cases (single ground-truth cell type, unnamed folds, stale fold files).</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.1" id="multideconv-001">multideconv 0.0.1<a class="anchor" aria-label="anchor" href="#multideconv-001"></a></h2>
 <p>This is the first release version of multideconv! 🎉</p>
 <ul><li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
@@ -61,7 +102,8 @@
 <ul><li><a href="https://verapancaldilab.github.io/multideconv/articles/multideconv.html">Getting started</a></li>
 </ul></li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

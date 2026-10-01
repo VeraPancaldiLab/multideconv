@@ -101,18 +101,20 @@ For processing the deconvolution features obtained from
 
 ``` r
 
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, return = T)
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, return = T)
 ```
 
-Users can also compute second-generation deconvolution methods using
-their single cell data. For this use the function
-`compute_sc_deconvolution_methods`. Remember that this function is
-already included in `compute.deconvolution` when setting
-`sc_deconv = T`.
+Users can also run second-generation deconvolution methods using their
+single cell data, by setting `sc_deconv = TRUE` in
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md).
+`sc_matrix` is the single-cell count matrix (genes x cells),
+`sc_metadata` its cell metadata, and `cell_label` / `sample_label` the
+metadata columns with the cell type and the sample of each cell. Use
+`methods = character(0)` to run only the single-cell methods.
 
 ``` r
 
-deconv_sc = compute_sc_deconvolution_methods(raw_counts, normalized = T, sc_object = sc_object, sc_metadata = sc_metadata, cell_annotations = cell_annotations, samples_ids = samples_ids, name_object = name_object, n_cores = 4)
+deconv_sc = compute.deconvolution(raw_counts, normalized = TRUE, methods = character(0), sc_deconv = TRUE, sc_matrix = sc_object, sc_metadata = sc_metadata, methods_sc = c("BayesPrism", "MuSic", "SCDC"), cell_label = "cell_type", sample_label = "sample", name_sc_signature = "MyReference", workers = 4)
 ```
 
 ## Shiny app
@@ -162,49 +164,58 @@ own deconvolution results or signatures, please make sure to follow
 these formats. The table below lists all recognized cell type groups and
 the standardized column name suffix each group is mapped to.
 
-| Cell type group                     | Standardized name suffix    |
-|-------------------------------------|-----------------------------|
-| B cells                             | `B.cells`                   |
-| B cells — naive                     | `B.naive.cells`             |
-| B cells — memory                    | `B.memory.cells`            |
-| Plasma cells                        | `Plasma`                    |
-| CD4 T cells                         | `CD4.cells`                 |
-| CD4 T cells — memory activated      | `CD4.memory.activated`      |
-| CD4 T cells — memory resting        | `CD4.memory.resting`        |
-| CD4 T cells — naive                 | `CD4.naive`                 |
-| CD4 T cells — non-regulatory        | `CD4.non.regulatory`        |
-| CD4 T cells — regulatory (Tregs)    | `CD4.regulatory`            |
-| CD8 T cells                         | `CD8.cells`                 |
-| T helper cells                      | `T.cells.helper`            |
-| T gamma-delta cells                 | `T.cells.gamma.delta`       |
-| NK cells                            | `NK.cells`                  |
-| NK cells — activated                | `NK.activated`              |
-| NK cells — resting                  | `NK.resting`                |
-| NKT cells                           | `NKT.cells`                 |
-| Monocytes                           | `Monocytes`                 |
-| Neutrophils                         | `Neutrophils`               |
-| Eosinophils                         | `Eosinophils`               |
-| Mast cells                          | `Mast.cells`                |
-| Mast cells — activated              | `Mast.activated.cells`      |
-| Mast cells — resting                | `Mast.resting.cells`        |
-| Macrophages (generic)               | `Macrophages.cells`         |
-| Macrophages M0                      | `Macrophages.M0`            |
-| Macrophages M1                      | `Macrophages.M1`            |
-| Macrophages M2                      | `Macrophages.M2`            |
-| Dendritic cells (generic)           | `Dendritic.cells`           |
-| Dendritic cells — activated         | `Dendritic.activated.cells` |
-| Dendritic cells — resting           | `Dendritic.resting.cells`   |
-| Cancer / malignant cells            | `Cancer`                    |
-| Endothelial cells                   | `Endothelial`               |
-| Fibroblasts                         | `Fibroblasts`               |
-| Cancer-associated fibroblasts (CAF) | `CAF`                       |
-| Myocytes                            | `Myocytes`                  |
+| Cell type group                      | Standardized name suffix       |
+|--------------------------------------|--------------------------------|
+| B cells                              | `B.cells`                      |
+| B cells — naive                      | `B.naive.cells`                |
+| B cells — memory                     | `B.memory.cells`               |
+| Plasma cells                         | `Plasma`                       |
+| CD4 T cells                          | `CD4.cells`                    |
+| CD4 T cells — memory activated       | `CD4.memory.activated`         |
+| CD4 T cells — memory resting         | `CD4.memory.resting`           |
+| CD4 T cells — naive                  | `CD4.naive`                    |
+| CD4 T cells — non-regulatory         | `CD4.non.regulatory`           |
+| CD4 T cells — regulatory (Tregs)     | `CD4.regulatory`               |
+| CD8 T cells                          | `CD8.cells`                    |
+| T helper cells                       | `T.cells.helper`               |
+| T gamma-delta cells                  | `T.cells.gamma.delta`          |
+| T cells — proliferative              | `T.cells.proliferative`        |
+| NK cells                             | `NK.cells`                     |
+| NK cells — activated                 | `NK.activated`                 |
+| NK cells — resting                   | `NK.resting`                   |
+| NKT cells                            | `NKT.cells`                    |
+| Myeloid cells (generic)              | `Myeloid.cells`                |
+| Monocytes                            | `Monocytes`                    |
+| Neutrophils                          | `Neutrophils`                  |
+| Eosinophils                          | `Eosinophils`                  |
+| Basophils                            | `Basophils`                    |
+| Mast cells                           | `Mast.cells`                   |
+| Mast cells — activated               | `Mast.activated.cells`         |
+| Mast cells — resting                 | `Mast.resting.cells`           |
+| Macrophages (generic)                | `Macrophages.cells`            |
+| Macrophages M0                       | `Macrophages.M0`               |
+| Macrophages M1                       | `Macrophages.M1`               |
+| Macrophages M2                       | `Macrophages.M2`               |
+| Dendritic cells (generic)            | `Dendritic.cells`              |
+| Dendritic cells — activated          | `Dendritic.activated.cells`    |
+| Dendritic cells — resting            | `Dendritic.resting.cells`      |
+| Dendritic cells — plasmacytoid (pDC) | `Dendritic.plasmacytoid.cells` |
+| Cancer / malignant cells             | `Cancer`                       |
+| Epithelial cells                     | `Epithelial`                   |
+| Endothelial cells                    | `Endothelial`                  |
+| Fibroblasts                          | `Fibroblasts`                  |
+| Cancer-associated fibroblasts (CAF)  | `CAF`                          |
+| Pericytes                            | `Pericytes`                    |
+| Mural cells                          | `Mural.cells`                  |
+| Myocytes                             | `Myocytes`                     |
 
 Each output column is prefixed by `<method>_<signature>_` followed by
 the suffix above. Unrecognized cell types are kept as-is under the
 `extra` group and will be discarded during
 [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
-unless passed via `cells_extra`.
+unless passed via `cells_extra`. The full list is also available in R
+with
+[`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md).
 
 ## How to add cell types other than the ones present in the nomenclature?
 
@@ -212,11 +223,11 @@ If you want `multideconv` to consider other cells, it is pretty simple!
 Just use the argument cells_extra in the function
 [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
 
-Let’s say you want to add mesenchymal and basophils cells:
+Let’s say you want to add mesenchymal and adipocytes cells:
 
 ``` r
 
-processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, seed = 123, cells_extra = c("mesenchymal", "basophils")) 
+processed_deconvolution = compute.deconvolution.analysis(deconvolution, corr = 0.7, cells_extra = c("mesenchymal", "adipocytes")) 
 ```
 
 And that’s it, just make sure the name you are putting in cells_extra is
@@ -319,19 +330,12 @@ Public single-cell utilities
 
 ## Helpers
 
-Exported helper functions (cell type nomenclature and single-method
-deconvolution)
+Exported helper functions for the cell type nomenclature
 
 - [`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
   : Canonical cell type nomenclature used by multideconv
 - [`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md)
   : Standardize Cell Type Column Names
-- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
-  : Computes CIBERSORTx (CBSX) using one signature
-- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
-  : Computes DWLS
-- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
-  : Computes MOMF
 
 ## Internal
 
@@ -343,14 +347,20 @@ Internal use (not exported functions)
   : Compute deconvolution methods with variable signatures
 - [`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md)
   : Compute second-generation deconvolution methods
+- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
+  : Computes CIBERSORTx (CBSX) using one signature
 - [`computeCBSX_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX_parallel.md)
   : Compute CIBERSORTx (CBSX) in parallel across multiple signatures
+- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
+  : Computes DWLS
 - [`computeDWLS_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS_parallel.md)
   : Compute DWLS in parallel across multiple signatures
 - [`computeDeconRNASeq()`](https://verapancaldilab.github.io/multideconv/reference/computeDeconRNASeq.md)
   : Computes DeconRNASeq
 - [`computeEpiDISH()`](https://verapancaldilab.github.io/multideconv/reference/computeEpiDISH.md)
   : Computes EpiDISH
+- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
+  : Computes MOMF
 - [`computeMOMF_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF_parallel.md)
   : Compute MOMF in parallel across multiple signatures
 - [`computeQuantiseq()`](https://verapancaldilab.github.io/multideconv/reference/computeQuantiseq.md)
@@ -361,15 +371,16 @@ Internal use (not exported functions)
   : Cell types split from deconvolution
 - [`corr_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/corr_subgroups.md)
   : Perform pairwise correlation across all features
-- [`remove_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/remove_subgroups.md)
-  : Remove subgroups that have the same method across different
-  signatures
 - [`remove_low_variance()`](https://verapancaldilab.github.io/multideconv/reference/remove_low_variance.md)
   : Remove low variance deconvolution features
-- [`find.maximum.iteration()`](https://verapancaldilab.github.io/multideconv/reference/find.maximum.iteration.md)
-  : Find maximum iteration from subgroups
-- [`removeCorrelatedFeatures()`](https://verapancaldilab.github.io/multideconv/reference/removeCorrelatedFeatures.md)
-  : Remove high correlated cell deconvolution features
+- [`process_group()`](https://verapancaldilab.github.io/multideconv/reference/process_group.md)
+  : Build metacells for one cell type and sample group
+- [`stratified_sample_cells()`](https://verapancaldilab.github.io/multideconv/reference/stratified_sample_cells.md)
+  : Subsample cells per cell type
+- [`unregister_dopar()`](https://verapancaldilab.github.io/multideconv/reference/unregister_dopar.md)
+  : Reset the foreach backend to sequential
+- [`ensure_results_dir()`](https://verapancaldilab.github.io/multideconv/reference/ensure_results_dir.md)
+  : Create the Results output directory
 
 ## Package Data
 

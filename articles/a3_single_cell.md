@@ -20,16 +20,20 @@ We adapted functions from the R package hdWGCNA (Morabito et al.
 ([2008](#ref-langfelder2008wgcna))) for the construction of metacells
 using the KNN algorithm.
 
-- **sc_object**: Normalized gene expression matrix with genes as rows
-  and cells as columns
-- **labels_column**: Vector of cell annotations
-- **samples_column**: Vector of sample IDs for each cell
+- **sc_object**: Seurat object with raw counts and a PCA already
+  computed
+  ([`Seurat::RunPCA()`](https://satijalab.org/seurat/reference/RunPCA.html))
+- **labels_column**: Name of the metadata column with the cell
+  annotations
+- **samples_column**: Name of the metadata column with the sample IDs
 - **exclude_cells**: Vector specifying which cell types to ignore during
   metacell construction (default is NULL)
 - **min_cells**: Minimum number of cells required to construct metacells
   in a group
-- **k**: Number of nearest neighbors used for the KNN algorithm
+- **k**: Number of nearest neighbors used for the KNN algorithm (each
+  metacell is the sum of the counts of its `k` cells)
 - **max_shared**: Maximum number of cells shared between two metacells
+  (keep it below `k`)
 - **n_workers**: Number of cores to use for parallelizing metacell
   construction
 - **min_meta**: Minimum number of metacells required for a cell type to
@@ -54,12 +58,12 @@ pak::pkg_install("smorabit/hdWGCNA")
 ``` r
 
 metacells = create_metacells(sc_object,
-                             labels_column = cell_labels, 
-                             samples_column = sample_labels, 
+                             labels_column = "cell_type", 
+                             samples_column = "sample", 
                              exclude_cells = NULL,
                              min_cells = 50, 
                              k = 15, 
-                             max_shared = 15, 
+                             max_shared = 10, 
                              n_workers = 4, 
                              min_meta = 10)
 ```

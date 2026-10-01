@@ -38,19 +38,12 @@ Public single-cell utilities
 
 ## Helpers
 
-Exported helper functions (cell type nomenclature and single-method
-deconvolution)
+Exported helper functions for the cell type nomenclature
 
 - [`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md)
   : Canonical cell type nomenclature used by multideconv
 - [`standardize_celltype_colnames()`](https://verapancaldilab.github.io/multideconv/reference/standardize_celltype_colnames.md)
   : Standardize Cell Type Column Names
-- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
-  : Computes CIBERSORTx (CBSX) using one signature
-- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
-  : Computes DWLS
-- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
-  : Computes MOMF
 
 ## Internal
 
@@ -62,14 +55,20 @@ Internal use (not exported functions)
   : Compute deconvolution methods with variable signatures
 - [`compute_sc_deconvolution_methods()`](https://verapancaldilab.github.io/multideconv/reference/compute_sc_deconvolution_methods.md)
   : Compute second-generation deconvolution methods
+- [`computeCBSX()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX.md)
+  : Computes CIBERSORTx (CBSX) using one signature
 - [`computeCBSX_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeCBSX_parallel.md)
   : Compute CIBERSORTx (CBSX) in parallel across multiple signatures
+- [`computeDWLS()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS.md)
+  : Computes DWLS
 - [`computeDWLS_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeDWLS_parallel.md)
   : Compute DWLS in parallel across multiple signatures
 - [`computeDeconRNASeq()`](https://verapancaldilab.github.io/multideconv/reference/computeDeconRNASeq.md)
   : Computes DeconRNASeq
 - [`computeEpiDISH()`](https://verapancaldilab.github.io/multideconv/reference/computeEpiDISH.md)
   : Computes EpiDISH
+- [`computeMOMF()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF.md)
+  : Computes MOMF
 - [`computeMOMF_parallel()`](https://verapancaldilab.github.io/multideconv/reference/computeMOMF_parallel.md)
   : Compute MOMF in parallel across multiple signatures
 - [`computeQuantiseq()`](https://verapancaldilab.github.io/multideconv/reference/computeQuantiseq.md)
@@ -80,15 +79,16 @@ Internal use (not exported functions)
   : Cell types split from deconvolution
 - [`corr_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/corr_subgroups.md)
   : Perform pairwise correlation across all features
-- [`remove_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/remove_subgroups.md)
-  : Remove subgroups that have the same method across different
-  signatures
 - [`remove_low_variance()`](https://verapancaldilab.github.io/multideconv/reference/remove_low_variance.md)
   : Remove low variance deconvolution features
-- [`find.maximum.iteration()`](https://verapancaldilab.github.io/multideconv/reference/find.maximum.iteration.md)
-  : Find maximum iteration from subgroups
-- [`removeCorrelatedFeatures()`](https://verapancaldilab.github.io/multideconv/reference/removeCorrelatedFeatures.md)
-  : Remove high correlated cell deconvolution features
+- [`process_group()`](https://verapancaldilab.github.io/multideconv/reference/process_group.md)
+  : Build metacells for one cell type and sample group
+- [`stratified_sample_cells()`](https://verapancaldilab.github.io/multideconv/reference/stratified_sample_cells.md)
+  : Subsample cells per cell type
+- [`unregister_dopar()`](https://verapancaldilab.github.io/multideconv/reference/unregister_dopar.md)
+  : Reset the foreach backend to sequential
+- [`ensure_results_dir()`](https://verapancaldilab.github.io/multideconv/reference/ensure_results_dir.md)
+  : Create the Results output directory
 
 ## Package Data
 

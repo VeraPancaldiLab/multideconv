@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@
 
 
 <dl><dt id="arg-deconv-res">deconv_res<a class="anchor" aria-label="anchor" href="#arg-deconv-res"></a></dt>
-<dd><p>A list containing results from the deconvolution process, including:</p><ul><li><p><code>Deconvolution subgroups composition</code>: a list of subgroup feature names per iteration</p></li>
+<dd><p>A list containing results from the deconvolution process, including:</p><ul><li><p><code>Deconvolution subgroups composition</code>: the member features of each subgroup, per cell type</p></li>
 <li><p><code>Deconvolution matrix</code>: the original deconvolution result used to determine relevant features</p></li>
 </ul></dd>
 
@@ -66,7 +66,10 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data.frame with the projected subgroup features proportions</p>
+    <p>A data.frame with the projected subgroup features proportions: the same features, in the same order, as
+the "Deconvolution matrix" of <code>deconv_res</code>. Each subgroup is the median of its member features. Subgroups with
+no member in <code>deconvolution_test</code>, and training features missing from it, are set to <code>NA</code> with a warning; a
+warning also lists subgroups computed from only part of their members.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

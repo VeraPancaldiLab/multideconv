@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@
 <span>  exclude_cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_cells <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  max_shared <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  max_shared <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  n_workers <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  min_meta <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -65,15 +65,15 @@
 
 
 <dl><dt id="arg-sc-object">sc_object<a class="anchor" aria-label="anchor" href="#arg-sc-object"></a></dt>
-<dd><p>A matrix with the counts from scRNAseq object (genes as rows and cells as columns)</p></dd>
+<dd><p>A Seurat object with raw counts and a PCA already computed (<code>RunPCA()</code>), used to find each cell's nearest neighbours.</p></dd>
 
 
 <dt id="arg-labels-column">labels_column<a class="anchor" aria-label="anchor" href="#arg-labels-column"></a></dt>
-<dd><p>A character vector with the cell labels (need to be of the same order as in the sc_object)</p></dd>
+<dd><p>Name of the metadata column with the cell type labels.</p></dd>
 
 
 <dt id="arg-samples-column">samples_column<a class="anchor" aria-label="anchor" href="#arg-samples-column"></a></dt>
-<dd><p>A character vector with the samples labels (need to be of the same order as in the sc_object)</p></dd>
+<dd><p>Name of the metadata column with the sample labels.</p></dd>
 
 
 <dt id="arg-exclude-cells">exclude_cells<a class="anchor" aria-label="anchor" href="#arg-exclude-cells"></a></dt>
@@ -89,7 +89,7 @@
 
 
 <dt id="arg-max-shared">max_shared<a class="anchor" aria-label="anchor" href="#arg-max-shared"></a></dt>
-<dd><p>The maximum number of cells to be shared across two metacells.</p></dd>
+<dd><p>The maximum number of cells to be shared across two metacells (keep it below <code>k</code>, otherwise metacells can overlap completely).</p></dd>
 
 
 <dt id="arg-n-workers">n_workers<a class="anchor" aria-label="anchor" href="#arg-n-workers"></a></dt>
@@ -102,7 +102,7 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with two elements:</p><ul><li><p>The metacell count matrix (genes as rownames and cells as columns)</p></li>
+    <p>A list with two elements:</p><ul><li><p>The metacell count matrix (genes as rownames and metacells as columns): each metacell is the sum of the counts of its <code>k</code> cells</p></li>
 <li><p>The metadata matrix corresponding to the metacell object</p></li>
 </ul></div>
     <div class="section level2">

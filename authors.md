@@ -14,13 +14,13 @@ Source:
 
 Hurtado M, Pancaldi V (2026). *multideconv: Integrative Pipeline for
 Cell Type Deconvolution from Bulk RNAseq using First and Second
-Generation Methods*. R package version 0.0.1,
+Generation Methods*. R package version 0.2.0,
 <https://verapancaldilab.github.io/multideconv/>.
 
     @Manual{,
       title = {multideconv: Integrative Pipeline for Cell Type Deconvolution from Bulk RNAseq using First and Second Generation Methods},
       author = {Marcelo Hurtado and Vera Pancaldi},
       year = {2026},
-      note = {R package version 0.0.1},
+      note = {R package version 0.2.0},
       url = {https://verapancaldilab.github.io/multideconv/},
     }

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,13 +91,14 @@ handle the full single-cell dataset, you may skip this step.</p>
 of metacells using the KNN algorithm.</p>
 <ul>
 <li>
-<strong>sc_object</strong>: Normalized gene expression matrix with
-genes as rows and cells as columns</li>
+<strong>sc_object</strong>: Seurat object with raw counts and a PCA
+already computed (<code><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">Seurat::RunPCA()</a></code>)</li>
 <li>
-<strong>labels_column</strong>: Vector of cell annotations</li>
+<strong>labels_column</strong>: Name of the metadata column with the
+cell annotations</li>
 <li>
-<strong>samples_column</strong>: Vector of sample IDs for each
-cell</li>
+<strong>samples_column</strong>: Name of the metadata column with
+the sample IDs</li>
 <li>
 <strong>exclude_cells</strong>: Vector specifying which cell types
 to ignore during metacell construction (default is NULL)</li>
@@ -106,10 +107,11 @@ to ignore during metacell construction (default is NULL)</li>
 construct metacells in a group</li>
 <li>
 <strong>k</strong>: Number of nearest neighbors used for the KNN
-algorithm</li>
+algorithm (each metacell is the sum of the counts of its <code>k</code>
+cells)</li>
 <li>
 <strong>max_shared</strong>: Maximum number of cells shared between
-two metacells</li>
+two metacells (keep it below <code>k</code>)</li>
 <li>
 <strong>n_workers</strong>: Number of cores to use for parallelizing
 metacell construction</li>
@@ -129,12 +131,12 @@ Install it once before first use:</p>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"smorabit/hdWGCNA"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metacells</span> <span class="op">=</span> <span class="fu"><a href="../reference/create_metacells.html">create_metacells</a></span><span class="op">(</span><span class="va">sc_object</span>,</span>
-<span>                             labels_column <span class="op">=</span> <span class="va">cell_labels</span>, </span>
-<span>                             samples_column <span class="op">=</span> <span class="va">sample_labels</span>, </span>
+<span>                             labels_column <span class="op">=</span> <span class="st">"cell_type"</span>, </span>
+<span>                             samples_column <span class="op">=</span> <span class="st">"sample"</span>, </span>
 <span>                             exclude_cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                             min_cells <span class="op">=</span> <span class="fl">50</span>, </span>
 <span>                             k <span class="op">=</span> <span class="fl">15</span>, </span>
-<span>                             max_shared <span class="op">=</span> <span class="fl">15</span>, </span>
+<span>                             max_shared <span class="op">=</span> <span class="fl">10</span>, </span>
 <span>                             n_workers <span class="op">=</span> <span class="fl">4</span>, </span>
 <span>                             min_meta <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 </div>

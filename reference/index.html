@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">multideconv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -132,7 +132,7 @@
       </dl></div><div class="section level2">
       <h2 id="helpers">Helpers<a class="anchor" aria-label="anchor" href="#helpers"></a></h2>
 
-      <div class="section-desc"><p>Exported helper functions (cell type nomenclature and single-method deconvolution)</p></div>
+      <div class="section-desc"><p>Exported helper functions for the cell type nomenclature</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -152,27 +152,6 @@
 
         </dt>
         <dd>Standardize Cell Type Column Names</dd>
-
-        <dt>
-
-          <code><a href="computeCBSX.html">computeCBSX()</a></code>
-
-        </dt>
-        <dd>Computes CIBERSORTx (CBSX) using one signature</dd>
-
-        <dt>
-
-          <code><a href="computeDWLS.html">computeDWLS()</a></code>
-
-        </dt>
-        <dd>Computes DWLS</dd>
-
-        <dt>
-
-          <code><a href="computeMOMF.html">computeMOMF()</a></code>
-
-        </dt>
-        <dd>Computes MOMF</dd>
       </dl></div><div class="section level2">
       <h2 id="internal">Internal<a class="anchor" aria-label="anchor" href="#internal"></a></h2>
 
@@ -206,10 +185,24 @@
 
         <dt>
 
+          <code><a href="computeCBSX.html">computeCBSX()</a></code>
+
+        </dt>
+        <dd>Computes CIBERSORTx (CBSX) using one signature</dd>
+
+        <dt>
+
           <code><a href="computeCBSX_parallel.html">computeCBSX_parallel()</a></code>
 
         </dt>
         <dd>Compute CIBERSORTx (CBSX) in parallel across multiple signatures</dd>
+
+        <dt>
+
+          <code><a href="computeDWLS.html">computeDWLS()</a></code>
+
+        </dt>
+        <dd>Computes DWLS</dd>
 
         <dt>
 
@@ -231,6 +224,13 @@
 
         </dt>
         <dd>Computes EpiDISH</dd>
+
+        <dt>
+
+          <code><a href="computeMOMF.html">computeMOMF()</a></code>
+
+        </dt>
+        <dd>Computes MOMF</dd>
 
         <dt>
 
@@ -269,13 +269,6 @@
 
         <dt>
 
-          <code><a href="remove_subgroups.html">remove_subgroups()</a></code>
-
-        </dt>
-        <dd>Remove subgroups that have the same method across different signatures</dd>
-
-        <dt>
-
           <code><a href="remove_low_variance.html">remove_low_variance()</a></code>
 
         </dt>
@@ -283,17 +276,31 @@
 
         <dt>
 
-          <code><a href="find.maximum.iteration.html">find.maximum.iteration()</a></code>
+          <code><a href="process_group.html">process_group()</a></code>
 
         </dt>
-        <dd>Find maximum iteration from subgroups</dd>
+        <dd>Build metacells for one cell type and sample group</dd>
 
         <dt>
 
-          <code><a href="removeCorrelatedFeatures.html">removeCorrelatedFeatures()</a></code>
+          <code><a href="stratified_sample_cells.html">stratified_sample_cells()</a></code>
 
         </dt>
-        <dd>Remove high correlated cell deconvolution features</dd>
+        <dd>Subsample cells per cell type</dd>
+
+        <dt>
+
+          <code><a href="unregister_dopar.html">unregister_dopar()</a></code>
+
+        </dt>
+        <dd>Reset the foreach backend to sequential</dd>
+
+        <dt>
+
+          <code><a href="ensure_results_dir.html">ensure_results_dir()</a></code>
+
+        </dt>
+        <dd>Create the Results output directory</dd>
       </dl></div><div class="section level2">
       <h2 id="package-data">Package Data<a class="anchor" aria-label="anchor" href="#package-data"></a></h2>
 
