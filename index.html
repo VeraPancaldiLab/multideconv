@@ -347,6 +347,16 @@
 <p>And that’s it, just make sure the name you are putting in cells_extra is exactly the name of your cells in your deconvolution matrix!</p>
 </div>
 <div class="section level2">
+<h2 id="how-to-aggregate-cell-types-into-groups">How to aggregate cell types into groups?<a class="anchor" aria-label="anchor" href="#how-to-aggregate-cell-types-into-groups"></a>
+</h2>
+<p>Signatures do not describe cell types with the same level of detail (e.g. <code>Macrophages.M1</code>, <code>Macrophages.M2</code> and <code>Monocytes</code> in one signature, <code>Myeloid.cells</code> in another). To compare them at the same level, use the argument cell_groups in the function <code><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code>:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">groups</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Myeloid.cells <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Macrophages.cells"</span>, <span class="st">"Macrophages.M0"</span>, <span class="st">"Macrophages.M1"</span>, <span class="st">"Macrophages.M2"</span>, <span class="st">"Monocytes"</span>, <span class="st">"Dendritic.cells"</span><span class="op">)</span>,</span>
+<span>              Lymphocytes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B.cells"</span>, <span class="st">"CD4.cells"</span>, <span class="st">"CD8.cells"</span>, <span class="st">"NK.cells"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">processed_deconvolution</span> <span class="op">=</span> <span class="fu"><a href="reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis</a></span><span class="op">(</span><span class="va">deconvolution</span>, corr <span class="op">=</span> <span class="fl">0.7</span>, cell_groups <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></code></pre></div>
+<p>For every method-signature combination with at least two cell types of the group, a new feature <code>&lt;method&gt;_&lt;signature&gt;_&lt;group&gt;</code> with their sum is added and analysed as any other cell type. The original features are kept, and combinations that already estimate the group are left as they are. <code><a href="reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> does only the aggregation and prints which cell types were summed in each combination.</p>
+</div>
+<div class="section level2">
 <h2 id="how-to-add-other-signatures">How to add other signatures?<a class="anchor" aria-label="anchor" href="#how-to-add-other-signatures"></a>
 </h2>
 <p>You can include other signatures into the analysis by adding them as .txt into the folder <code>Results/custom_signatures</code>. Please make sure that your signature name is not splitted by “_” or any other character, use single-word names.</p>
@@ -357,7 +367,7 @@
 <p><code>multideconv</code> includes second generation methods that allows users to input single cell data and use it for constructing signatures ‘on-the-fly’ and deconvolve the bulk RNAseq data.</p>
 <p>Because most of the times scRNAseq data can be big and sparse matrices, we applied ‘preprocessing’ steps to avoid crashing the computer. For this, <code>multideconv</code> construct metacells per cell type and patient from the single cell data using the KNN algorithm. This is done essentially by executing different tasks per cluster in parallel for N workers and once finished, it computes deconvolution using the reduced single cell object.</p>
 <p><strong>NOTE</strong>: If you encounter missing packages for certain deconvolution methods (e.g., <code>MuSiC</code>, <code>SCDC</code>) during the pipeline, make sure to install the versions maintained by the <code>omnideconv</code> team. These versions are patched to work seamlessly with <code>omnideconv</code> functions:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/MuSiC"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"omnideconv/SCDC"</span><span class="op">)</span></span></code></pre></div>
 </div>

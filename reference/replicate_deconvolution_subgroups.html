@@ -37,7 +37,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Replicate deconvolution subgroups in a new dataset</h1>
-      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/v0.2.0/R/cell_deconvolution.R" class="external-link"><code>R/cell_deconvolution.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/main/R/cell_deconvolution.R" class="external-link"><code>R/cell_deconvolution.R</code></a></small>
       <div class="d-none name"><code>replicate_deconvolution_subgroups.Rd</code></div>
     </div>
 
@@ -61,7 +61,9 @@
 
 
 <dt id="arg-deconvolution-test">deconvolution_test<a class="anchor" aria-label="anchor" href="#arg-deconvolution-test"></a></dt>
-<dd><p>A data.frame or matrix of deconvolution results (e.g., from another cohort)</p></dd>
+<dd><p>A data.frame or matrix of deconvolution results (e.g., from another cohort). If
+<code>deconv_res</code> was computed with <code>cell_groups</code>, the same cell groups are aggregated here first
+(see <code><a href="aggregate_cell_groups.html">aggregate_cell_groups()</a></code>), so give the deconvolution as returned by <code><a href="compute.deconvolution.html">compute.deconvolution()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

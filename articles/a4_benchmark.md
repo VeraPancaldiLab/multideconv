@@ -91,3 +91,34 @@ benchmark = compute.benchmark(deconv_pseudo,
 
 *Figure 1. Example of performance of different methods and signature
 combinations on the pseudo bulk.*
+
+### Benchmarking at the level of the ground truth
+
+A ground truth is often coarser than the signatures. Here it contains
+`Myeloid.cells`, but most signatures report macrophages, monocytes and
+dendritic cells separately, so only the combinations that estimate
+`Myeloid.cells` directly can be compared with it.
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+sums the cell types of each method-signature combination into the group,
+which makes the other combinations comparable too (see the *Cell type
+subgroup analysis* article):
+
+``` r
+
+myeloid = list(Myeloid.cells = c("Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2",
+                                 "Monocytes", "Dendritic.cells", "Dendritic.activated.cells",
+                                 "Dendritic.resting.cells"))
+
+deconv_groups = aggregate_cell_groups(deconv_pseudo, cell_groups = myeloid, verbose = FALSE)
+
+benchmark_groups = compute.benchmark(deconv_groups,
+                                     cells_groundtruth,
+                                     corr_type = "spearman",
+                                     scatter = FALSE)
+
+# Method-signature combinations compared with the Myeloid cells of the ground truth
+sum(!is.na(benchmark["Myeloid.cells", ]))
+#> [1] 22
+sum(!is.na(benchmark_groups["Myeloid.cells", ]))
+#> [1] 51
+```

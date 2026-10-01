@@ -8,6 +8,8 @@ Public user-facing functions
   : Compute deconvolution
 - [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
   : Compute cell type processing
+- [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+  : Aggregate cell types into groups
 - [`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
   : Replicate deconvolution subgroups in a new dataset
 - [`compute.subgroup.pathways()`](https://verapancaldilab.github.io/multideconv/reference/compute.subgroup.pathways.md)

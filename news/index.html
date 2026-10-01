@@ -37,9 +37,18 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/v0.2.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="multideconv-development-version">multideconv (development version)<a class="anchor" aria-label="anchor" href="#multideconv-development-version"></a></h2>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li>New <code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code>: sums cell types into user-defined groups (e.g. Myeloid cells = macrophages + monocytes + dendritic cells) within each method-signature combination, adding a feature <code>&lt;method&gt;_&lt;signature&gt;_&lt;group&gt;</code>. The original features are kept, combinations that already estimate the group are left as they are and combinations with fewer than <code>min_types</code> (default 2) cell types of the group are skipped. It prints which cell types were summed in each combination.</li>
+<li>
+<code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> and <code><a href="../reference/prepare_multideconv_folds.html">prepare_multideconv_folds()</a></code> have a <code>cell_groups</code> argument that aggregates the groups before the analysis and analyses them as any other cell type. The output of <code><a href="../reference/compute.deconvolution.analysis.html">compute.deconvolution.analysis()</a></code> has a new last element, “Cell groups”, and <code><a href="../reference/replicate_deconvolution_subgroups.html">replicate_deconvolution_subgroups()</a></code> uses it to aggregate the same groups in a new cohort.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="multideconv-020">multideconv 0.2.0<a class="anchor" aria-label="anchor" href="#multideconv-020"></a></h2>
 <div class="section level3">

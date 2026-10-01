@@ -24,7 +24,11 @@ replicate_deconvolution_subgroups(deconv_res, deconvolution_test)
 - deconvolution_test:
 
   A data.frame or matrix of deconvolution results (e.g., from another
-  cohort)
+  cohort). If `deconv_res` was computed with `cell_groups`, the same
+  cell groups are aggregated here first (see
+  [`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)),
+  so give the deconvolution as returned by
+  [`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md).
 
 ## Value
 

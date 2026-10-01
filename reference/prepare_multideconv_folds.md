@@ -19,7 +19,8 @@ prepare_multideconv_folds(
   corr_type = "spearman",
   zero_thr = 0.9,
   cv_thr = 0.1,
-  batch = NULL
+  batch = NULL,
+  cell_groups = NULL
 )
 ```
 
@@ -75,6 +76,12 @@ prepare_multideconv_folds(
 
   Optional batch covariate passed to
   [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
+
+- cell_groups:
+
+  Optional named list of cell types to aggregate into groups, passed to
+  [`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md).
+  The same groups are applied to the test samples of each fold.
 
 ## Value
 

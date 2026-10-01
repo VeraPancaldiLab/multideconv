@@ -75,6 +75,14 @@ res <- pipeML::compute_features.training.ML(features_train = deconv_train,
                                             fold_construction_args_fixed = list(ncores = 3))
 ```
 
+To also use aggregated cell groups as features (see
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md)
+in the *Cell type subgroup analysis* article), add them to the same
+list,
+e.g. `fold_construction_args_fixed = list(ncores = 3, cell_groups = list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes")))`.
+The groups are summed per sample, so they do not leak information
+between training and test samples.
+
 - `res$Model` is the selected model, trained on the deconvolution
   subgroups computed on all the training samples.
 - `res$Custom_output` is the output of

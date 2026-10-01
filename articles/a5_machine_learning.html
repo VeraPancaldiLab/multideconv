@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Machine learning workflows</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/v0.2.0/vignettes/a5_machine_learning.Rmd" class="external-link"><code>vignettes/a5_machine_learning.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/main/vignettes/a5_machine_learning.Rmd" class="external-link"><code>vignettes/a5_machine_learning.Rmd</code></a></small>
       <div class="d-none name"><code>a5_machine_learning.Rmd</code></div>
     </div>
 
@@ -149,6 +149,12 @@ fold and in the final model:</p>
 <span>                                            return <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                                            fold_construction_fun <span class="op">=</span> <span class="va">prepare_multideconv_folds</span>,</span>
 <span>                                            fold_construction_args_fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ncores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>To also use aggregated cell groups as features (see
+<code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> in the <em>Cell type subgroup
+analysis</em> article), add them to the same list,
+e.g. <code>fold_construction_args_fixed = list(ncores = 3, cell_groups = list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes")))</code>.
+The groups are summed per sample, so they do not leak information
+between training and test samples.</p>
 <ul>
 <li>
 <code>res$Model</code> is the selected model, trained on the

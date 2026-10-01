@@ -14,10 +14,11 @@ subgroups
 
 ## Format
 
-A list with 6 elements: "Deconvolution matrix", "Deconvolution subgroups
+A list with 7 elements: "Deconvolution matrix", "Deconvolution subgroups
 per cell types", "Deconvolution subgroups composition", "Discarded
 features with high number of zeros", "Discarded features with low
-variance" and "Discarded cell types".
+variance", "Discarded cell types" and "Cell groups" (`NULL` here: no
+`cell_groups` were given).
 
 ## Examples
 

@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Pseudo-bulk profiles and benchmarking</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/v0.2.0/vignettes/a4_benchmark.Rmd" class="external-link"><code>vignettes/a4_benchmark.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/multideconv/blob/main/vignettes/a4_benchmark.Rmd" class="external-link"><code>vignettes/a4_benchmark.Rmd</code></a></small>
       <div class="d-none name"><code>a4_benchmark.Rmd</code></div>
     </div>
 
@@ -157,6 +157,35 @@ convention used - see README for more information).</p>
 <div style="text-align: center;">
 <p><em>Figure 1. Example of performance of different methods and
 signature combinations on the pseudo bulk.</em></p>
+</div>
+<div class="section level3">
+<h3 id="benchmarking-at-the-level-of-the-ground-truth">Benchmarking at the level of the ground truth<a class="anchor" aria-label="anchor" href="#benchmarking-at-the-level-of-the-ground-truth"></a>
+</h3>
+<p>A ground truth is often coarser than the signatures. Here it contains
+<code>Myeloid.cells</code>, but most signatures report macrophages,
+monocytes and dendritic cells separately, so only the combinations that
+estimate <code>Myeloid.cells</code> directly can be compared with it.
+<code><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups()</a></code> sums the cell types of each
+method-signature combination into the group, which makes the other
+combinations comparable too (see the <em>Cell type subgroup
+analysis</em> article):</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">myeloid</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Myeloid.cells <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Macrophages.cells"</span>, <span class="st">"Macrophages.M0"</span>, <span class="st">"Macrophages.M1"</span>, <span class="st">"Macrophages.M2"</span>,</span>
+<span>                                 <span class="st">"Monocytes"</span>, <span class="st">"Dendritic.cells"</span>, <span class="st">"Dendritic.activated.cells"</span>,</span>
+<span>                                 <span class="st">"Dendritic.resting.cells"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">deconv_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/aggregate_cell_groups.html">aggregate_cell_groups</a></span><span class="op">(</span><span class="va">deconv_pseudo</span>, cell_groups <span class="op">=</span> <span class="va">myeloid</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">benchmark_groups</span> <span class="op">=</span> <span class="fu"><a href="../reference/compute.benchmark.html">compute.benchmark</a></span><span class="op">(</span><span class="va">deconv_groups</span>,</span>
+<span>                                     <span class="va">cells_groundtruth</span>,</span>
+<span>                                     corr_type <span class="op">=</span> <span class="st">"spearman"</span>,</span>
+<span>                                     scatter <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Method-signature combinations compared with the Myeloid cells of the ground truth</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">benchmark</span><span class="op">[</span><span class="st">"Myeloid.cells"</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 22</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">benchmark_groups</span><span class="op">[</span><span class="st">"Myeloid.cells"</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 51</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

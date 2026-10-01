@@ -18,8 +18,7 @@ Within each cell type, features (method-signature estimates) are grouped
 by complete-linkage hierarchical clustering of their correlations:
 features form a subgroup only if **every pair** of them correlates at
 least `corr` (non-significant correlations count as 0). Each subgroup is
-summarised by the median of its members. The result does not depend on
-the order of the columns.
+summarised by the median of its members.
 
 Key parameters:
 
@@ -40,7 +39,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
                                                   return = TRUE)
 ```
 
-The result is a named list with six elements:
+The result is a named list with seven elements:
 
 ``` r
 
@@ -50,7 +49,8 @@ names(deconv_subgroups)
 #> [3] "Deconvolution subgroups composition"         
 #> [4] "Discarded features with high number of zeros"
 #> [5] "Discarded features with low variance"        
-#> [6] "Discarded cell types"
+#> [6] "Discarded cell types"                        
+#> [7] "Cell groups"
 ```
 
 Access the reduced deconvolution matrix (samples × subgroups):
@@ -172,6 +172,145 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
                                                   file_name = "Tutorial")
 ```
 
+## **Aggregating cell types into groups**
+
+Signatures do not describe cell types with the same level of detail: one
+reports `Macrophages.M1`, `Macrophages.M2` and `Monocytes`, another one
+only `Myeloid.cells`. To compare them at the same level, or to match a
+coarser ground truth (e.g. H&E or flow cytometry), you can sum cell
+types into groups with
+[`aggregate_cell_groups()`](https://verapancaldilab.github.io/multideconv/reference/aggregate_cell_groups.md).
+
+`cell_groups` is a named list: each name is a group and each element
+contains the cell types to sum, written as in
+[`get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.md).
+For every method-signature combination, the function adds a new feature
+`<method>_<signature>_<group>`:
+
+- Cell types are summed only **within the same method-signature
+  combination**, where the estimates are proportions of the same sample.
+- The original features are kept.
+- A combination that already estimates the group (e.g. a signature with
+  its own `Myeloid.cells`) is left as it is.
+- A combination needs at least `min_types = 2` cell types of the group,
+  otherwise it is skipped (the group would be a copy of a single cell
+  type).
+
+The function prints which cell types were summed in each combination:
+
+``` r
+
+myeloid = list(Myeloid.cells = c("Macrophages.cells", "Macrophages.M0", "Macrophages.M1", "Macrophages.M2",
+                                 "Monocytes", "Dendritic.cells", "Dendritic.activated.cells",
+                                 "Dendritic.resting.cells"))
+
+deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = myeloid)
+#> 
+#> Group 'Myeloid.cells'
+#>   Quantiseq: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   DeconRNASeq_BPRNACan: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   Epidish_BPRNACan: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DeconRNASeq_BPRNACan3DProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   Epidish_BPRNACan3DProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DeconRNASeq_BPRNACanProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   Epidish_BPRNACanProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DeconRNASeq_CBSX.HNSCC.scRNAseq: Macrophages.cells + Dendritic.cells
+#>   Epidish_CBSX.HNSCC.scRNAseq: Macrophages.cells + Dendritic.cells
+#>   DeconRNASeq_CBSX.Melanoma.scRNAseq: skipped (1 member: Macrophages.cells)
+#>   Epidish_CBSX.Melanoma.scRNAseq: skipped (1 member: Macrophages.cells)
+#>   DeconRNASeq_CBSX.NSCLC.PBMCs.scRNAseq: skipped (1 member: Monocytes)
+#>   Epidish_CBSX.NSCLC.PBMCs.scRNAseq: skipped (1 member: Monocytes)
+#>   DeconRNASeq_CCLE.TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   Epidish_CCLE.TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   DeconRNASeq_TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   Epidish_TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   DWLS_BPRNACan: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DWLS_BPRNACan3DProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DWLS_BPRNACanProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   DWLS_CBSX.HNSCC.scRNAseq: Macrophages.cells + Dendritic.cells
+#>   DWLS_CBSX.Melanoma.scRNAseq: skipped (1 member: Macrophages.cells)
+#>   DWLS_CBSX.NSCLC.PBMCs.scRNAseq: skipped (1 member: Monocytes)
+#>   DWLS_CCLE.TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   DWLS_TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   CBSX_BPRNACan: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   CBSX_BPRNACan3DProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   CBSX_BPRNACanProMet: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes
+#>   CBSX_CBSX.HNSCC.scRNAseq: Macrophages.cells + Dendritic.cells
+#>   CBSX_CBSX.Melanoma.scRNAseq: skipped (1 member: Macrophages.cells)
+#>   CBSX_CBSX.NSCLC.PBMCs.scRNAseq: skipped (1 member: Monocytes)
+#>   CBSX_CCLE.TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   CBSX_TIL10: Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.cells
+#>   DeconRNASeq_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
+#>   Epidish_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
+#>   DWLS_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
+#>   CBSX_LM22: Macrophages.M0 + Macrophages.M1 + Macrophages.M2 + Monocytes + Dendritic.activated.cells + Dendritic.resting.cells
+```
+
+To use the groups in the subgroup analysis, give them directly to
+[`compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.md)
+with the `cell_groups` argument. The groups are aggregated first and
+then analysed as any other cell type. A group name can be a cell type of
+the nomenclature (`Myeloid.cells`) or a new name (`Lymphocytes`); new
+names must not contain `_` nor the name of an existing cell type.
+
+``` r
+
+groups = list(Myeloid.cells = myeloid$Myeloid.cells,
+              Lymphocytes = c("B.cells", "B.naive.cells", "B.memory.cells", "Plasma",
+                              "CD4.cells", "CD4.memory.activated", "CD4.memory.resting", "CD4.naive",
+                              "CD4.regulatory", "CD4.non.regulatory", "CD8.cells",
+                              "NK.cells", "NK.activated", "NK.resting"))
+
+deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
+                                                         corr = 0.7,
+                                                         cell_groups = groups)
+
+deconv_subgroups_groups[["Deconvolution subgroups composition"]]$Myeloid.cells
+#> $Myeloid.cells_Subgroup.1
+#> [1] "CBSX_BPRNACan_Myeloid.cells"           
+#> [2] "CBSX_BPRNACan3DProMet_Myeloid.cells"   
+#> [3] "CBSX_BPRNACanProMet_Myeloid.cells"     
+#> [4] "Epidish_BPRNACan_Myeloid.cells"        
+#> [5] "Epidish_BPRNACan3DProMet_Myeloid.cells"
+#> [6] "Epidish_BPRNACanProMet_Myeloid.cells"  
+#> 
+#> $Myeloid.cells_Subgroup.2
+#> [1] "CBSX_CBSX.HNSCC.scRNAseq_Myeloid.cells"   
+#> [2] "DWLS_CBSX.HNSCC.scRNAseq_Myeloid.cells"   
+#> [3] "Epidish_CBSX.HNSCC.scRNAseq_Myeloid.cells"
+#> 
+#> $Myeloid.cells_Subgroup.3
+#> [1] "CBSX_CCLE.TIL10_Myeloid.cells"    "DWLS_CCLE.TIL10_Myeloid.cells"   
+#> [3] "Epidish_CCLE.TIL10_Myeloid.cells"
+#> 
+#> $Myeloid.cells_Subgroup.4
+#> [1] "CBSX_LM22_Myeloid.cells"        "DeconRNASeq_LM22_Myeloid.cells"
+#> [3] "DWLS_LM22_Myeloid.cells"        "Epidish_LM22_Myeloid.cells"    
+#> 
+#> $Myeloid.cells_Subgroup.5
+#> [1] "DeconRNASeq_CCLE.TIL10_Myeloid.cells"
+#> [2] "DeconRNASeq_TIL10_Myeloid.cells"     
+#> 
+#> $Myeloid.cells_Subgroup.6
+#> [1] "DWLS_BPRNACan_Myeloid.cells"         "DWLS_BPRNACan3DProMet_Myeloid.cells"
+#> [3] "DWLS_BPRNACanProMet_Myeloid.cells"  
+#> 
+#> $Myeloid.cells_Subgroup.7
+#> [1] "DWLS_TIL10_Myeloid.cells"    "Epidish_TIL10_Myeloid.cells"
+```
+
+The groups are stored in the output
+(`deconv_subgroups_groups[["Cell groups"]]`), so
+[`replicate_deconvolution_subgroups()`](https://verapancaldilab.github.io/multideconv/reference/replicate_deconvolution_subgroups.md)
+aggregates the same groups in a new cohort before rebuilding the
+subgroups: give it the deconvolution as returned by
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md).
+
+**NOTE:** A group can list cell types of different levels of detail,
+because each signature reports its own. Check the printed lines: within
+one method-signature combination the summed cell types must not overlap
+(a cell type together with its own subtypes would be counted twice).
+
 ## **Handling batch effects (multiple cohorts)**
 
 When your samples come from multiple cohorts or batches, simple
@@ -182,8 +321,7 @@ accepts a `batch` argument that switches the internal correlation to
 correlations used to build the subgroups.
 
 The `batch` vector must be a factor or character vector with one label
-per sample, in the same order as the rows of the deconvolution matrix
-(names are not used).
+per sample, in the same order as the rows of the deconvolution matrix.
 
 ``` r
 
