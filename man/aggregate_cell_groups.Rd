@@ -23,7 +23,8 @@ The cell types of a group should not overlap (do not list a cell type together w
 \item{min_types}{Minimum number of cell types of the group that a method-signature combination must have to be
 aggregated. Combinations with fewer are skipped (with 1, the group would be a copy of a single cell type).}
 
-\item{verbose}{Boolean value to whether print the cell types summed in each method-signature combination}
+\item{verbose}{Boolean value to whether print the cell types summed in each method-signature combination and
+the reminder of how to use the groups in the other functions}
 }
 \value{
 The deconvolution matrix with the group features added as new columns.
@@ -34,9 +35,17 @@ the cell types of the group (e.g. Myeloid cells = macrophages + monocytes + dend
 only summed within the same method-signature combination, and the original features are kept.
 }
 \details{
-Group names that are not in the nomenclature (e.g. \code{Lymphocytes}) need to be given in \code{cells_extra} to
-\code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}} and \code{\link[=compute.benchmark]{compute.benchmark()}}. The \code{cell_groups} argument of
-\code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}} does both steps at once.
+It is an optional step after \code{\link[=compute.deconvolution]{compute.deconvolution()}}: the returned matrix can be used in the other
+functions as any other deconvolution matrix. Two things are needed for the groups to be used there (the
+function prints them as a reminder):
+\itemize{
+\item \strong{\code{cells_extra}}: group names that are not in the nomenclature (e.g. \code{Lymphocytes}) must be given in
+\code{cells_extra} to \code{\link[=compute.deconvolution.analysis]{compute.deconvolution.analysis()}}, \code{\link[=compute.benchmark]{compute.benchmark()}} and \code{\link[=prepare_multideconv_folds]{prepare_multideconv_folds()}},
+otherwise these groups are discarded. Listing all the group names in \code{cells_extra} is always safe: names
+that are already in the nomenclature (e.g. \code{Myeloid.cells}) are ignored there.
+\item \strong{New cohorts}: before \code{\link[=replicate_deconvolution_subgroups]{replicate_deconvolution_subgroups()}}, aggregate the same groups in the new
+deconvolution matrix. Otherwise the group features are missing in it and are set to \code{NA}.
+}
 }
 \examples{
 

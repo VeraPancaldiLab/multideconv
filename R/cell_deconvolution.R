@@ -687,13 +687,21 @@ remove_low_variance <- function(data, cv_thr = 0.1) {
 #'   The cell types of a group should not overlap (do not list a cell type together with its own subtypes).
 #' @param min_types Minimum number of cell types of the group that a method-signature combination must have to be
 #'   aggregated. Combinations with fewer are skipped (with 1, the group would be a copy of a single cell type).
-#' @param verbose Boolean value to whether print the cell types summed in each method-signature combination
+#' @param verbose Boolean value to whether print the cell types summed in each method-signature combination and
+#'   the reminder of how to use the groups in the other functions
 #'
 #' @return The deconvolution matrix with the group features added as new columns.
 #'
-#' @details Group names that are not in the nomenclature (e.g. `Lymphocytes`) need to be given in `cells_extra` to
-#'   [compute.deconvolution.analysis()] and [compute.benchmark()]. The `cell_groups` argument of
-#'   [compute.deconvolution.analysis()] does both steps at once.
+#' @details It is an optional step after [compute.deconvolution()]: the returned matrix can be used in the other
+#'   functions as any other deconvolution matrix. Two things are needed for the groups to be used there (the
+#'   function prints them as a reminder):
+#'
+#'   - **`cells_extra`**: group names that are not in the nomenclature (e.g. `Lymphocytes`) must be given in
+#'     `cells_extra` to [compute.deconvolution.analysis()], [compute.benchmark()] and [prepare_multideconv_folds()],
+#'     otherwise these groups are discarded. Listing all the group names in `cells_extra` is always safe: names
+#'     that are already in the nomenclature (e.g. `Myeloid.cells`) are ignored there.
+#'   - **New cohorts**: before [replicate_deconvolution_subgroups()], aggregate the same groups in the new
+#'     deconvolution matrix. Otherwise the group features are missing in it and are set to `NA`.
 #'
 #' @export
 #'
@@ -743,6 +751,12 @@ aggregate_cell_groups = function(deconvolution, cell_groups, min_types = 2, verb
     }
   }
 
+  if(verbose){
+    cat("\nTo use the aggregated matrix in other functions:\n")
+    if(length(new_groups) > 0) cat("  - compute.deconvolution.analysis(), compute.benchmark(), prepare_multideconv_folds(): add cells_extra = ", paste(deparse(new_groups), collapse = ""), ", otherwise these groups are discarded\n", sep = "")
+    cat("  - replicate_deconvolution_subgroups(): aggregate the same groups in the new cohort first, otherwise their features are set to NA\n")
+  }
+
   return(deconvolution)
 }
 
@@ -757,14 +771,11 @@ aggregate_cell_groups = function(deconvolution, cell_groups, min_types = 2, verb
 #'   is treated as categorical: correlations become partial correlations controlling for one indicator column
 #'   per batch. A numeric vector is used as a single linear covariate. With only one batch, ordinary
 #'   correlations are used.
-#' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme)
+#' @param cells_extra A string specifying the cells names to consider and that are not including in the nomenclature of multideconv (see Readme).
+#'   This includes groups created with [aggregate_cell_groups()] under a new name (e.g. `Lymphocytes`): if they are not listed here they are discarded.
 #' @param file_name A string specifying the file name of the .csv file with the deconvolution subgroups
 #' @param return Boolean value to whether return and saved the plot and csv files of deconvolution generated during the run inside the Results/ directory.
 #' @param verbose Boolen value to whether print or no the function messages
-#' @param cell_groups Optional named list of cell types to aggregate into groups before the analysis (see
-#'   [aggregate_cell_groups()]), e.g. `list(Myeloid.cells = c("Macrophages.M1", "Macrophages.M2", "Monocytes"))`.
-#'   The group features are added to the deconvolution and analysed as any other cell type (group names are added
-#'   to `cells_extra`).
 #'
 #' @return A list containing
 #'
@@ -774,7 +785,6 @@ aggregate_cell_groups = function(deconvolution, cell_groups, min_types = 2, verb
 #' - The discarded features because they contain a high number of zeros across samples (> 90%)
 #' - Discarded features due to low variance across samples
 #' - Discarded cell types because they are not supported in the pipeline
-#' - The cell groups given in `cell_groups` (`NULL` if none), used by [replicate_deconvolution_subgroups()]
 #'
 #' @export
 #'
@@ -786,16 +796,7 @@ aggregate_cell_groups = function(deconvolution, cell_groups, min_types = 2, verb
 #'
 #' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cells_extra = "mesenchymal")
 #'
-#' groups = list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
-#' processed_deconvolution = compute.deconvolution.analysis(deconvolution, cell_groups = groups)
-#'
-compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", zero_thr = 0.9, cv_thr = 0.1, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE, cell_groups = NULL){
-  #Aggregate cell types into groups (they are analysed as any other cell type)
-  if(!is.null(cell_groups)){
-    deconvolution = aggregate_cell_groups(deconvolution, cell_groups, verbose = verbose)
-    cells_extra = c(cells_extra, names(cell_groups))
-  }
-
+compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type = "spearman", zero_thr = 0.9, cv_thr = 0.1, batch = NULL, cells_extra = NULL, file_name = NULL, return = FALSE, verbose = FALSE){
   deconvolution.mat = deconvolution
 
   if(!is.null(batch) && length(unique(batch)) < 2){
@@ -891,9 +892,9 @@ compute.deconvolution.analysis <- function(deconvolution, corr = 0.7, corr_type 
     message("Deconvolution features subgroupped")
   }
 
-  results = list(dt, res, groups, zero_features, low_variance_features, cells_discarded, cell_groups)
+  results = list(dt, res, groups, zero_features, low_variance_features, cells_discarded)
   names(results) = c("Deconvolution matrix", "Deconvolution subgroups per cell types", "Deconvolution subgroups composition",
-                     "Discarded features with high number of zeros", "Discarded features with low variance", "Discarded cell types", "Cell groups")
+                     "Discarded features with high number of zeros", "Discarded features with low variance", "Discarded cell types")
   return(results)
 
 }
@@ -1831,9 +1832,9 @@ create_metacells = function(sc_object, labels_column, samples_column, exclude_ce
 #'     \item{\code{Deconvolution subgroups composition}: the member features of each subgroup, per cell type}
 #'     \item{\code{Deconvolution matrix}: the original deconvolution result used to determine relevant features}
 #'   }
-#' @param deconvolution_test A data.frame or matrix of deconvolution results (e.g., from another cohort). If
-#'   `deconv_res` was computed with `cell_groups`, the same cell groups are aggregated here first
-#'   (see [aggregate_cell_groups()]), so give the deconvolution as returned by [compute.deconvolution()].
+#' @param deconvolution_test A data.frame or matrix of deconvolution results (e.g., from another cohort). If cell
+#'   groups were aggregated with [aggregate_cell_groups()] before computing `deconv_res`, aggregate the same groups
+#'   here first; otherwise their features are missing and are set to `NA`.
 #'
 #' @return A data.frame with the projected subgroup features proportions: the same features, in the same order, as
 #'   the "Deconvolution matrix" of `deconv_res`. Each subgroup is the median of its member features. Subgroups with
@@ -1852,9 +1853,6 @@ replicate_deconvolution_subgroups = function(deconv_res, deconvolution_test){
 
   # Create same groups composition (one subgroup at a time, so a subgroup can also use earlier subgroups)
   deconvolution_test = data.frame(deconvolution_test, check.names = FALSE)
-  if(!is.null(deconv_res[["Cell groups"]])){ #Same cell groups as in the analysis
-    deconvolution_test = aggregate_cell_groups(deconvolution_test, deconv_res[["Cell groups"]], verbose = FALSE)
-  }
   partial = c()
   absent = c()
   for (sub_name in names(deconv_subgroups)) {
@@ -2448,8 +2446,6 @@ stratified_sample_cells <- function(SCData, SCData_metadata, cell_label, n_cells
 #' @param zero_thr Maximum zero fraction passed to [compute.deconvolution.analysis()].
 #' @param cv_thr Minimum coefficient of variation passed to [compute.deconvolution.analysis()].
 #' @param batch Optional batch covariate passed to [compute.deconvolution.analysis()].
-#' @param cell_groups Optional named list of cell types to aggregate into groups, passed to
-#'   [compute.deconvolution.analysis()]. The same groups are applied to the test samples of each fold.
 #'
 #' @return
 #' - When `bestune` is `NULL` (fold mode): invisibly, a named list of processed folds, each also saved to
@@ -2482,8 +2478,7 @@ prepare_multideconv_folds <- function(
     corr_type = "spearman",
     zero_thr = 0.9,
     cv_thr = 0.1,
-    batch = NULL,
-    cell_groups = NULL
+    batch = NULL
 ) {
 
   # Outcome columns given by pipeML in data: "target" (classification) or "time" + "event" (survival).
@@ -2513,7 +2508,6 @@ prepare_multideconv_folds <- function(
       cv_thr = cv_thr,
       batch = batch,
       cells_extra = cells_extra,
-      cell_groups = cell_groups,
       return = FALSE,
       verbose = FALSE
     )
@@ -2551,7 +2545,6 @@ prepare_multideconv_folds <- function(
       cv_thr = cv_thr,
       batch = if (!is.null(batch)) batch[train_idx] else NULL,
       cells_extra = cells_extra,
-      cell_groups = cell_groups,
       return = FALSE
     )
 

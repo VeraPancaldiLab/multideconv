@@ -88,17 +88,16 @@ test_that("aggregate_cell_groups sums cell types within each method-signature co
   expect_error(aggregate_cell_groups(d, list(All.B.cells = c("Monocytes", "B.cells"))), "Group names")
 })
 
-test_that("cell groups are analysed as a cell type and replicated in new data", {
+test_that("aggregated cell groups can be analysed as a cell type and replicated in new data", {
   data("deconvolution", package = "multideconv", envir = environment())
   groups <- list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
-  res <- compute.deconvolution.analysis(deconvolution[1:10, ], cell_groups = groups)
-  expect_equal(res[["Cell groups"]], groups)
+  agg <- aggregate_cell_groups(deconvolution, groups, verbose = FALSE)
+  res <- compute.deconvolution.analysis(agg[1:10, ], cells_extra = "Lymphocytes")
+  expect_length(res, 6)
   expect_true(any(grepl("Lymphocytes", colnames(res[["Deconvolution matrix"]]))))
   expect_false(any(duplicated(colnames(res[["Deconvolution matrix"]]))))
-  expect_null(compute.deconvolution.analysis(deconvolution[1:10, ])[["Cell groups"]])
 
-  # Raw deconvolution of new samples: the groups are aggregated before replicating the subgroups
-  rep <- expect_no_warning(replicate_deconvolution_subgroups(res, deconvolution[11:15, ]))
+  rep <- expect_no_warning(replicate_deconvolution_subgroups(res, agg[11:15, ]))
   expect_equal(colnames(rep), colnames(res[["Deconvolution matrix"]]))
   expect_false(anyNA(rep))
 })
@@ -120,12 +119,6 @@ test_that("prepare_multideconv_folds returns and saves the processed folds", {
   expect_named(folds, c("F1", "F2"))
   expect_true(all(file.exists(file.path("Results", c("fold_F1.rds", "fold_F2.rds")))))
   expect_equal(nrow(folds$F1$test_data), 5)
-
-  groups <- list(Lymphocytes = c("B.cells", "CD4.cells", "CD8.cells", "NK.cells"))
-  folds <- prepare_multideconv_folds(dd, folds = list(F1 = 1:10), ncores = 1, cell_groups = groups)
-  expect_true(any(grepl("Lymphocytes", colnames(folds$F1$train_data))))
-  expect_setequal(colnames(folds$F1$test_data), setdiff(colnames(folds$F1$train_data), "target"))
-  expect_false(anyNA(folds$F1$test_data))
 })
 
 test_that("prepare_multideconv_folds handles survival outcomes given as time and event columns", {

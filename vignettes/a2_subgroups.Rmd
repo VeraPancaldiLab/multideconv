@@ -43,7 +43,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
                                                   return = TRUE)
 ```
 
-The result is a named list with seven elements:
+The result is a named list with six elements:
 
 ```{r}
 names(deconv_subgroups)
@@ -75,7 +75,7 @@ deconv_subgroups = compute.deconvolution.analysis(deconvolution = deconv_pseudo,
 
 ## **Aggregating cell types into groups**
 
-Signatures do not describe cell types with the same level of detail: one reports `Macrophages.M1`, `Macrophages.M2` and `Monocytes`, another one only `Myeloid.cells`. To compare them at the same level, or to match a coarser ground truth (e.g. H&E or flow cytometry), you can sum cell types into groups with `aggregate_cell_groups()`.
+Signatures do not describe cell types with the same level of detail: one reports `Macrophages.M1`, `Macrophages.M2` and `Monocytes`, another one only `Myeloid.cells`. To compare them at the same level, or to match a coarser ground truth (e.g. H&E or flow cytometry), you can sum cell types into groups with `aggregate_cell_groups()`. It is an optional step after `compute.deconvolution()`, independent of the subgroup analysis: it takes a deconvolution matrix and returns it with the group features added.
 
 `cell_groups` is a named list: each name is a group and each element contains the cell types to sum, written as in `get_cell_type_nomenclature()`. For every method-signature combination, the function adds a new feature `<method>_<signature>_<group>`:
 
@@ -94,7 +94,11 @@ myeloid = list(Myeloid.cells = c("Macrophages.cells", "Macrophages.M0", "Macroph
 deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = myeloid)
 ```
 
-To use the groups in the subgroup analysis, give them directly to `compute.deconvolution.analysis()` with the `cell_groups` argument. The groups are aggregated first and then analysed as any other cell type. A group name can be a cell type of the nomenclature (`Myeloid.cells`) or a new name (`Lymphocytes`); new names must not contain `_` nor the name of an existing cell type.
+A group name can be a cell type of the nomenclature (`Myeloid.cells`) or a new name (`Lymphocytes`); new names must not contain `_` nor the name of an existing cell type.
+
+The returned matrix is a deconvolution matrix as any other, so it can be given to `compute.deconvolution.analysis()` if you want the groups to be analysed too. They are then treated as one more cell type.
+
+**IMPORTANT:** group names that are not in the nomenclature (here `Lymphocytes`) must be listed in `cells_extra`, otherwise these groups are **discarded** by `compute.deconvolution.analysis()` (and by `compute.benchmark()` and `prepare_multideconv_folds()`). If in doubt, list all your group names: the ones already in the nomenclature are simply ignored. `aggregate_cell_groups()` prints this reminder after the summed cell types.
 
 ```{r, message=FALSE}
 groups = list(Myeloid.cells = myeloid$Myeloid.cells,
@@ -103,14 +107,21 @@ groups = list(Myeloid.cells = myeloid$Myeloid.cells,
                               "CD4.regulatory", "CD4.non.regulatory", "CD8.cells",
                               "NK.cells", "NK.activated", "NK.resting"))
 
-deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_bulk,
+deconv_groups = aggregate_cell_groups(deconv_bulk, cell_groups = groups, verbose = FALSE)
+
+deconv_subgroups_groups = compute.deconvolution.analysis(deconvolution = deconv_groups,
                                                          corr = 0.7,
-                                                         cell_groups = groups)
+                                                         cells_extra = "Lymphocytes")
 
 deconv_subgroups_groups[["Deconvolution subgroups composition"]]$Myeloid.cells
 ```
 
-The groups are stored in the output (`deconv_subgroups_groups[["Cell groups"]]`), so `replicate_deconvolution_subgroups()` aggregates the same groups in a new cohort before rebuilding the subgroups: give it the deconvolution as returned by `compute.deconvolution()`.
+**IMPORTANT:** if you later replicate these subgroups in a new cohort with `replicate_deconvolution_subgroups()` (see below), run `aggregate_cell_groups()` with the same `cell_groups` on the new deconvolution matrix first. Otherwise the group features do not exist in the new cohort and are returned as `NA` (with a warning).
+
+```{r, eval = FALSE}
+deconv_new_groups = aggregate_cell_groups(deconv_new, cell_groups = groups)
+deconv_new_subgroups = replicate_deconvolution_subgroups(deconv_subgroups_groups, deconv_new_groups)
+```
 
 **NOTE:** A group can list cell types of different levels of detail, because each signature reports its own. Check the printed lines: within one method-signature combination the summed cell types must not overlap (a cell type together with its own subtypes would be counted twice).
 

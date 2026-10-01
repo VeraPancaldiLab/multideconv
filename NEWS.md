@@ -3,7 +3,7 @@
 ## New features
 
 - New `aggregate_cell_groups()`: sums cell types into user-defined groups (e.g. Myeloid cells = macrophages + monocytes + dendritic cells) within each method-signature combination, adding a feature `<method>_<signature>_<group>`. The original features are kept, combinations that already estimate the group are left as they are and combinations with fewer than `min_types` (default 2) cell types of the group are skipped. It prints which cell types were summed in each combination.
-- `compute.deconvolution.analysis()` and `prepare_multideconv_folds()` have a `cell_groups` argument that aggregates the groups before the analysis and analyses them as any other cell type. The output of `compute.deconvolution.analysis()` has a new last element, "Cell groups", and `replicate_deconvolution_subgroups()` uses it to aggregate the same groups in a new cohort.
+- `aggregate_cell_groups()` is an optional step after `compute.deconvolution()`, independent of `compute.deconvolution.analysis()`. Its output is a deconvolution matrix as any other; group names that are not in the nomenclature (e.g. `Lymphocytes`) are given in `cells_extra` to `compute.deconvolution.analysis()` and `compute.benchmark()`.
 
 # multideconv 0.2.0
 

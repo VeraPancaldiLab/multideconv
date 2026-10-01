@@ -13,9 +13,9 @@ replicate_deconvolution_subgroups(deconv_res, deconvolution_test)
 \item{\code{Deconvolution matrix}: the original deconvolution result used to determine relevant features}
 }}
 
-\item{deconvolution_test}{A data.frame or matrix of deconvolution results (e.g., from another cohort). If
-\code{deconv_res} was computed with \code{cell_groups}, the same cell groups are aggregated here first
-(see \code{\link[=aggregate_cell_groups]{aggregate_cell_groups()}}), so give the deconvolution as returned by \code{\link[=compute.deconvolution]{compute.deconvolution()}}.}
+\item{deconvolution_test}{A data.frame or matrix of deconvolution results (e.g., from another cohort). If cell
+groups were aggregated with \code{\link[=aggregate_cell_groups]{aggregate_cell_groups()}} before computing \code{deconv_res}, aggregate the same groups
+here first; otherwise their features are missing and are set to \code{NA}.}
 }
 \value{
 A data.frame with the projected subgroup features proportions: the same features, in the same order, as
