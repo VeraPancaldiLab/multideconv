@@ -15,6 +15,7 @@ Depends:
     R (>= 4.3)
 Imports:
     ADImpute,
+    Deriv,
     doParallel,
     dplyr,
     EpiDISH,
@@ -23,14 +24,12 @@ Imports:
     graphics,
     reshape2,
     grDevices,
-    ggpubr,
     Hmisc (>= 5.2-3),
     immunedeconv (>= 2.1.0),
     matrixStats,
     omnideconv (>= 0.1.0),
     parallel,
     ppcor,
-    glmGamPoi,
     future.apply,
     ggtext,
     future,
@@ -49,7 +48,9 @@ Remotes:
     omnideconv/DWLS,
     omnideconv/BayesPrism,
     omnideconv/MOMF,
-    cozygene/bisque
+    BisqueRNA=cozygene/bisque,
+    bioc/DeconRNASeq,
+    Deriv=url::https://cran.r-project.org/src/contrib/Archive/Deriv/Deriv_4.2.0.tar.gz
 Suggests:
     testthat (>= 3.0.0),
     withr,
@@ -63,7 +64,8 @@ Suggests:
     matlib,
     limSolve,
     ComplexHeatmap,
-    bisque,
+    BisqueRNA,
+    DeconRNASeq,
     DWLS (>= 0.4),
     MOMF (>= 0.2),
     BayesPrism (>= 0.2),

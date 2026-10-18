@@ -2115,7 +2115,7 @@ compute.benchmark = function(deconvolution, groundtruth, cells_extra = NULL, cor
     ggplot2::theme_classic() +
     ggplot2::scale_x_discrete(expand=c(0,0)) +
     ggplot2::scale_y_discrete(expand=c(0,0)) +
-    ggpubr::rotate_x_text(angle = 45) + ggplot2::theme(axis.text.x=ggtext::element_markdown()) + ggplot2::theme(axis.text.y=ggtext::element_markdown())
+    ggplot2::theme(axis.text.x = ggtext::element_markdown(angle = 45, hjust = 1, vjust = 1), axis.text.y = ggtext::element_markdown())
 
   if(plot){
     ensure_results_dir()
@@ -2146,13 +2146,23 @@ create_sc_pseudobulk = function(sc_obj, cells_labels = NULL, sample_labels, norm
   if (!requireNamespace("Seurat", quietly = TRUE))
     stop("Package 'Seurat' is required for create_sc_pseudobulk().")
 
-  #Convert to SingleCell
-  sc_obj@meta.data$Patient = as.factor(sc_obj@meta.data[,sample_labels])
-  sce = Seurat::as.SingleCellExperiment(sc_obj)
+  # Counts of the default assay, with the accessor matching the installed SeuratObject
+  # (the `slot` argument is defunct in v5)
+  assay = SeuratObject::DefaultAssay(sc_obj)
+  if (utils::packageVersion("SeuratObject") >= "5.0.0") {
+    counts = SeuratObject::LayerData(sc_obj, assay = assay, layer = "counts")
+  } else {
+    counts = SeuratObject::GetAssayData(sc_obj, assay = assay, slot = "counts")
+  }
 
   ##Aggregating counts (sum of the counts of the cells of each sample)
-  aggr_counts <- glmGamPoi::pseudobulk(sce, group_by = glmGamPoi::vars(Patient), aggregation_functions = list(counts = "rowSums2", .default = "rowMeans2"))
-  pseudo_counts = data.frame(SummarizedExperiment::assay(aggr_counts, "counts"), check.names = FALSE)
+  # Cells x samples indicator matrix: the product sums each sample's cells without densifying sparse counts.
+  # Samples are in order of first appearance; cells without a sample label are left out.
+  samples = as.character(sc_obj@meta.data[colnames(counts), sample_labels])
+  keep = !is.na(samples)
+  indicator = 1 * outer(samples[keep], unique(samples[keep]), "==")
+  colnames(indicator) = unique(samples[keep])
+  pseudo_counts = data.frame(as.matrix(counts[, keep, drop = FALSE] %*% indicator), check.names = FALSE)
 
   if(normalized == TRUE){
     pseudo_counts = ADImpute::NormalizeTPM(pseudo_counts, log=F) %>%
