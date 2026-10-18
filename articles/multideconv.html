@@ -81,16 +81,28 @@ et al., 2025</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p><code>multideconv</code> requires R &gt;= 4.3.3. On R 4.3.0 to 4.3.2,
+first install a newer version of the <code>Matrix</code> package (R
+4.3.3 already includes it):</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"Matrix@1.6-5"</span><span class="op">)</span></span></code></pre></div>
 <p>To avoid GitHub API rate limit issues, set up a Personal Access Token
 (PAT) before installing:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages(c("usethis", "gitcreds"))</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/github-token.html" class="external-link">create_github_token</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">gitcreds</span><span class="fu">::</span><span class="fu"><a href="https://gitcreds.r-lib.org/reference/gitcreds_get.html" class="external-link">gitcreds_set</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Install <code>multideconv</code> from GitHub:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"VeraPancaldiLab/multideconv"</span><span class="op">)</span></span></code></pre></div>
+<p>Two of the default methods of <code><a href="../reference/compute.deconvolution.html">compute.deconvolution()</a></code>,
+DeconRNASeq and DWLS, are optional dependencies and are not installed
+automatically. Install them with:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bioc/DeconRNASeq"</span>, <span class="st">"omnideconv/DWLS"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>DeconRNASeq was removed from Bioconductor (release 3.22), so it is
+installed from Bioconductor’s GitHub mirror.</p>
 </div>
 <div class="section level2">
 <h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>

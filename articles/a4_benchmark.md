@@ -21,11 +21,6 @@ the real cell proportions (if needed).
 metacells_seurat = Seurat::CreateSeuratObject(metacell_obj, meta.data = metacell_metadata)
 #> Warning: Data is of class matrix. Coercing to dgCMatrix.
 pseudobulk = create_sc_pseudobulk(metacells_seurat, sample_labels = "sample", normalized = TRUE, file_name = "Tutorial")
-#> Warning: replacing previous import 'S4Arrays::makeNindexFromArrayViewport' by
-#> 'DelayedArray::makeNindexFromArrayViewport' when loading 'SummarizedExperiment'
-#> Warning: Layer 'data' is empty
-#> Warning: Layer 'scale.data' is empty
-#> Aggregating assay 'counts' using 'rowSums2'.
 #> Converting input to matrix.
 ```
 

@@ -74,9 +74,29 @@ pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
 
 Several dependencies come from GitHub remotes (omnideconv, immunedeconv,
-DWLS, BayesPrism, MOMF, bisque) — see `DESCRIPTION`. `hdWGCNA` is an
-optional runtime dependency (`pak::pkg_install("smorabit/hdWGCNA")`)
-needed only by
+DWLS, BayesPrism, MOMF, `BisqueRNA=cozygene/bisque`, `bioc/DeconRNASeq`)
+— see `DESCRIPTION`. A remote whose repo name differs from the package
+name needs the `Package=` prefix, otherwise pak cannot match it.
+
+**Effective minimum R is 4.3.3** (it ships Matrix 1.6-5; current
+`SeuratObject` needs Matrix \>= 1.6-4, and current Matrix needs R \>=
+4.4). DESCRIPTION keeps `R (>= 4.3)` on purpose: `R (>= 4.3.3)` gives
+the `--as-cran` WARNING “Dependence on R version not with patchlevel 0”,
+which fails CI. The README/vignette tell R 4.3.0–4.3.2 users to run
+`pak::pkg_install("Matrix@1.6-5")` first (verified to resolve on R
+4.3.1). `Deriv` (reached via `ggpubr → rstatix → car → pbkrtest → doBy`,
+which omnideconv still pulls in) needs R \>= 4.5 in its current version,
+so it is pinned to 4.2.0 through `Remotes: Deriv=url::...` and listed in
+Imports, because pak only applies a `Remotes` pin to a direct dependency
+(unused import → harmless R CMD check NOTE). DeconRNASeq was removed
+from Bioconductor 3.22, hence the `bioc/DeconRNASeq` GitHub mirror; it
+and DWLS are Suggests although they are default methods. `ggpubr` and
+`glmGamPoi` were replaced in code
+(`ggtext::element_markdown(angle = 45, ...)`; per-sample sums via a
+sparse cells x samples indicator product in
+[`create_sc_pseudobulk()`](https://verapancaldilab.github.io/multideconv/reference/create_sc_pseudobulk.md));
+do not reintroduce them. `hdWGCNA` is an optional runtime dependency
+(`pak::pkg_install("smorabit/hdWGCNA")`) needed only by
 [`create_metacells()`](https://verapancaldilab.github.io/multideconv/reference/create_metacells.md);
 it is not a `Remote` and is checked via
 [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html). `Seurat` is

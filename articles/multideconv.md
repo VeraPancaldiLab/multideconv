@@ -7,6 +7,14 @@ data, as described in [Hurtado et al.,
 
 ## Installation
 
+`multideconv` requires R \>= 4.3.3. On R 4.3.0 to 4.3.2, first install a
+newer version of the `Matrix` package (R 4.3.3 already includes it):
+
+``` r
+
+pak::pkg_install("Matrix@1.6-5")
+```
+
 To avoid GitHub API rate limit issues, set up a Personal Access Token
 (PAT) before installing:
 
@@ -24,6 +32,19 @@ Install `multideconv` from GitHub:
 # install.packages("pak")
 pak::pkg_install("VeraPancaldiLab/multideconv")
 ```
+
+Two of the default methods of
+[`compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.md),
+DeconRNASeq and DWLS, are optional dependencies and are not installed
+automatically. Install them with:
+
+``` r
+
+pak::pkg_install(c("bioc/DeconRNASeq", "omnideconv/DWLS"))
+```
+
+DeconRNASeq was removed from Bioconductor (release 3.22), so it is
+installed from Bioconductor’s GitHub mirror.
 
 ## Tutorials
 
